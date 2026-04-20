@@ -307,6 +307,17 @@ textarea::placeholder{color:var(--muted);}
     </div>
     <textarea id="scriptTA" rows="7" placeholder="상황을 선택하고 AI 대본 생성을 누르거나 직접 입력해주세요."></textarea>
     <div class="script-note">💡 생성된 대본은 직접 수정 가능합니다. 매번 다른 내용으로 생성됩니다.</div>
+    <div style="margin-top:14px;">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">🎙️ 목소리</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="voiceChips">
+        <button class="btn active" data-val="adult_male" onclick="selVoice(this)" style="background:var(--accent);color:var(--bg);border-color:var(--accent);">👨 남자</button>
+        <button class="btn" data-val="deep_male" onclick="selVoice(this)">🎤 굵은 남자</button>
+        <button class="btn" data-val="adult_female" onclick="selVoice(this)">👩 여자</button>
+        <button class="btn" data-val="elderly_male" onclick="selVoice(this)">👴 할아버지</button>
+        <button class="btn" data-val="elderly_female" onclick="selVoice(this)">👵 할머니</button>
+        <button class="btn" data-val="child" onclick="selVoice(this)">🧒 어린이</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -425,7 +436,30 @@ const STYLE_MAP = {
 };
 
 // ── STATE ───────────────────────────────────────────────
-const S = { obj:null, objKr:null, objEn:null, sit:null, style:'pixar', dur:'10' };
+const S = { obj:null, objKr:null, objEn:null, sit:null, style:'pixar', dur:'10', voice:'adult_male' };
+
+const VOICE_MAP = {
+  adult_male:'clear adult male voice — confident, authoritative scolding tone',
+  deep_male:'deep resonant bass male voice — low rumbling and gravelly, commanding scolding',
+  adult_female:'clear adult female voice — sharp, direct, no-nonsense scolding tone',
+  elderly_male:'elderly grandfather voice — raspy, weathered, world-weary scolding',
+  elderly_female:'elderly grandmother voice — firm, sharp, disappointment-laden scolding',
+  child:'high-pitched child voice — unexpectedly serious and surprisingly cutting scolding',
+};
+
+function selVoice(el){
+  document.querySelectorAll('#voiceChips .btn').forEach(b=>{
+    b.classList.remove('active');
+    b.style.background='transparent';
+    b.style.color='var(--sub)';
+    b.style.borderColor='var(--border2)';
+  });
+  el.classList.add('active');
+  el.style.background='var(--accent)';
+  el.style.color='var(--bg)';
+  el.style.borderColor='var(--accent)';
+  S.voice = el.dataset.val;
+}
 let usedScripts = [];
 
 // ── AI 카테고리별 오브젝트 생성 ──────────────────────────
@@ -638,21 +672,23 @@ function generate() {
   // 이미지 프롬프트
   const imgPrompt = `A ${obj} with a distinctly human-like expression — deeply creased brows pulled inward, teeth visibly clenched, wide oversized cartoon eyes full of exasperated frustration. Two slim expressive arms emerge naturally from either side of its form, tinted to complement the object's own color. One arm drives a pointed finger straight at the viewer in accusation, the other hangs mid-air in a firm scolding position. No legs, no feet — the character rests solidly on its natural base, fully grounded with zero sense of floating. Surface textures of the ${obj} remain true to life with fine material detail preserved throughout. The setting reflects a typical Korean single-person household or office environment — realistic and relatable. ${styleEn}. Composition: ${ratio}, rule of thirds, highly detailed, masterpiece quality.`;
 
+  const voiceEn = VOICE_MAP[S.voice] || VOICE_MAP.adult_male;
+
   // 영상 프롬프트
   const vidPrompt = `Bring this character to life with expressive upper-body frustration and scolding energy.
 The character speaks directly to the viewer: "${script}"
+CHARACTER: Locked center-frame — upper body only, planted and stable. No drifting, no floating.
 All motion is measured and intentional — nothing too fast or chaotic.
 Body language syncs naturally with the dialogue:
 - A single extended finger aims directly into the lens during moments of accusation
-- Both palms open and raised when expressing disbelief ("how could you do this")
+- Both palms open and raised when expressing disbelief
 - Head shakes slowly during the scolding sections
 Every gesture feels like a real reaction — organic, unrepeated, conversational.
-The mouth moves with the speech — opening and closing shaped by emotion behind each word.
-Brow furrows hard throughout. Eyes convey deep exasperation and judgment.
-Feet stay planted — no hovering, no bounce, no lift.
-Camera: mostly static with only a slow subtle push-in toward the subject.
+The mouth moves with the speech. Brow furrows hard. Eyes convey deep exasperation and judgment.
+BACKGROUND: Slow cinematic parallax drift — background elements move independently at different depths. Floating particles, dust motes, ambient environmental motion (steam, bokeh orbs, drifting objects) fill the background while the character stays locked center.
+Camera: static on character with only a slow subtle push-in. Background moves behind the fixed subject.
 ${styleEn}.
-Voice energy: adult scolding tone — authoritative, slightly tired, like someone who has seen too much. Clear and dry sound — no echo, no reverb, no hollow sound.
+Voice: ${voiceEn}. Clear and dry sound — no echo, no reverb, no hollow sound.
 No roaring, no monster sounds. No on-screen text, no subtitles, no captions.
 The character's face is permanently the ${obj} itself — under no circumstance should it shift toward or become a human face.
 Aspect ratio: ${ratio}. [Platform: ${platform}]`;
