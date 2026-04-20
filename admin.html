@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 · 쇼츠 3D 프롬프트 생성기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--card:#1a1a1a;
+  --border:#2a2a2a;--border2:#3a3a3a;
+  --text:#f0f0f0;--muted:#888;--sub:#aaa;
+  --accent:#22c55e;--warn:#f59e0b;--red:#dc2626;--blue:#3b82f6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;
+}
+
+/* Login */
+.login-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.login-box{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:40px 32px;max-width:380px;width:100%;text-align:center;
+}
+.login-icon{font-size:42px;margin-bottom:12px;}
+.login-title{font-size:22px;font-weight:900;margin-bottom:4px;}
+.login-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
+.login-input{
+  width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  color:var(--text);font-size:16px;padding:12px 16px;outline:none;text-align:center;
+  letter-spacing:3px;font-family:monospace;margin-bottom:12px;
+}
+.login-input:focus{border-color:var(--accent);}
+.login-btn{
+  width:100%;padding:13px;border:none;border-radius:8px;
+  background:var(--accent);color:#000;font-size:15px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:opacity 0.2s;
+}
+.login-btn:hover{opacity:0.85;}
+.login-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+.login-back{font-size:11px;color:var(--muted);cursor:pointer;margin-top:16px;text-decoration:underline;}
+
+/* Dashboard */
+.dashboard{display:none;padding:24px;}
+.dashboard.show{display:block;}
+header{
+  max-width:1000px;margin:0 auto 28px;display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:16px;border-bottom:1px solid var(--border);
+}
+.header-title{font-size:20px;font-weight:900;}
+.header-title small{font-size:11px;color:var(--muted);font-weight:400;margin-left:8px;letter-spacing:1px;}
+.logout-btn{
+  padding:7px 14px;border-radius:6px;border:1px solid var(--border2);
+  background:transparent;color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;
+}
+.logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red);}
+
+.container{max-width:1000px;margin:0 auto;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;
+}
+.stat-label{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.stat-value{font-size:32px;font-weight:900;color:var(--accent);line-height:1;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+
+.section{margin-bottom:28px;}
+.section-title{
+  font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:12px;color:var(--sub);
+}
+
+.bar-chart{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;}
+.bar-label{flex:0 0 130px;color:var(--sub);}
+.bar-wrap{flex:1;background:var(--surface);border-radius:4px;height:22px;overflow:hidden;position:relative;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#16a34a);border-radius:4px;transition:width 0.4s;}
+.bar-count{flex:0 0 50px;text-align:right;font-weight:700;color:var(--text);}
+
+.daily-chart{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;
+  display:flex;align-items:flex-end;gap:4px;height:180px;overflow-x:auto;
+}
+.day-bar{
+  flex:0 0 32px;background:var(--accent);border-radius:3px 3px 0 0;
+  position:relative;min-height:3px;transition:all 0.3s;
+  display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+}
+.day-bar:hover{background:#16a34a;}
+.day-bar-label{
+  position:absolute;bottom:-22px;font-size:9px;color:var(--muted);
+  white-space:nowrap;transform:rotate(-45deg);transform-origin:center;
+}
+.day-bar-count{position:absolute;top:-18px;font-size:10px;color:var(--sub);font-weight:700;}
+
+.table{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-row{display:flex;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;align-items:center;}
+.table-row:last-child{border-bottom:none;}
+.table-row .rank{flex:0 0 32px;color:var(--muted);font-weight:700;}
+.table-row .name{flex:1;color:var(--text);}
+.table-row .count{flex:0 0 60px;text-align:right;font-weight:700;color:var(--accent);}
+
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.action-btn{
+  padding:10px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;
+  color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;font-weight:700;
+}
+.action-btn:hover{background:var(--surface);color:var(--text);}
+.action-btn.danger:hover{background:var(--red);color:#fff;border-color:var(--red);}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+
+.warn-banner{
+  background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);
+  border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:var(--warn);
+}
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-icon">⚙️</div>
+    <div class="login-title">관리자 페이지</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="password" class="login-input" id="pwInput" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="login-btn" onclick="tryLogin()">로그인</button>
+    <div class="login-err" id="loginErr">비밀번호가 틀렸습니다.</div>
+    <div class="login-back" onclick="window.location.href='saul-prompt-v5.html'">← 메인 페이지로</div>
+  </div>
+</div>
+
+<!-- 대시보드 -->
+<div class="dashboard" id="dashboard">
+  <header>
+    <div class="header-title">⚙️ 관리자 대시보드 <small>쇼츠 3D 프롬프트 생성기</small></div>
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+  </header>
+
+  <div class="container">
+
+    <div class="warn-banner">
+      💡 이 통계는 이 브라우저에만 저장된 사용 기록입니다. 다른 브라우저/기기의 통계는 여기서 볼 수 없어요 (localStorage 기반). 향후 서버 기반 통계가 필요하면 Railway 백엔드 연결 필요.
+    </div>
+
+    <!-- 핵심 통계 -->
+    <div class="grid">
+      <div class="stat-card">
+        <div class="stat-label">총 생성 횟수</div>
+        <div class="stat-value" id="totalGen">-</div>
+        <div class="stat-sub" id="lastGen">아직 없음</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">총 방문 횟수</div>
+        <div class="stat-value" id="totalVis">-</div>
+        <div class="stat-sub" id="firstVis">첫 방문: -</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">오늘 생성</div>
+        <div class="stat-value" id="todayGen">-</div>
+        <div class="stat-sub">이번 브라우저 기준</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">이번 주 생성</div>
+        <div class="stat-value" id="weekGen">-</div>
+        <div class="stat-sub">최근 7일</div>
+      </div>
+    </div>
+
+    <!-- 일별 추이 -->
+    <div class="section">
+      <div class="section-title">📅 최근 14일 생성 추이</div>
+      <div class="daily-chart" id="dailyChart"></div>
+    </div>
+
+    <!-- 컨셉별 -->
+    <div class="section">
+      <div class="section-title">💡 컨셉별 사용량</div>
+      <div class="bar-chart" id="conceptChart"></div>
+    </div>
+
+    <!-- 국가별 -->
+    <div class="section">
+      <div class="section-title">🌏 국가별 사용량</div>
+      <div class="bar-chart" id="countryChart"></div>
+    </div>
+
+    <!-- 스타일별 -->
+    <div class="section">
+      <div class="section-title">🎨 스타일별 사용량</div>
+      <div class="bar-chart" id="styleChart"></div>
+    </div>
+
+    <!-- Top 사물 -->
+    <div class="section">
+      <div class="section-title">🏆 가장 많이 생성된 사물 Top 10</div>
+      <div class="table" id="topObjects"></div>
+    </div>
+
+    <!-- 액션 -->
+    <div class="actions">
+      <button class="action-btn" onclick="exportStats()">📥 통계 JSON 다운로드</button>
+      <button class="action-btn danger" onclick="resetStats()">🗑️ 통계 초기화</button>
+      <button class="action-btn" onclick="window.location.href='saul-prompt-v5.html'">🏠 메인 페이지</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ 설정 ═══
+// 관리자 비밀번호 — 원하면 여기서 변경하세요 (소스코드에 박히니까 절대 외부에 소스 노출 X)
+const ADMIN_PASSWORD = 'zheila2026';
+const SESSION_KEY = 'admin_session_v1';
+
+// ═══ 로그인 ═══
+function tryLogin(){
+  const pw = document.getElementById('pwInput').value.trim();
+  if(pw === ADMIN_PASSWORD){
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e){}
+    showDashboard();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('pwInput').value='';
+  }
+}
+
+function logout(){
+  try { sessionStorage.removeItem(SESSION_KEY); } catch(e){}
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('pwInput').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+
+function showDashboard(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('dashboard').classList.add('show');
+  loadStats();
+}
+
+// ═══ 통계 로드 ═══
+function getStats(){
+  try {
+    return JSON.parse(localStorage.getItem('usage_stats') || '{}');
+  } catch(e){ return {}; }
+}
+
+function loadStats(){
+  const stats = getStats();
+
+  // 핵심 숫자
+  document.getElementById('totalGen').textContent = stats.totalGenerates || 0;
+  document.getElementById('totalVis').textContent = stats.totalVisits || 0;
+
+  if(stats.lastGenerate){
+    const d = new Date(stats.lastGenerate);
+    document.getElementById('lastGen').textContent = '마지막: ' + formatDate(d);
+  }
+
+  if(stats.firstVisit){
+    const d = new Date(stats.firstVisit);
+    document.getElementById('firstVis').textContent = '첫 방문: ' + formatDate(d);
+  }
+
+  // 오늘 / 이번주
+  const today = new Date().toISOString().split('T')[0];
+  const daily = stats.daily || {};
+  document.getElementById('todayGen').textContent = daily[today] || 0;
+
+  let weekSum = 0;
+  for(let i=0; i<7; i++){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const k = d.toISOString().split('T')[0];
+    weekSum += (daily[k] || 0);
+  }
+  document.getElementById('weekGen').textContent = weekSum;
+
+  // 일별 차트 (최근 14일)
+  renderDailyChart(daily);
+
+  // 분포 차트들
+  renderBarChart('conceptChart', stats.byConcept || {}, {
+    tip: '💡 꿀팁 알려주기',
+    complaint: '😤 민폐 지적'
+  });
+
+  renderBarChart('countryChart', stats.byCountry || {}, {
+    kr: '🇰🇷 한국',
+    jp: '🇯🇵 일본'
+  });
+
+  renderBarChart('styleChart', stats.byStyle || {}, {
+    pixar: '🎬 픽사 3D',
+    realistic: '📷 실사',
+    anime: '🌸 애니메이션',
+    webtoon: '📱 웹툰',
+    sketch: '✏️ 스케치',
+    claymation: '🧸 클레이메이션'
+  });
+
+  // Top 사물
+  renderTopObjects(stats.byObject || {});
+}
+
+function renderDailyChart(daily){
+  const chart = document.getElementById('dailyChart');
+  chart.innerHTML = '';
+  const days = [];
+  for(let i=13; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const k = d.toISOString().split('T')[0];
+    days.push({key:k, label: (d.getMonth()+1)+'/'+d.getDate(), count: daily[k]||0});
+  }
+  const max = Math.max(...days.map(d=>d.count), 1);
+  days.forEach(d=>{
+    const bar = document.createElement('div');
+    bar.className = 'day-bar';
+    bar.style.height = ((d.count/max)*100) + '%';
+    if(d.count>0){
+      const ct = document.createElement('span');
+      ct.className = 'day-bar-count';
+      ct.textContent = d.count;
+      bar.appendChild(ct);
+    }
+    const lb = document.createElement('span');
+    lb.className = 'day-bar-label';
+    lb.textContent = d.label;
+    bar.appendChild(lb);
+    bar.title = d.key + ': ' + d.count + '회 생성';
+    chart.appendChild(bar);
+  });
+}
+
+function renderBarChart(targetId, data, labels){
+  const el = document.getElementById(targetId);
+  el.innerHTML = '';
+  const entries = Object.entries(data);
+  if(entries.length===0){
+    el.innerHTML = '<div class="empty">아직 데이터가 없습니다.</div>';
+    return;
+  }
+  const max = Math.max(...entries.map(e=>e[1]));
+  entries.sort((a,b)=>b[1]-a[1]).forEach(([key,count])=>{
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = '<div class="bar-label">' + (labels[key]||key) + '</div>'
+      + '<div class="bar-wrap"><div class="bar-fill" style="width:' + ((count/max)*100) + '%"></div></div>'
+      + '<div class="bar-count">' + count + '</div>';
+    el.appendChild(row);
+  });
+}
+
+function renderTopObjects(data){
+  const el = document.getElementById('topObjects');
+  el.innerHTML = '';
+  const entries = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(entries.length===0){
+    el.innerHTML = '<div class="empty">아직 생성 기록이 없습니다.</div>';
+    return;
+  }
+  entries.forEach(([name, count], idx)=>{
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    row.innerHTML = '<div class="rank">#' + (idx+1) + '</div>'
+      + '<div class="name">' + name + '</div>'
+      + '<div class="count">' + count + '회</div>';
+    el.appendChild(row);
+  });
+}
+
+function formatDate(d){
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function pad(n){return n<10?'0'+n:n;}
+
+// ═══ 액션 ═══
+function exportStats(){
+  const stats = getStats();
+  const blob = new Blob([JSON.stringify(stats, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'usage_stats_' + new Date().toISOString().split('T')[0] + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function resetStats(){
+  if(!confirm('정말로 모든 통계를 초기화할까요? 복구할 수 없습니다.')) return;
+  try { localStorage.removeItem('usage_stats'); } catch(e){}
+  loadStats();
+  alert('통계가 초기화되었습니다.');
+}
+
+// ═══ 초기화 ═══
+window.addEventListener('load', ()=>{
+  try {
+    if(sessionStorage.getItem(SESSION_KEY) === '1'){
+      showDashboard();
+    }
+  } catch(e){}
+});
+</script>
+</body>
+</html>
