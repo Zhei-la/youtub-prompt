@@ -330,9 +330,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <footer style="text-align:center;padding:20px 0 30px;border-top:1px solid var(--border);margin-top:20px;">
   <div style="font-size:10px;color:var(--muted);">쇼츠 3D 프롬프트 생성기 · 앵그리 에디션 · by 제일라</div>
-  <div style="font-size:9px;color:var(--muted);margin-top:4px;opacity:0.4;">
-    <a href="admin.html" style="color:inherit;text-decoration:none;">·</a>
-  </div>
 </footer>
 
 <script>
@@ -939,12 +936,6 @@ function doCopy(textId,btnId){
 }
 function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000);}
 function hideErr(){document.getElementById('errMsg').style.display='none';}
-
-document.addEventListener('keydown',(e)=>{
-  if(e.ctrlKey&&e.shiftKey&&(e.key==='A'||e.key==='a')){
-    e.preventDefault();window.location.href='admin.html';
-  }
-});
 
 window.addEventListener('load',()=>{
   buildTopics();
