@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사물의 참견 — 프롬프트 빌더</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--surface:#f8f8f8;--card:#f2f2f2;
+  --border:#e0e0e0;--border2:#c8c8c8;
+  --text:#0a0a0a;--muted:#999;--sub:#555;
+  --accent:#000;--chip-active-bg:#000;--chip-active-text:#fff;
+  --input-bg:#fff;--textarea-bg:#fafafa;
+  --result-bg:#f8f8f8;--green:#16a34a;--red:#dc2626;
+}
+body.dark{
+  --bg:#0a0a0a;--surface:#111;--card:#1a1a1a;
+  --border:#2a2a2a;--border2:#3a3a3a;
+  --text:#f0f0f0;--muted:#555;--sub:#aaa;
+  --accent:#fff;--chip-active-bg:#fff;--chip-active-text:#000;
+  --input-bg:#1a1a1a;--textarea-bg:#111;
+  --result-bg:#111;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;transition:background 0.25s,color 0.25s;}
+
+.dark-toggle{position:fixed;top:16px;right:16px;z-index:1000;width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);background:var(--card);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.dark-toggle:hover{background:var(--accent);color:var(--bg);}
+
+/* API KEY */
+.api-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 20px;}
+.api-bar-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.api-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;white-space:nowrap;}
+.api-input{flex:1;min-width:160px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:6px 11px;outline:none;font-family:monospace;}
+.api-input:focus{border-color:var(--accent);}
+.api-save{padding:6px 14px;border-radius:6px;border:1.5px solid var(--accent);background:var(--accent);color:var(--bg);font-size:11px;cursor:pointer;font-weight:700;font-family:inherit;white-space:nowrap;}
+.api-del{padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;}
+.api-status{font-size:10px;color:var(--muted);margin-top:4px;width:100%;}
+
+header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--border);}
+.logo{font-size:clamp(20px,4vw,36px);font-weight:900;color:var(--text);letter-spacing:-1px;}
+.logo span{color:var(--muted);font-weight:300;}
+.tagline{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:5px;}
+
+.wrap{max-width:800px;margin:0 auto;padding:32px 20px 100px;}
+
+/* STEP */
+.step{margin-bottom:28px;opacity:0.3;pointer-events:none;transition:opacity 0.3s;}
+.step.active{opacity:1;pointer-events:all;}
+.step.done{opacity:0.6;pointer-events:all;}
+.step-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--sub);flex-shrink:0;transition:all 0.2s;}
+.step.done .step-num{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.step-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--sub);flex:1;}
+.step.active .step-title{color:var(--text);}
+.step-actions{display:flex;gap:6px;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:7px 13px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:4px;user-select:none;}
+.chip:hover{border-color:var(--border2);color:var(--text);}
+.chip.active{background:var(--chip-active-bg);border-color:var(--chip-active-bg);color:var(--chip-active-text);font-weight:700;}
+.chip .del{font-size:9px;color:rgba(255,255,255,0.4);margin-left:2px;}
+body:not(.dark) .chip.active .del{color:rgba(255,255,255,0.5);}
+
+/* BUTTONS */
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--sub);font-size:11px;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;}
+.btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.btn.primary:hover{opacity:0.8;}
+
+/* INPUT */
+.input-row{display:flex;gap:7px;margin-top:8px;}
+input[type=text]{flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:12px;padding:8px 12px;outline:none;transition:border-color 0.2s;}
+input[type=text]:focus{border-color:var(--accent);}
+input[type=text]::placeholder{color:var(--muted);}
+
+/* DURATION TOGGLE */
+.dur-wrap{display:flex;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden;width:fit-content;margin-bottom:16px;}
+.dur-btn{padding:7px 18px;border:none;background:var(--bg);color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;border-right:1px solid var(--border);transition:all 0.15s;}
+.dur-btn:last-child{border-right:none;}
+.dur-btn.active{background:var(--accent);color:var(--bg);font-weight:700;}
+
+/* SCRIPT BOX */
+.script-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+.script-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.script-btns{display:flex;gap:6px;margin-bottom:11px;flex-wrap:wrap;}
+textarea{width:100%;background:var(--textarea-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.8;padding:11px 13px;resize:none;outline:none;transition:border-color 0.2s;}
+textarea:focus{border-color:var(--accent);}
+textarea::placeholder{color:var(--muted);}
+.script-note{font-size:11px;color:var(--muted);margin-top:6px;}
+
+/* STYLE */
+.style-note-box{font-size:11px;padding:6px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--sub);margin-top:8px;display:none;}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:24px 0;}
+
+/* SUMMARY */
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);min-height:38px;line-height:1.9;}
+.summary b{color:var(--text);}
+
+.err{display:none;padding:10px 14px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:7px;color:var(--red);font-size:12px;margin-bottom:12px;}
+
+/* GEN BTN */
+.gen-btn{width:100%;padding:15px;border:none;border-radius:8px;background:var(--accent);color:var(--bg);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all 0.2s;margin-bottom:24px;}
+.gen-btn:hover{opacity:0.85;transform:translateY(-1px);}
+.gen-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+/* RESULT */
+.result-wrap{display:none;}
+.result-wrap.show{display:block;animation:fadeUp 0.35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.tab{padding:8px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:-1px;transition:all 0.15s;}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:700;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.result-card{background:var(--result-bg);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:12px;}
+.result-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.result-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.copy-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--sub);font-size:11px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.copy-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+.copy-btn.ok{border-color:var(--green)!important;color:var(--green)!important;}
+.result-text{font-size:13px;line-height:1.9;color:var(--sub);white-space:pre-wrap;word-break:break-word;}
+
+/* SCRIPT PREVIEW */
+.script-preview{background:var(--card);border-radius:8px;padding:16px;margin-bottom:16px;border:1px solid var(--border);}
+.script-preview-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.script-line{font-size:14px;line-height:2;color:var(--text);}
+.script-line.dim{color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+
+<button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
+
+<!-- API KEY -->
+<div class="api-bar">
+  <div class="api-bar-inner">
+    <span class="api-label">🔑 API Key</span>
+    <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-...">
+    <button class="api-save" onclick="saveKey()">저장</button>
+    <button class="api-del" onclick="clearKey()">삭제</button>
+    <div class="api-status" id="apiStatus">API 키를 입력하면 AI 대본 자동생성이 활성화됩니다.</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">사물의 참견 <span>프롬프트 빌더</span></div>
+  <div class="tagline">자취생 · 직장인 · 사물 의인화 AI 영상</div>
+</header>
+
+<div class="wrap">
+
+<!-- 언어/국가 선택 -->
+<div style="margin-bottom:28px;">
+  <div style="font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">🌏 타겟 국가</div>
+  <div class="chips" id="langChips">
+    <div class="chip active" data-val="kr" onclick="selLang(this)">🇰🇷 한국</div>
+    <div class="chip" data-val="jp" onclick="selLang(this)">🇯🇵 일본</div>
+  </div>
+</div>
+
+<!-- STEP 1: 사물 -->
+<div class="step active" id="s1">
+  <div class="step-hd">
+    <div class="step-num">1</div>
+    <div class="step-title">사물 선택</div>
+    <div class="step-actions">
+      <button class="btn" onclick="randObj()">🎲 랜덤</button>
+    </div>
+  </div>
+
+  <!-- 한국 오브젝트 -->
+  <div id="objsKR">
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;">🏠 자취 생활</div>
+        <button class="btn" style="font-size:10px;padding:3px 10px;" onclick="aiGenObj('kr','home')">🎲 AI 생성</button>
+      </div>
+      <div class="chips" id="objChips1">
+        <div class="chip" data-val="fridge" data-kr="냉장고" data-en="refrigerator" onclick="selObj(this)">🧊 냉장고</div>
+        <div class="chip" data-val="washer" data-kr="세탁기" data-en="washing machine" onclick="selObj(this)">🌀 세탁기</div>
+        <div class="chip" data-val="bed" data-kr="침대" data-en="bed" onclick="selObj(this)">🛏️ 침대</div>
+        <div class="chip" data-val="alarm" data-kr="알람시계" data-en="alarm clock" onclick="selObj(this)">⏰ 알람시계</div>
+        <div class="chip" data-val="charger" data-kr="충전기" data-en="phone charger" onclick="selObj(this)">🔌 충전기</div>
+        <div class="chip" data-val="trash" data-kr="쓰레기통" data-en="trash can" onclick="selObj(this)">🗑️ 쓰레기통</div>
+        <div class="chip" data-val="sink" data-kr="싱크대" data-en="kitchen sink" onclick="selObj(this)">🚰 싱크대</div>
+        <div class="chip" data-val="mirror" data-kr="거울" data-en="bathroom mirror" onclick="selObj(this)">🪞 거울</div>
+        <div class="chip" data-val="blanket" data-kr="이불" data-en="blanket" onclick="selObj(this)">🛌 이불</div>
+        <div class="chip" data-val="freezer" data-kr="냉동실" data-en="freezer" onclick="selObj(this)">🧊 냉동실</div>
+        <div class="chip" data-val="dustpan" data-kr="빗자루" data-en="broom and dustpan" onclick="selObj(this)">🧹 빗자루</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;">💼 직장 생활</div>
+        <button class="btn" style="font-size:10px;padding:3px 10px;" onclick="aiGenObj('kr','work')">🎲 AI 생성</button>
+      </div>
+      <div class="chips" id="objChips2">
+        <div class="chip" data-val="wallet" data-kr="통장" data-en="bank account book" onclick="selObj(this)">💳 통장</div>
+        <div class="chip" data-val="desk" data-kr="사무용 책상" data-en="office desk" onclick="selObj(this)">🖥️ 사무용 책상</div>
+        <div class="chip" data-val="coffee" data-kr="커피잔" data-en="coffee mug" onclick="selObj(this)">☕ 커피잔</div>
+        <div class="chip" data-val="bag" data-kr="출퇴근 가방" data-en="work commute bag" onclick="selObj(this)">👜 출퇴근 가방</div>
+        <div class="chip" data-val="keyboard" data-kr="키보드" data-en="office keyboard" onclick="selObj(this)">⌨️ 키보드</div>
+        <div class="chip" data-val="namecard" data-kr="명함" data-en="business card" onclick="selObj(this)">📇 명함</div>
+        <div class="chip" data-val="elevator" data-kr="엘리베이터" data-en="office elevator" onclick="selObj(this)">🛗 엘리베이터</div>
+        <div class="chip" data-val="printer" data-kr="프린터" data-en="office printer" onclick="selObj(this)">🖨️ 프린터</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일본 오브젝트 -->
+  <div id="objsJP" style="display:none;">
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;">🏠 一人暮らし (자취)</div>
+        <button class="btn" style="font-size:10px;padding:3px 10px;" onclick="aiGenObj('jp','home')">🎲 AI 생성</button>
+      </div>
+      <div class="chips" id="objChipsJP1">
+        <div class="chip" data-val="bento" data-kr="편의점 도시락" data-en="convenience store bento box" onclick="selObj(this)">🍱 편의점 도시락</div>
+        <div class="chip" data-val="fridge" data-kr="냉장고" data-en="small apartment refrigerator" onclick="selObj(this)">🧊 냉장고</div>
+        <div class="chip" data-val="washer" data-kr="세탁기" data-en="coin laundry washing machine" onclick="selObj(this)">🌀 세탁기</div>
+        <div class="chip" data-val="alarm" data-kr="알람시계" data-en="alarm clock" onclick="selObj(this)">⏰ 알람시계</div>
+        <div class="chip" data-val="futon" data-kr="후톤(이불)" data-en="Japanese futon mattress" onclick="selObj(this)">🛌 후톤 이불</div>
+        <div class="chip" data-val="daiso" data-kr="다이소 물건" data-en="Daiso 100 yen shop item" onclick="selObj(this)">🛒 다이소 물건</div>
+        <div class="chip" data-val="ramen" data-kr="컵라면" data-en="cup ramen noodles" onclick="selObj(this)">🍜 컵라면</div>
+        <div class="chip" data-val="bike" data-kr="자전거" data-en="commuter bicycle" onclick="selObj(this)">🚲 자전거</div>
+        <div class="chip" data-val="trash_jp" data-kr="쓰레기 분리통" data-en="Japanese recycling trash bin" onclick="selObj(this)">🗑️ 분리수거통</div>
+        <div class="chip" data-val="aircon" data-kr="에어컨 리모컨" data-en="air conditioner remote control" onclick="selObj(this)">📟 에어컨 리모컨</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;">💼 サラリーマン (직장인)</div>
+        <button class="btn" style="font-size:10px;padding:3px 10px;" onclick="aiGenObj('jp','work')">🎲 AI 생성</button>
+      </div>
+      <div class="chips" id="objChipsJP2">
+        <div class="chip" data-val="train" data-kr="통근 전철" data-en="packed commuter train" onclick="selObj(this)">🚃 통근 전철</div>
+        <div class="chip" data-val="hanko" data-kr="도장(한코)" data-en="Japanese personal seal hanko stamp" onclick="selObj(this)">🔴 도장(한코)</div>
+        <div class="chip" data-val="nemawashi" data-kr="회의 자료" data-en="office meeting documents" onclick="selObj(this)">📋 회의 자료</div>
+        <div class="chip" data-val="nomikai" data-kr="회식 잔" data-en="nomikai work drinking party glass" onclick="selObj(this)">🍺 회식 잔</div>
+        <div class="chip" data-val="suit" data-kr="넥타이" data-en="business suit necktie" onclick="selObj(this)">👔 넥타이</div>
+        <div class="chip" data-val="desk_jp" data-kr="사무용 책상" data-en="cluttered Japanese office desk" onclick="selObj(this)">🖥️ 사무용 책상</div>
+        <div class="chip" data-val="fax" data-kr="팩스기" data-en="office fax machine" onclick="selObj(this)">📠 팩스기</div>
+        <div class="chip" data-val="vending" data-kr="자판기" data-en="Japanese vending machine" onclick="selObj(this)">🥤 자판기</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="customObj" placeholder="직접 입력: 예) 에어컨, 신발장, 월급명세서">
+    <button class="btn" onclick="addCustomObj()">+</button>
+  </div>
+</div>
+
+<!-- STEP 2: 상황 -->
+<div class="step" id="s2">
+  <div class="step-hd">
+    <div class="step-num">2</div>
+    <div class="step-title">상황 선택</div>
+    <div class="step-actions">
+      <button class="btn" onclick="aiRandSit()">🎲 AI 생성</button>
+    </div>
+  </div>
+  <div class="chips" id="sitChips"></div>
+  <div class="input-row">
+    <input type="text" id="customSit" placeholder="직접 입력: 예) 운동하겠다고 산 헬스장 3개월째 안 감">
+    <button class="btn" onclick="addCustomSit()">+</button>
+  </div>
+</div>
+
+<!-- STEP 3: 스타일 -->
+<div class="step" id="s3">
+  <div class="step-hd">
+    <div class="step-num">3</div>
+    <div class="step-title">비주얼 스타일</div>
+  </div>
+  <div class="chips" id="styleChips">
+    <div class="chip active" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
+    <div class="chip" data-val="realistic" onclick="selStyle(this)">📷 실사</div>
+    <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
+    <div class="chip" data-val="webtoon" onclick="selStyle(this)">📱 웹툰</div>
+    <div class="chip" data-val="sketch" onclick="selStyle(this)">✏️ 스케치</div>
+    <div class="chip" data-val="claymation" onclick="selStyle(this)">🧸 클레이메이션</div>
+  </div>
+  <div class="style-note-box" id="styleNote"></div>
+</div>
+
+<!-- STEP 4: 대본 생성 -->
+<div class="step" id="s4">
+  <div class="step-hd">
+    <div class="step-num">4</div>
+    <div class="step-title">대본</div>
+  </div>
+  <div class="script-box">
+    <div class="dur-wrap">
+      <button class="dur-btn active" data-val="10" onclick="selDur(this)">⚡ 10초</button>
+      <button class="dur-btn" data-val="30" onclick="selDur(this)">🎬 30초</button>
+    </div>
+    <div class="script-btns">
+      <button class="btn primary" onclick="genScript()">✨ AI 대본 생성</button>
+      <button class="btn" onclick="regenScript()">🔄 다시 생성</button>
+    </div>
+    <textarea id="scriptTA" rows="7" placeholder="상황을 선택하고 AI 대본 생성을 누르거나 직접 입력해주세요."></textarea>
+    <div class="script-note">💡 생성된 대본은 직접 수정 가능합니다. 매번 다른 내용으로 생성됩니다.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="summary" id="summary">선택한 항목이 여기에 표시됩니다.</div>
+<div class="err" id="errMsg"></div>
+<button class="gen-btn" id="genBtn" onclick="generate()">🔥 프롬프트 생성하기</button>
+
+<!-- 결과 -->
+<div class="result-wrap" id="resultWrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('img')">🖼️ 이미지 프롬프트</button>
+    <button class="tab" onclick="switchTab('vid')">🎬 영상 프롬프트</button>
+    <button class="tab" onclick="switchTab('script')">📝 대본 (KR/JP)</button>
+  </div>
+  <div class="tab-panel active" id="panelImg">
+    <div class="result-card">
+      <div class="result-top">
+        <span class="result-label">Image Prompt · EN</span>
+        <button class="copy-btn" id="cpImg" onclick="doCopy('imgOut','cpImg')">📋 복사</button>
+      </div>
+      <div class="result-text" id="imgOut"></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panelVid">
+    <div class="result-card">
+      <div class="result-top">
+        <span class="result-label">Video Prompt · EN</span>
+        <button class="copy-btn" id="cpVid" onclick="doCopy('vidOut','cpVid')">📋 복사</button>
+      </div>
+      <div class="result-text" id="vidOut"></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panelScript">
+    <div class="result-card">
+      <div class="result-top">
+        <span class="result-label">대본 · KR</span>
+        <button class="copy-btn" id="cpSc" onclick="doCopy('scOut','cpSc')">📋 복사</button>
+      </div>
+      <div class="result-text" id="scOut"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── 상황 DB ──────────────────────────────────────────────
+const SITUATIONS = {
+  kr:{
+    fridge:['배달 시켜 먹고 남은 거 냉장고에 넣고 다음날 또 배달 시키기','냉장고 안에 유통기한 지난 음식 방치하기','장 봐서 채워놓고 결국 다 버리기','냉동실에 언젠가 먹겠다는 음식 1년째 방치','배달 음식 남기면 그냥 버리기'],
+    washer:['빨래 다 됐는데 3일째 안 꺼내기','빨래 쌓아두고 빨 생각 안 하기','같은 옷 며칠째 입기'],
+    bed:['퇴근하고 씻지도 않고 바로 눕기','침대에서 유튜브만 보다가 새벽 됨','이불 한 달째 안 빨기','알람 끄고 5분만 더 자다가 지각'],
+    alarm:['알람 7번 끄고 결국 지각','스누즈 9번 누르기','오늘도 일어나서 후회하는 패턴 반복'],
+    charger:['폰은 충전하면서 본인은 방전된 채로 잠','배터리 5% 될 때까지 충전 안 하기'],
+    trash:['쓰레기통 있는데 옆에 버리기','분리수거 안 하고 다 섞어 버리기','음식물쓰레기 일반쓰레기에 버리기'],
+    sink:['설거지 3일째 방치','배달 그릇 씻지 않고 쌓아두기'],
+    mirror:['거울 보면서 다이어트 다짐하고 배달 시키기'],
+    blanket:['이불 속에서 핸드폰만 하다가 새벽','이불 개지 않고 그냥 나가기'],
+    freezer:['냉동 음식 쌓아두고 안 먹기','냉동만두 3개월째 방치'],
+    dustpan:['청소기 돌린다고 사놓고 한 달째 박스 그대로'],
+    wallet:['월급날만 두껍고 나머지 한 달 텅 빔','커피 하루 두 잔씩 한 달이면 18만원','카드값 고지서 보고 충격 받기'],
+    desk:['퇴근 전 5분이 제일 안 끝나는 것','야근하고 내일 또 야근'],
+    coffee:['아메리카노 없이 일 못 하는 몸 됨','하루 커피값이 밥값보다 비쌈'],
+    bag:['출근 가방 현관에 던지고 들어오기','가방 안에 영수증 3개월치 쌓임'],
+    keyboard:['키보드 청소 한 번도 안 함'],
+    namecard:['명함 서랍에 3년째 박혀 있음','아직도 이 회사 다니고 있는 나'],
+    elevator:['같은 층 직장인이랑 매일 어색하게 탐'],
+    printer:['중요한 날 항상 프린터 고장'],
+  },
+  jp:{
+    bento:['편의점 도시락만 매일 먹기','도시락 사서 반도 못 먹고 버리기','유통기한 오늘까지인 거 사고 결국 버리기'],
+    fridge:['냉장고에 도시락 쌓아두고 안 먹기','맥주만 가득하고 먹을 게 없는 냉장고'],
+    washer:['코인빨래방 가기 귀찮아서 빨래 2주째 미루기','같은 옷 계속 입기'],
+    alarm:['알람 7번 끄고 전철 놓치기','간신히 일어나 전철에서 서서 자기'],
+    futon:['후톤 깔아놓고 개지 않은 채 한 달','후톤 안에서 스마트폰만 보다가 새벽'],
+    daiso:['다이소에서 필요한 것보다 훨씬 많이 사기','100엔 물건 한 달 만에 버리기'],
+    ramen:['컵라면으로 한 끼 때우는 습관','라면에 계란 하나도 안 넣고 그냥 먹기'],
+    bike:['자전거 체인 기름 한 번도 안 친 것','비 맞혀서 녹슨 자전거 그냥 타기'],
+    trash_jp:['분리수거 규칙 복잡한데 그냥 섞어 버리기','쓰레기 수거일 놓쳐서 일주일 방치'],
+    aircon:['에어컨 필터 청소 한 번도 안 함','겨울에 난방 틀고 창문 열어두기'],
+    train:['만원 전철에서 1시간 서서 출퇴근','전철 안에서 아무것도 못 하고 그냥 버티기','퇴근 전철에서 서서 자다가 지나침'],
+    hanko:['도장 찾느라 결재 5분 걸리는 일본','디지털 시대에 아직도 도장 들고 다니기'],
+    nemawashi:['회의에서 아무것도 결정 안 하고 또 회의','자료 만드는 데 3시간, 회의 5분'],
+    nomikai:['회식 거절 못 하고 끌려가기','술 못 마셔도 따라 마시는 척하기'],
+    suit:['더운데 양복 넥타이 풀지도 못하기','양복 세탁 1년에 한 번도 안 함'],
+    desk_jp:['책상 위 서류 산더미인데 어디 있는지 모름','퇴근 못 하고 상사 눈치 보며 앉아 있기'],
+    fax:['21세기에 팩스로 서류 주고받기','팩스 고장났을 때의 패닉'],
+    vending:['자판기 커피로 하루 버티기','자판기에 쓰는 돈이 한 달에 얼마인지 계산해봄'],
+  }
+};
+
+let currentLang = 'kr';
+
+function selLang(el) {
+  document.querySelectorAll('#langChips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentLang = el.dataset.val;
+  document.getElementById('objsKR').style.display = currentLang==='kr'?'block':'none';
+  document.getElementById('objsJP').style.display = currentLang==='jp'?'block':'none';
+  S.obj=null;S.objKr=null;S.objEn=null;S.sit=null;
+  document.querySelectorAll('#s1 .chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('sitChips').innerHTML='';
+  deact('s2');deact('s3');deact('s4');
+  updateSummary();
+}
+
+const STYLE_MAP = {
+  pixar:{note:'픽사 3D — 과장된 표정, 만화팔, 귀엽지만 화남',en:'Pixar-inspired 3D animation style, cinematic studio lighting, volumetric light, subsurface scattering, highly expressive cartoon character design, vibrant colors'},
+  realistic:{note:'실사 — ARRI Alexa, 자연광, 절제된 감정',en:'photorealistic cinematic style, shot on ARRI Alexa, 85mm f/2.0 lens, natural practical lighting, subtle color grade, film grain'},
+  anime:{note:'애니 — 지브리 감성, 셀쉐이딩, 감정 과장',en:'Studio Ghibli inspired anime style, expressive hand-drawn linework, cel shading, atmospheric watercolor backgrounds, large emotive eyes'},
+  webtoon:{note:'웹툰 — 한국 웹툰, 디지털 선화, 공감형',en:'Korean webtoon style, clean digital linework, flat colors with soft cell shading, chibi proportions, expressive oversized eyes'},
+  sketch:{note:'스케치 — 연필선, 보일링라인, 종이 질감',en:'hand-drawn pencil sketch animation style, rough expressive pencil lines, visible hatching, warm paper texture, black ink on cream paper feel'},
+  claymation:{note:'클레이 — 점토 질감, 지문 흔적, Laika 감성',en:'stop-motion claymation style, handcrafted clay texture, visible fingerprint impressions, warm Laika Animation studio lighting, tactile physical feel'},
+};
+
+// ── STATE ───────────────────────────────────────────────
+const S = { obj:null, objKr:null, objEn:null, sit:null, style:'pixar', dur:'10' };
+let usedScripts = [];
+
+// ── AI 카테고리별 오브젝트 생성 ──────────────────────────
+async function aiGenObj(lang, category) {
+  const btnSelector = lang==='kr'
+    ? (category==='home' ? '#objsKR .chips:first-of-type' : '#objsKR .chips:last-of-type')
+    : (category==='home' ? '#objsJP .chips:first-of-type' : '#objsJP .chips:last-of-type');
+  const targetId = lang==='kr'
+    ? (category==='home' ? 'objChips1' : 'objChips2')
+    : (category==='home' ? 'objChipsJP1' : 'objChipsJP2');
+
+  // 버튼 로딩 상태
+  const btn = document.querySelector(`button[onclick="aiGenObj('${lang}','${category}')"]`);
+  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
+
+  const categoryDesc = lang==='kr'
+    ? (category==='home' ? '한국 자취생 생활용품/가전/일상 사물' : '한국 직장인 사무용품/회사 생활 관련 사물')
+    : (category==='home' ? '일본 일인暮らし(자취) 생활용품/편의점/일상 사물' : '일본 사라리만(직장인) 사무용품/회사 문화 관련 사물');
+
+  try {
+    const r = await callAI(
+      'JSON만 출력. {"items":[{"kr":"한글이름","en":"English name for AI prompt"},...]}',
+      `카테고리: ${categoryDesc}\n이 카테고리에서 자취생/직장인이 공감할 수 있는 사물 6개를 새롭게 생성해줘.\n기존에 없는 것들로, 구체적이고 재미있게.\nJSON만 출력.`
+    );
+    const d = JSON.parse(r.replace(/```json|```/g,'').trim());
+    const wrap = document.getElementById(targetId);
+    d.items.forEach(o => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.dataset.val = o.kr;
+      chip.dataset.kr = o.kr;
+      chip.dataset.en = o.en;
+      chip.innerHTML = `<span>✨ ${o.kr}</span><span class="del"> ✕</span>`;
+      chip.querySelector('.del').onclick = e => { e.stopPropagation(); chip.remove(); };
+      chip.onclick = () => selObj(chip);
+      wrap.appendChild(chip);
+    });
+  } catch(e) { showErr('AI 생성 실패: ' + e.message); }
+  finally {
+    if(btn){ btn.textContent='🎲 AI 생성'; btn.disabled=false; }
+  }
+}
+
+// ── STEP 1: 오브젝트 ────────────────────────────────────
+function selObj(el) {
+  document.querySelectorAll('.chip[data-val]').forEach(c => {
+    if(c.closest('#s1')) c.classList.remove('active');
+  });
+  el.classList.add('active');
+  S.obj = el.dataset.val;
+  S.objKr = el.dataset.kr;
+  S.objEn = el.dataset.en;
+  buildSituations(S.obj);
+  activate('s1'); done('s1'); activate('s2'); deact('s3'); deact('s4');
+  S.sit = null;
+  updateSummary();
+}
+
+function randObj() {
+  const allChips = document.querySelectorAll('#s1 .chips .chip[data-val]');
+  const el = allChips[Math.floor(Math.random() * allChips.length)];
+  if(el) selObj(el);
+}
+
+function addCustomObj() {
+  const v = document.getElementById('customObj').value.trim();
+  if(!v) return;
+  const chip = makeChip(v, v, v, null, ()=>selObj(chip));
+  chip.dataset.kr = v; chip.dataset.en = v;
+  document.getElementById('objChips1').appendChild(chip);
+  selObj(chip);
+  document.getElementById('customObj').value = '';
+}
+
+// ── STEP 2: 상황 ─────────────────────────────────────────
+function buildSituations(obj) {
+  const wrap = document.getElementById('sitChips');
+  wrap.innerHTML = '';
+  const sits = (SITUATIONS[currentLang]||{})[obj] || [];
+  sits.forEach(s => {
+    const c = makeChipSimple(s, ()=>selSit(c, s));
+    wrap.appendChild(c);
+  });
+}
+
+function selSit(el, val) {
+  document.querySelectorAll('#sitChips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  S.sit = val;
+  done('s2'); activate('s3'); activate('s4');
+  updateSummary();
+}
+
+async function aiRandSit() {
+  if(!S.obj) return showErr('사물을 먼저 선택해주세요.');
+  const btn = document.querySelector('#s2 .btn');
+  btn.textContent = '⏳...'; btn.disabled = true;
+  try {
+    const r = await callAI(
+      'JSON만 출력. {"items":["상황1","상황2",...]}',
+      `사물: ${S.objKr}\n이 사물의 시점에서 자취생/직장인이 흔히 하는 잘못된 습관이나 공감되는 상황 5개 생성. 구체적이고 현실적으로. JSON만.`
+    );
+    const d = JSON.parse(r.replace(/```json|```/g,'').trim());
+    const wrap = document.getElementById('sitChips');
+    d.items.forEach(s => {
+      const c = makeChipSimple('✨ '+s, ()=>selSit(c, s));
+      wrap.appendChild(c);
+    });
+  } catch(e) { showErr('AI 생성 실패'); }
+  finally { btn.textContent='🎲 AI 생성'; btn.disabled=false; }
+}
+
+function addCustomSit() {
+  const v = document.getElementById('customSit').value.trim();
+  if(!v) return;
+  const c = makeChipSimple('✏️ '+v, ()=>selSit(c, v));
+  document.getElementById('sitChips').appendChild(c);
+  selSit(c, v);
+  document.getElementById('customSit').value = '';
+}
+
+// ── STEP 3: 스타일 ───────────────────────────────────────
+document.querySelectorAll('#styleChips .chip').forEach(c => {
+  c.onclick = () => selStyle(c);
+});
+function selStyle(el) {
+  document.querySelectorAll('#styleChips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  S.style = el.dataset.val;
+  const note = document.getElementById('styleNote');
+  note.textContent = STYLE_MAP[S.style]?.note || '';
+  note.style.display = 'block';
+  updateSummary();
+}
+
+// ── STEP 4: 대본 ─────────────────────────────────────────
+function selDur(el) {
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  S.dur = el.dataset.val;
+}
+
+async function genScript() { await doGenScript(); }
+async function regenScript() { await doGenScript(true); }
+async function doGenScript(regen) {
+  if(!S.sit) return showErr('상황을 먼저 선택해주세요.');
+  const btns = document.querySelectorAll('.script-btns .btn');
+  btns.forEach(b => b.disabled = true);
+  const avoid = usedScripts.length > 0 ? `\n⚠️ 다음과 완전히 다른 내용으로:\n${usedScripts.slice(-2).join('\n---\n')}` : '';
+  const isJP = currentLang === 'jp';
+  const durDesc = S.dur === '30'
+    ? '30초 분량 — 자기소개(1~2초) → 목격한 장면 폭로(3~5초) → 팩트+훈계+꿀팁(10~15초) → 마무리 한방(2~3초)'
+    : '10초 분량 — 자기소개(1초) → 폭로(2~3초) → 핵심 훈계 한 가지(3~4초) → 마무리(1초)';
+
+  const systemPrompt = isJP
+    ? `あなたは一人暮らし・会社員向けの「モノが直接しゃべる」ショート動画の台本ライターです。
+
+【絶対ルール】
+- 台本だけ出力する（説明・ラベル不要）
+- モノが直接しゃべる一人称視点（俺、私など）
+- 文法は完全に正確な日本語
+- 話し言葉・タメ口で書く（だ／だろ／じゃん／だよ）
+- 文は短く切る（一文ごとに改行）
+- コンビニ、スマホ、アパートなど自然な外来語を使う
+- 説教臭くなりすぎない。共感→ツッコミ→アドバイスの順
+- 最後は行動を促す一言で締める（例：「ちゃんとやれよ」「わかった？」「やってみろって」）
+
+【自己紹介の例】
+「俺、お前の冷蔵庫なんだけど」
+「私、お前の洗濯機ね」
+「俺、お前の目覚まし時計だ」
+
+【分量】${durDesc}`
+    : `자취생/직장인 대상 사물 의인화 숏폼 대본 작가.
+
+규칙:
+- 한국어 대본만 출력 (설명 없이 대사만)
+- 사물이 직접 말하는 1인칭 시점
+- 화나지만 현실적인 조언도 주는 톤
+- 공감 → 훈계 → 꿀팁 순서
+- 마지막에 행동 유도 한마디로 마무리
+- 분량: ${durDesc}`;
+
+  const userPrompt = isJP
+    ? `モノ: ${S.objKr}\n状況: ${S.sit}\n分量: ${durDesc}${avoid}`
+    : `사물: ${S.objKr}\n상황: ${S.sit}\n분량: ${durDesc}${avoid}`;
+
+  try {
+    const txt = await callAI(systemPrompt, userPrompt);
+    document.getElementById('scriptTA').value = txt.trim();
+    usedScripts.push(txt.trim());
+    if(usedScripts.length > 10) usedScripts.shift();
+  } catch(e) { showErr('대본 생성 실패: ' + e.message); }
+  finally { btns.forEach(b => b.disabled = false); }
+}
+
+// ── 프롬프트 생성 ────────────────────────────────────────
+function generate() {
+  if(!S.obj) return showErr('사물을 선택해주세요.');
+  if(!S.sit) return showErr('상황을 선택해주세요.');
+  hideErr();
+
+  const script = document.getElementById('scriptTA').value.trim() || '나 네 냉장고인데. 좀 제대로 써줘.';
+  const styleEn = STYLE_MAP[S.style]?.en || STYLE_MAP.pixar.en;
+  const ratio = '9:16 vertical short-form';
+  const platform = 'Kling | Max: 60s';
+  const obj = S.objEn || S.objKr;
+  const isPerson = false;
+
+  // 이미지 프롬프트
+  const imgPrompt = `A ${obj} with a distinctly human-like expression — deeply creased brows pulled inward, teeth visibly clenched, wide oversized cartoon eyes full of exasperated frustration. Two slim expressive arms emerge naturally from either side of its form, tinted to complement the object's own color. One arm drives a pointed finger straight at the viewer in accusation, the other hangs mid-air in a firm scolding position. No legs, no feet — the character rests solidly on its natural base, fully grounded with zero sense of floating. Surface textures of the ${obj} remain true to life with fine material detail preserved throughout. The setting reflects a typical Korean single-person household or office environment — realistic and relatable. ${styleEn}. Composition: ${ratio}, rule of thirds, highly detailed, masterpiece quality.`;
+
+  // 영상 프롬프트
+  const vidPrompt = `Bring this character to life with expressive upper-body frustration and scolding energy.
+The character speaks directly to the viewer: "${script}"
+All motion is measured and intentional — nothing too fast or chaotic.
+Body language syncs naturally with the dialogue:
+- A single extended finger aims directly into the lens during moments of accusation
+- Both palms open and raised when expressing disbelief ("how could you do this")
+- Head shakes slowly during the scolding sections
+Every gesture feels like a real reaction — organic, unrepeated, conversational.
+The mouth moves with the speech — opening and closing shaped by emotion behind each word.
+Brow furrows hard throughout. Eyes convey deep exasperation and judgment.
+Feet stay planted — no hovering, no bounce, no lift.
+Camera: mostly static with only a slow subtle push-in toward the subject.
+${styleEn}.
+Voice energy: adult scolding tone — authoritative, slightly tired, like someone who has seen too much. Clear and dry sound — no echo, no reverb, no hollow sound.
+No roaring, no monster sounds. No on-screen text, no subtitles, no captions.
+The character's face is permanently the ${obj} itself — under no circumstance should it shift toward or become a human face.
+Aspect ratio: ${ratio}. [Platform: ${platform}]`;
+
+  document.getElementById('imgOut').textContent = imgPrompt;
+  document.getElementById('vidOut').textContent = vidPrompt;
+  document.getElementById('scOut').textContent = script;
+
+  const wrap = document.getElementById('resultWrap');
+  wrap.classList.add('show');
+  switchTab('img');
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── 유틸 ─────────────────────────────────────────────────
+function makeChip(label, val, kr, en, onClick) {
+  const d = document.createElement('div');
+  d.className = 'chip'; d.dataset.val = val;
+  if(kr) d.dataset.kr = kr;
+  if(en) d.dataset.en = en;
+  const s = document.createElement('span'); s.textContent = label;
+  d.appendChild(s); d.onclick = onClick;
+  return d;
+}
+function makeChipSimple(label, onClick) {
+  const d = document.createElement('div'); d.className = 'chip';
+  const s = document.createElement('span'); s.textContent = label;
+  const x = document.createElement('span'); x.className='del'; x.textContent=' ✕';
+  x.onclick = e => { e.stopPropagation(); d.remove(); };
+  d.appendChild(s); d.appendChild(x); d.onclick = onClick;
+  return d;
+}
+function activate(id){const e=document.getElementById(id);e.classList.add('active');e.classList.remove('done');}
+function done(id){const e=document.getElementById(id);e.classList.add('active','done');}
+function deact(id){const e=document.getElementById(id);e.classList.remove('active','done');}
+function updateSummary(){
+  const p=[];
+  if(S.objKr) p.push(`사물: <b>${S.objKr}</b>`);
+  if(S.sit) p.push(`상황: <b>${S.sit.substring(0,20)}${S.sit.length>20?'...':''}</b>`);
+  if(S.style) p.push(`스타일: <b>${STYLE_MAP[S.style]?.note?.split(' — ')[0]||S.style}</b>`);
+  p.push(`길이: <b>${S.dur}초</b>`);
+  document.getElementById('summary').innerHTML = p.length ? p.join(' &nbsp;·&nbsp; ') : '선택한 항목이 여기에 표시됩니다.';
+}
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['img','vid','script'][i]===t));
+  ['panelImg','panelVid','panelScript'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.getElementById({img:'panelImg',vid:'panelVid',script:'panelScript'}[t])?.classList.add('active');
+}
+function doCopy(id, btnId){
+  const text = document.getElementById(id).textContent;
+  const btn = document.getElementById(btnId);
+  if(!text.trim()){showErr('먼저 프롬프트를 생성해주세요.');return;}
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='✅ 복사됨'; btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='📋 복사'; btn.classList.remove('ok');},2000);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    btn.textContent='✅ 복사됨'; btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='📋 복사'; btn.classList.remove('ok');},2000);
+  });
+}
+function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000);}
+function hideErr(){document.getElementById('errMsg').style.display='none';}
+
+// ── 다크모드 ─────────────────────────────────────────────
+function toggleDark(){
+  const d = document.body.classList.toggle('dark');
+  document.getElementById('darkToggle').textContent = d?'☀️':'🌙';
+  localStorage.setItem('dark', d?'1':'0');
+}
+(function(){
+  if(localStorage.getItem('dark')==='1'){
+    document.body.classList.add('dark');
+    document.getElementById('darkToggle').textContent='☀️';
+  }
+})();
+
+// ── API 키 ───────────────────────────────────────────────
+function saveKey(){
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if(!k) return showErr('API 키를 입력해주세요.');
+  if(!k.startsWith('sk-ant-')) return showErr('올바른 형식이 아닙니다. (sk-ant- 로 시작)');
+  localStorage.setItem('apk', k);
+  document.getElementById('apiStatus').textContent = '✅ 저장됨. AI 기능 활성화.';
+  document.getElementById('apiStatus').style.color = '#16a34a';
+  document.getElementById('apiKeyInput').value = 'sk-ant-••••••••••••';
+}
+function clearKey(){
+  localStorage.removeItem('apk');
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiStatus').textContent = '삭제됨.';
+  document.getElementById('apiStatus').style.color = '#dc2626';
+}
+function getKey(){ return localStorage.getItem('apk')||''; }
+(function(){
+  if(getKey()){
+    document.getElementById('apiKeyInput').value='sk-ant-••••••••••••';
+    document.getElementById('apiStatus').textContent='✅ 저장된 키 있음. AI 기능 활성화.';
+    document.getElementById('apiStatus').style.color='#16a34a';
+  }
+})();
+
+async function callAI(sys, usr){
+  const k = getKey();
+  if(!k){ showErr('API 키를 먼저 입력해주세요.'); throw new Error('no key'); }
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:[{role:'user',content:usr}]})
+  });
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e?.error?.message||`오류 ${r.status}`); }
+  const d = await r.json();
+  return d.content?.map(b=>b.text||'').join('')||'';
+}
+</script>
+</body>
+</html>
