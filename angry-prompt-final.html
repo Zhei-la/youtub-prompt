@@ -204,15 +204,21 @@ textarea::placeholder{color:var(--muted);}
   background:var(--surface);border:1px solid var(--border);color:var(--sub);margin-top:8px;display:none;
 }
 /* ── 코드 입력 화면 ── */
-.gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
-.gate-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px 32px;max-width:380px;width:90%;text-align:center;}
-.gate-logo{font-size:32px;font-weight:900;color:var(--text);letter-spacing:-1px;margin-bottom:6px;}
-.gate-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
-.gate-input{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;padding:12px 16px;outline:none;text-align:center;letter-spacing:3px;font-family:monospace;margin-bottom:12px;transition:border-color 0.2s;}
-.gate-input:focus{border-color:var(--accent);}
-.gate-btn{width:100%;padding:13px;border:none;border-radius:8px;background:var(--accent);color:var(--bg);font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.2s;}
+.gate{position:fixed;inset:0;background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+body.dark .gate{background:#0a0a0a;}
+.gate-box{background:#f8f8f8;border:1px solid #e0e0e0;border-radius:12px;padding:40px 32px;max-width:380px;width:90%;text-align:center;}
+body.dark .gate-box{background:#1a1a1a;border-color:#2a2a2a;}
+.gate-logo{font-size:32px;font-weight:900;color:#0a0a0a;letter-spacing:-1px;margin-bottom:6px;}
+body.dark .gate-logo{color:#f0f0f0;}
+.gate-sub{font-size:11px;color:#999;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
+.gate-input{width:100%;background:#fff;border:1px solid #e0e0e0;border-radius:8px;color:#0a0a0a;font-size:16px;padding:12px 16px;outline:none;text-align:center;letter-spacing:3px;font-family:monospace;margin-bottom:12px;transition:border-color 0.2s;}
+body.dark .gate-input{background:#111;border-color:#3a3a3a;color:#f0f0f0;}
+.gate-input:focus{border-color:#000;}
+body.dark .gate-input:focus{border-color:#fff;}
+.gate-btn{width:100%;padding:13px;border:none;border-radius:8px;background:#000;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.2s;}
+body.dark .gate-btn{background:#fff;color:#000;}
 .gate-btn:hover{opacity:0.8;}
-.gate-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+.gate-err{font-size:12px;color:#dc2626;margin-top:8px;display:none;}
 .gate-admin-link{font-size:11px;color:var(--muted);cursor:pointer;margin-top:16px;text-decoration:underline;}
 
 /* ── 관리자 패널 ── */
@@ -549,10 +555,18 @@ async function toggleCode(code){
 
 function closeAdmin(){ document.getElementById('adminPanel').classList.remove('show'); }
 
-// 세션 유지
+// 페이지 로드 시 통합 초기화
 window.addEventListener('load',()=>{
+  // 세션 확인 (코드 입력 게이트)
   if(sessionStorage.getItem('verified')==='1'){
     document.getElementById('gate').style.display='none';
+  }
+  // API 키 확인
+  const saved=getApiKey();
+  if(saved){
+    document.getElementById('apiKeyInput').value='sk-ant-••••••••••••••••••••••';
+    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키가 있습니다. AI 기능을 사용할 수 있습니다.';
+    document.getElementById('apiKeyStatus').style.color='#22c55e';
   }
 });
 
@@ -1414,16 +1428,6 @@ function clearApiKey(){
 function getApiKey(){
   return localStorage.getItem('anthropic_api_key')||'';
 }
-// 페이지 로드 시 키 상태 확인
-window.addEventListener('load',()=>{
-  const saved=getApiKey();
-  if(saved){
-    document.getElementById('apiKeyInput').value='sk-ant-••••••••••••••••••••••';
-    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키가 있습니다. AI 기능을 사용할 수 있습니다.';
-    document.getElementById('apiKeyStatus').style.color='#22c55e';
-  }
-});
-
 // ── 공통 ─────────────────────────────────────────────────
 async function callAI(system,user){
   const apiKey=getApiKey();
