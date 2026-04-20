@@ -141,7 +141,7 @@ textarea::placeholder{color:var(--muted);}
 <div class="api-bar">
   <div class="api-bar-inner">
     <span class="api-label">🔑 API Key</span>
-    <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-...">
+    <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-...">
     <button class="api-save" onclick="saveKey()">저장</button>
     <button class="api-del" onclick="clearKey()">삭제</button>
     <div class="api-status" id="apiStatus">API 키를 입력하면 AI 대본 자동생성이 활성화됩니다.</div>
@@ -734,11 +734,11 @@ function toggleDark(){
 function saveKey(){
   const k = document.getElementById('apiKeyInput').value.trim();
   if(!k) return showErr('API 키를 입력해주세요.');
-  if(!k.startsWith('sk-ant-')) return showErr('올바른 형식이 아닙니다. (sk-ant- 로 시작)');
+  if(!k.startsWith('sk-')) return showErr('올바른 형식이 아닙니다. (sk- 로 시작)');
   localStorage.setItem('apk', k);
   document.getElementById('apiStatus').textContent = '✅ 저장됨. AI 기능 활성화.';
   document.getElementById('apiStatus').style.color = '#16a34a';
-  document.getElementById('apiKeyInput').value = 'sk-ant-••••••••••••';
+  document.getElementById('apiKeyInput').value = 'sk-••••••••••••';
 }
 function clearKey(){
   localStorage.removeItem('apk');
@@ -749,7 +749,7 @@ function clearKey(){
 function getKey(){ return localStorage.getItem('apk')||''; }
 (function(){
   if(getKey()){
-    document.getElementById('apiKeyInput').value='sk-ant-••••••••••••';
+    document.getElementById('apiKeyInput').value='sk-••••••••••••';
     document.getElementById('apiStatus').textContent='✅ 저장된 키 있음. AI 기능 활성화.';
     document.getElementById('apiStatus').style.color='#16a34a';
   }
@@ -758,14 +758,14 @@ function getKey(){ return localStorage.getItem('apk')||''; }
 async function callAI(sys, usr){
   const k = getKey();
   if(!k){ showErr('API 키를 먼저 입력해주세요.'); throw new Error('no key'); }
-  const r = await fetch('https://api.anthropic.com/v1/messages',{
+  const r = await fetch('https://api.openai.com/v1/chat/completions',{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:[{role:'user',content:usr}]})
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},
+    body:JSON.stringify({model:'gpt-4o',max_tokens:800,messages:[{role:'system',content:sys},{role:'user',content:usr}]})
   });
   if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e?.error?.message||`오류 ${r.status}`); }
   const d = await r.json();
-  return d.content?.map(b=>b.text||'').join('')||'';
+  return d.choices?.[0]?.message?.content||'';
 }
 </script>
 </body>
