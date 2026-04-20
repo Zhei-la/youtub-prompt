@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>오늘의 참견 — 프롬프트 빌더 v3</title>
+<title>쇼츠 3D 프롬프트 생성기</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -40,6 +40,7 @@ body{
 header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--border);}
 .logo{font-size:clamp(20px,3.5vw,32px);font-weight:900;letter-spacing:-1px;line-height:1.1;}
 .tagline{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:6px;}
+.byline{font-size:9px;opacity:0.7;margin-left:6px;letter-spacing:1px;}
 
 .wrap{max-width:860px;margin:0 auto;padding:0 20px 100px;}
 
@@ -214,14 +215,14 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="다크/라이트">🌙</button>
 
 <header>
-  <div class="logo">오늘의 참견 — 프롬프트 빌더</div>
-  <div class="tagline">자취생 · 직장인 · 사물 의인화 AI 영상</div>
+  <div class="logo">쇼츠 3D 프롬프트 생성기</div>
+  <div class="tagline">자취생 · 직장인 · 사물 의인화 AI 영상 <span class="byline">by 제일라</span></div>
 </header>
 
 <div id="apiKeyBanner">
   <div class="api-row">
     <span class="api-label">🔑 API KEY</span>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <input type="password" id="apiKeyInput" placeholder="sk-proj-... 또는 sk-...">
     <button class="api-btn primary" onclick="saveApiKey()">저장</button>
     <button class="api-btn ghost" onclick="clearApiKey()">삭제</button>
   </div>
@@ -394,6 +395,13 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </div>
 
 </div>
+
+<footer style="text-align:center;padding:20px 0 30px;border-top:1px solid var(--border);margin-top:20px;">
+  <div style="font-size:10px;color:var(--muted);">쇼츠 3D 프롬프트 생성기 · by 제일라</div>
+  <div style="font-size:9px;color:var(--muted);margin-top:4px;opacity:0.4;">
+    <a href="admin.html" style="color:inherit;text-decoration:none;">·</a>
+  </div>
+</footer>
 
 <script>
 // ═══ 데이터베이스 ═══
@@ -799,6 +807,56 @@ const STYLE_TEMPLATES = {
 };
 
 // ═══ 배경 상황별 소품 매핑 (이미지 프롬프트 디테일 강화용) ═══
+// ═══ 사물별 실제 크기 힌트 (비율/스케일을 프롬프트에 강제하기 위함) ═══
+// 카테고리별로 real-world size reference + 화면 내 프레이밍 가이드
+const SIZE_HINTS = {
+  // 대형 가전 (사람 키와 비슷하거나 큼)
+  'large_appliance': 'real-world life-size — roughly 150-180cm tall or wall-mounted, matches how it actually appears in a real home. Framed from mid-shot to wide, so the object fills about 60-70% of the vertical frame without distortion',
+  // 중형 가전 (허리~가슴 높이)
+  'medium_appliance': 'real-world counter-top or floor-standing size — around 30-60cm, sitting naturally on its actual surface. Framed so the object takes about 50-60% of the frame with realistic surroundings visible',
+  // 소형 주방/욕실용품 (한 손 크기)
+  'small_handheld': 'real-world hand-held size — around 10-25cm. Framed in a realistic close-up but NOT extreme macro — the surrounding scene is still clearly visible around it, the object takes about 40-50% of the frame',
+  // 가구
+  'furniture': 'real-world furniture size — matches a real bed/desk/chair in a normal room. Framed wide enough to show its actual scale relative to the room, object takes about 50-60% of the frame',
+  // 작은 사무/생활 소품
+  'tiny_object': 'real-world tiny object size — around 5-15cm. Framed with care so it does NOT look absurdly enlarged — the natural surrounding (desk surface, palm-sized perspective) is clearly shown, object takes about 30-45% of the frame',
+  // 큰 공간/장소
+  'space': 'real-world architectural scale — a full room or vehicle interior. Framed as establishing shot showing the whole environment realistically',
+  // 기본값
+  'default': 'real-world life-size matching how this object actually appears in daily life — never cartoonishly oversized, never shrunken. The object sits naturally in its real environment with correct scale relative to surrounding props'
+};
+
+// 사물 → 크기 카테고리 매핑
+const OBJECT_SIZE = {
+  // 대형 가전
+  '🧊 냉장고':'large_appliance', '🌀 세탁기':'large_appliance', '❄️ 에어컨':'large_appliance', '🧹 청소기':'medium_appliance',
+  // 중형
+  '🍚 전기밥솥':'medium_appliance', '🖨️ 프린터':'medium_appliance', '🖥️ 사무용 책상':'furniture',
+  '📠 팩스기':'medium_appliance', '🥤 자판기':'large_appliance',
+  // 가구
+  '🛏️ 침대':'furniture', '🛌 이불':'furniture', '🛌 후톤 이불':'furniture',
+  // 소형
+  '⏰ 알람시계':'small_handheld', '🪞 거울':'medium_appliance', '🚿 샤워기':'small_handheld',
+  '☕ 커피잔':'small_handheld', '🍜 컵라면':'small_handheld', '🍱 편의점 도시락':'small_handheld',
+  '🍙 오니기리 도시락':'small_handheld', '📟 에어컨 리모컨':'tiny_object',
+  // 초소형
+  '🔌 충전기':'tiny_object', '🧻 화장지 롤':'small_handheld', '🦷 칫솔':'tiny_object',
+  '⌨️ 키보드':'small_handheld', '📇 명함':'tiny_object', '💳 통장':'tiny_object',
+  '🔴 도장(한코)':'tiny_object', '👔 넥타이':'small_handheld', '📎 서류 클립':'tiny_object',
+  // 공간
+  '🛁 욕조':'furniture', '🚰 싱크대':'furniture', '🗑️ 쓰레기통':'medium_appliance',
+  '🗑️ 분리수거통 (연소/불연)':'medium_appliance', '🛗 엘리베이터':'space',
+  '🚃 통근 전철':'space', '🚲 자전거':'furniture',
+  // 기타
+  '🍺 회식 잔':'small_handheld', '💼 노트북':'small_handheld', '📧 이메일 받은편지함':'small_handheld',
+  '🏢 타임카드':'small_handheld', '🪟 쇼지 (장지문)':'furniture', '🧊 유니트 버스':'space'
+};
+
+function getSizeHint(objKey){
+  const cat = OBJECT_SIZE[objKey] || 'default';
+  return SIZE_HINTS[cat];
+}
+
 const SCENE_PROPS = {
   kr:{
     '🧊 냉장고':{loc:'inside a small Korean one-room apartment kitchen',props:'refrigerator as main subject in the foreground, kitchen counter beside it with a rice cooker and some instant coffee sticks, magnetic takeout menus stuck on the fridge door, a small dish rack nearby, warm apartment lighting'},
@@ -1026,30 +1084,65 @@ function selVoice(el){
 
 // ═══ AI 랜덤 ═══
 async function aiRandomObj(){
-  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요.');return;}
+  if(!getApiKey()){
+    showErr('API 키를 먼저 입력하고 저장해주세요. (상단 🔑 입력란)');
+    return;
+  }
+  const btn = document.querySelector('[onclick="aiRandomObj()"]');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
   try {
-    const r=await callAI(
-      '너는 '+(S.country==='kr'?'한국':'일본')+' 자취생/직장인이 일상에서 접하는 사물 생성기. JSON만 반환. {"items":[{"kr":"한글명","en":"English name","jp":"日本語"}]}',
-      '독특하고 재미있는, 영상 콘텐츠에 쓸만한 일상 사물 6개. JSON만.'
+    const r = await callAI(
+      '너는 ' + (S.country==='kr'?'한국':'일본') + ' 자취생/직장인이 일상에서 접하는 사물 생성기다. 반드시 JSON만 반환. 설명·주석·코드블록 표시 없이.\n포맷: {"items":[{"kr":"이모지 + 한글명","en":"English name","jp":"日本語"}]}\n예: {"items":[{"kr":"🍳 프라이팬","en":"frying pan","jp":"フライパン"}]}',
+      '독특하고 재미있는, 영상 콘텐츠에 쓸만한 일상 사물 6개 생성. 이모지 포함. JSON만.'
     );
-    const d=JSON.parse(r.replace(/```json|```/g,'').trim());
-    const firstGroup=document.querySelector('#objectGroups .chips');
+    let cleaned = r.replace(/```json|```/g,'').trim();
+    // JSON 추출 (혹시 앞뒤에 설명 붙었을 경우)
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if(m) cleaned = m[0];
+    const d = JSON.parse(cleaned);
+    if(!d.items || !Array.isArray(d.items) || d.items.length===0){
+      throw new Error('응답 형식 오류');
+    }
+    const firstGroup = document.querySelector('#objectGroups .chips');
     if(firstGroup){
       d.items.forEach(o=>{
-        const c=document.createElement('div');
-        c.className='chip';
-        c.dataset.kr='✨ '+o.kr;c.dataset.en=o.en;c.dataset.jp=o.jp||o.en;
-        c.textContent='✨ '+o.kr;
-        c.onclick=()=>selObj('✨ '+o.kr, o.en, o.jp||o.en);
+        const kr = o.kr || o.en || '사물';
+        const en = o.en || o.kr;
+        const jp = o.jp || o.en || o.kr;
+        const c = document.createElement('div');
+        c.className = 'chip';
+        c.dataset.kr = '✨ '+kr;
+        c.dataset.en = en;
+        c.dataset.jp = jp;
+        c.textContent = '✨ '+kr;
+        c.onclick = ()=>selObj('✨ '+kr, en, jp);
         firstGroup.appendChild(c);
       });
+      // 마지막 생성 요소로 스크롤
+      firstGroup.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
     }
-  } catch(e){showErr('AI 생성 실패: '+e.message);}
+  } catch(e){
+    console.error('AI 랜덤 오브젝트 에러:', e);
+    showErr('AI 생성 실패: ' + e.message + ' (콘솔 F12에서 상세 확인)');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 async function aiRandomSit(){
   if(!S.obj){showErr('사물을 먼저 선택해주세요.');return;}
-  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요.');return;}
+  if(!getApiKey()){
+    showErr('API 키를 먼저 입력하고 저장해주세요. (상단 🔑 입력란)');
+    return;
+  }
+  const btn = document.querySelector('[onclick="aiRandomSit()"]');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+
   const isJP = S.country==='jp';
   const conceptDesc = S.concept==='tip'
     ? '이 사물을 잘못 사용하는 생활 습관/실수 (꿀팁·경고로 풀어낼 수 있는 것)'
@@ -1064,7 +1157,7 @@ async function aiRandomSit(){
 - 쓰레기 분리배출(燃えるゴミ/燃えないゴミ/資源ゴミ), 초세밀한 분별 규칙
 - 여름: 후키, 모기 퇴치, 풍령, 에어컨 전기세 전쟁
 - 겨울: 코타츠, 전기담요, 결로
-- 식문화: 오니기리, 벤토, 라멘집 룰(물 셀프, 티켓), 컨비니
+- 식문화: 오니기리, 벤토, 라멘집 룰, 컨비니
 - 일본식 매너 강박: 소리 안 내기, 길에서 음식 금지, 이어폰
 각 상황은 "그 사물과 직접 관련된 일본 생활 디테일" 이어야 함.`;
 
@@ -1081,27 +1174,42 @@ async function aiRandomSit(){
   try {
     const r = await callAI(
       '너는 ' + (isJP?'일본':'한국') + ' 자취생/직장인 공감형 상황 생성기다.\n'
-      + '반드시 JSON만 반환. 설명 금지.\n'
+      + '반드시 JSON만 반환. 설명·주석·코드블록 금지.\n'
       + (isJP
-        ? '포맷: {"items":[{"kr":"한국어 짧은 설명 (한국 개발자가 보기 위한 것)","jp":"일본어 원문 상황 (영상 대본 AI가 참고할 실제 현지 표현)"}, ...]}'
+        ? '포맷: {"items":[{"kr":"한국어 짧은 설명","jp":"일본어 원문 상황"}, ...]}'
         : '포맷: {"items":[{"kr":"한국어 상황 설명","jp":""}, ...]}')
-      + '\n반드시 매번 다른 각도로 생성. 이전에 봤던 뻔한 것 말고 신선한 것.',
+      + '\n반드시 매번 다른 각도로 생성. 뻔한 것 말고 신선하게.',
 
       '사물: ' + S.obj + '\n컨셉: ' + conceptDesc + '\n'
       + (isJP?jpCultureHints:krCultureHints)
       + '\n\n6개의 상황을 생성. 반드시 JSON만. 각 상황은 15자 내외로 간결하게.'
     );
-    const d = JSON.parse(r.replace(/```json|```/g,'').trim());
+    let cleaned = r.replace(/```json|```/g,'').trim();
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if(m) cleaned = m[0];
+    const d = JSON.parse(cleaned);
+    if(!d.items || !Array.isArray(d.items) || d.items.length===0){
+      throw new Error('응답 형식 오류');
+    }
     d.items.forEach(it=>{
-      const displayText = '✨ ' + it.kr;
-      const aiValue = isJP ? (it.jp||it.kr) : it.kr;
-      const c=document.createElement('div');
-      c.className='chip';
-      c.textContent=displayText;
-      c.onclick=()=>selSit(displayText, aiValue, c);
+      const kr = it.kr || it.jp || '상황';
+      const displayText = '✨ ' + kr;
+      const aiValue = isJP ? (it.jp||kr) : kr;
+      const c = document.createElement('div');
+      c.className = 'chip';
+      c.textContent = displayText;
+      c.onclick = ()=>selSit(displayText, aiValue, c);
       document.getElementById('sitChips').appendChild(c);
     });
-  } catch(e){showErr('AI 생성 실패: '+e.message);}
+    const sitChips = document.getElementById('sitChips');
+    if(sitChips.lastElementChild) sitChips.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e){
+    console.error('AI 랜덤 상황 에러:', e);
+    showErr('AI 생성 실패: ' + e.message + ' (콘솔 F12에서 상세 확인)');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 // ═══ 대본 AI 생성 ═══
@@ -1225,12 +1333,14 @@ async function generate(){
   const styleTpl=STYLE_TEMPLATES[S.style];
   const scene=SCENE_PROPS[S.country][S.obj]||SCENE_PROPS[S.country]['default'];
   const objEn=S.objEn||S.obj;
+  const sizeHint = getSizeHint(S.obj);
 
   const imagePrompt = styleTpl.base+'.\n\n'+
-    'Main subject: a '+objEn+' with a personified face showing subtle emotion — the subject is clearly in the foreground, sharp focus, the star of the frame.\n\n'+
-    'Scene & background: '+scene.loc+'. Background detail: '+scene.props+'. The background should feel lived-in and authentic — visible but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first, but the environment gives contextual richness.\n\n'+
-    'Context of the scene: '+(S.concept==='tip'?'the object is about to explain a common mistake or helpful tip — its expression should be knowing, slightly exasperated, wanting to teach':'the object is visibly annoyed at something someone did — frustrated but controlled')+'.\n\n'+
-    'Aspect ratio: 9:16 vertical short-form. No text overlays, no subtitles, no captions, no watermarks. Highly detailed background, masterpiece quality.';
+    'MAIN SUBJECT: a '+objEn+' with a personified face showing subtle emotion — the subject is clearly in the foreground, sharp focus, the star of the frame.\n\n'+
+    '⚠️ REAL-WORLD SCALE (CRITICAL): the '+objEn+' must be '+sizeHint+'. Do NOT make it cartoonishly oversized or shrunken relative to its surroundings. Proportions must feel like a real photograph where this object naturally sits in its real environment.\n\n'+
+    'SCENE & BACKGROUND: '+scene.loc+'. Background detail: '+scene.props+'. The background should feel lived-in and authentic — visible but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first, but the environment gives contextual richness and visual interest (the viewer should enjoy noticing the background details even though the main focus is the object).\n\n'+
+    'EXPRESSION CONTEXT: '+(S.concept==='tip'?'the object is about to explain a common mistake or helpful tip — its expression is knowing, slightly exasperated, wanting to teach the viewer':'the object is visibly annoyed at something someone did — frustrated but controlled')+'.\n\n'+
+    'FRAMING: 9:16 vertical short-form composition. No text overlays, no subtitles, no captions, no watermarks, no UI elements. Highly detailed background with realistic scale, masterpiece quality.';
 
   // ═ 영상 프롬프트 ═
   const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
@@ -1238,19 +1348,44 @@ async function generate(){
   const isTip=S.concept==='tip';
 
   const videoPrompt = 'An AI short-form video: the '+objEn+' (with a subtle personified face) speaks directly to camera.\n\n'+
-    'Scene: '+scene.loc+'. '+scene.props+'. The object is the main subject in sharp focus; the surrounding environment stays visible and atmospheric but softer, so the viewer knows exactly where the scene takes place.\n\n'+
-    'The object delivers the following monologue out loud: "'+scriptForVideo+'"\n\n'+
-    'Performance: '+(isTip
-      ? 'the object speaks like a knowing expert — measured pacing, slight exasperation early that softens into helpful advice at the end. It wants the viewer to LEARN something. Natural pauses between the three beats (problem → warning → solution).'
+    '⚠️ SCALE RULE (CRITICAL): the '+objEn+' must be '+sizeHint+'. The object must maintain its real-world proportion relative to the surrounding environment throughout the entire video — never cartoonishly oversized, never suspiciously shrunk. Every frame must look like a real scene where the object naturally lives.\n\n'+
+    'SCENE: '+scene.loc+'. '+scene.props+'. The object is the main subject in sharp focus; the surrounding environment stays visible and atmospheric but softer, so the viewer clearly sees WHERE the scene takes place. Background elements are still but detailed — they give the scene a lived-in feeling.\n\n'+
+    'DIALOGUE — the object delivers the following monologue out loud: "'+scriptForVideo+'"\n\n'+
+    'PERFORMANCE: '+(isTip
+      ? 'the object speaks like a knowing expert — measured pacing, slight exasperation early that softens into helpful advice at the end. It wants the viewer to LEARN and SAVE this video. Natural pauses between the three beats (problem → warning → solution).'
       : 'the object vents with relatable frustration — like a friend complaining about someone who just left the room. Building emotion, natural irritation, never theatrical.')+'\n\n'+
-    'Motion: the object has subtle idle breathing and small expressive movements synced to speech. '+(S.style==='realistic'?'No cartoon arm gestures — emotion conveyed purely through facial expression and slight body lean.':'Small stylized arm gestures matching the dialogue beats.')+' Camera stays mostly static with a very slow gentle push-in over the course of the scene.\n\n'+
-    'Lighting: motivated by the scene\'s natural light sources. Other objects in the background remain still and do not distract — they provide context, not action.\n\n'+
-    'Voice direction: '+voiceDesc+'. Clean dry audio recording, no room echo, no reverb tail, no music unless ambient. Lip/mouth animation syncs naturally to the spoken words.\n\n'+
-    (S.country==='jp'?'Language: Japanese (natural spoken Japanese, SNS short-form pacing).':'Language: Korean (natural spoken Korean, YouTube Shorts pacing).')+'\n\n'+
-    'Duration target: '+(S.dur==='30'?'~30 seconds':'~10 seconds')+'. Aspect ratio: 9:16 vertical. Zero on-screen text, no subtitles, no captions, no overlays. [Platform: Kling / Veo / Runway compatible]';
+    'MOTION: the object has subtle idle breathing and small expressive movements synced to speech. '+(S.style==='realistic'?'No cartoon arm gestures — emotion conveyed purely through facial expression and slight body lean.':'Small stylized arm gestures matching the dialogue beats.')+' Camera stays mostly static with a very slow gentle push-in over the course of the scene.\n\n'+
+    'LIGHTING: motivated by the scene\'s natural light sources. Other objects in the background remain still and do not distract — they provide visual context and interest, not action.\n\n'+
+    'VOICE: '+voiceDesc+'. Clean dry audio recording, no room echo, no reverb tail, no background music unless ambient. Lip/mouth animation syncs naturally to the spoken words.\n\n'+
+    (S.country==='jp'?'LANGUAGE: Japanese (natural spoken Japanese, SNS short-form pacing).':'LANGUAGE: Korean (natural spoken Korean, YouTube Shorts pacing).')+'\n\n'+
+    'OUTPUT: Duration target '+(S.dur==='30'?'~30 seconds':'~10 seconds')+'. Aspect ratio 9:16 vertical. Zero on-screen text, no subtitles, no captions, no overlays, no watermarks. [Platform: Kling / Veo / Runway compatible]';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
+
+  // 통계 기록 (관리자 페이지용)
+  try {
+    const stats = JSON.parse(localStorage.getItem('usage_stats')||'{}');
+    stats.totalGenerates = (stats.totalGenerates||0) + 1;
+    stats.lastGenerate = new Date().toISOString();
+    // 일별
+    const today = new Date().toISOString().split('T')[0];
+    if(!stats.daily) stats.daily = {};
+    stats.daily[today] = (stats.daily[today]||0) + 1;
+    // 컨셉별
+    if(!stats.byConcept) stats.byConcept = {};
+    stats.byConcept[S.concept] = (stats.byConcept[S.concept]||0) + 1;
+    // 국가별
+    if(!stats.byCountry) stats.byCountry = {};
+    stats.byCountry[S.country] = (stats.byCountry[S.country]||0) + 1;
+    // 스타일별
+    if(!stats.byStyle) stats.byStyle = {};
+    stats.byStyle[S.style] = (stats.byStyle[S.style]||0) + 1;
+    // 사물별 (Top 10 추적용)
+    if(!stats.byObject) stats.byObject = {};
+    stats.byObject[S.obj] = (stats.byObject[S.obj]||0) + 1;
+    localStorage.setItem('usage_stats', JSON.stringify(stats));
+  } catch(e){}
 
   // 대본 탭 세팅
   currentScriptLang='native';
@@ -1297,36 +1432,144 @@ function toggleDark(){
 }
 
 function saveApiKey(){
-  const key=document.getElementById('apiKeyInput').value.trim();
-  if(!key){showErr('API 키를 입력해주세요.');return;}
-  if(!key.startsWith('sk-ant-')){showErr('Anthropic API 키 형식이 아닙니다 (sk-ant- 시작).');return;}
-  try{localStorage.setItem('anthropic_api_key',key);}catch(e){}
-  document.getElementById('apiKeyStatus').textContent='✅ API 키 저장됨. AI 기능 활성화.';
-  document.getElementById('apiKeyStatus').style.color='#22c55e';
-  document.getElementById('apiKeyInput').value='sk-ant-••••••••••••••••';
+  // 즉시 시각적 피드백 (버튼이 반응하는지 확인 가능)
+  const statusEl = document.getElementById('apiKeyStatus');
+  if(!statusEl){
+    alert('⚠️ 페이지가 아직 로딩 중입니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  statusEl.textContent = '⏳ 저장 시도 중...';
+  statusEl.style.color = '#888';
+
+  const inputEl = document.getElementById('apiKeyInput');
+  if(!inputEl){
+    statusEl.textContent = '❌ 입력창을 찾을 수 없음';
+    statusEl.style.color = '#dc2626';
+    return;
+  }
+
+  const key = inputEl.value.trim();
+
+  if(!key){
+    statusEl.textContent = '⚠️ API 키를 먼저 입력해주세요.';
+    statusEl.style.color = '#f59e0b';
+    return;
+  }
+
+  // 마스킹된 값 ( sk-•••• )은 저장 거부
+  if(key.includes('•') || key.includes('*')){
+    try {
+      const existing = localStorage.getItem('openai_api_key');
+      if(existing && !existing.includes('•') && !existing.includes('*')){
+        statusEl.textContent = '✅ 이미 저장된 API 키가 있습니다. 새 키 입력하려면 먼저 🗑️ 삭제 버튼을 누르세요.';
+        statusEl.style.color = '#22c55e';
+        return;
+      } else {
+        statusEl.textContent = '⚠️ 유효한 API 키를 입력해주세요 (마스킹 표시만 있음)';
+        statusEl.style.color = '#f59e0b';
+        return;
+      }
+    } catch(e){
+      statusEl.textContent = '❌ localStorage 접근 불가 — 시크릿 모드인지 확인';
+      statusEl.style.color = '#dc2626';
+      return;
+    }
+  }
+
+  if(!key.startsWith('sk-')){
+    statusEl.textContent = '⚠️ OpenAI API 키 형식이 아닙니다. sk-proj- 또는 sk- 로 시작해야 합니다.';
+    statusEl.style.color = '#f59e0b';
+    return;
+  }
+
+  // 실제 저장
+  try {
+    localStorage.setItem('openai_api_key', key);
+    const verify = localStorage.getItem('openai_api_key');
+    if(verify !== key){
+      statusEl.textContent = '❌ 저장 확인 실패 (브라우저가 저장을 차단했을 수 있음)';
+      statusEl.style.color = '#dc2626';
+      return;
+    }
+  } catch(e){
+    console.error('API 키 저장 실패:', e);
+    statusEl.textContent = '❌ 저장 실패: ' + e.message + ' — 시크릿 모드나 iframe 환경일 수 있음';
+    statusEl.style.color = '#dc2626';
+    return;
+  }
+
+  statusEl.textContent = '✅ OpenAI API 키 저장 완료! 이 브라우저에서는 새로고침해도 유지됩니다.';
+  statusEl.style.color = '#22c55e';
+  inputEl.value = 'sk-••••••••••••••••';
 }
+
 function clearApiKey(){
-  try{localStorage.removeItem('anthropic_api_key');}catch(e){}
-  document.getElementById('apiKeyInput').value='';
-  document.getElementById('apiKeyStatus').textContent='API 키 삭제됨.';
-  document.getElementById('apiKeyStatus').style.color='#f87171';
+  const statusEl = document.getElementById('apiKeyStatus');
+  try {
+    localStorage.removeItem('openai_api_key');
+  } catch(e){
+    if(statusEl){
+      statusEl.textContent = '❌ 삭제 실패: ' + e.message;
+      statusEl.style.color = '#dc2626';
+    }
+    return;
+  }
+  const inputEl = document.getElementById('apiKeyInput');
+  if(inputEl) inputEl.value = '';
+  if(statusEl){
+    statusEl.textContent = '🗑️ API 키 삭제됨. 새 키를 입력하고 저장해주세요.';
+    statusEl.style.color = '#f87171';
+  }
 }
-function getApiKey(){try{return localStorage.getItem('anthropic_api_key')||'';}catch(e){return '';}}
+
+function getApiKey(){
+  try {
+    const k = localStorage.getItem('openai_api_key') || '';
+    // 혹시 과거 버그로 마스킹 값이 저장되어 있으면 삭제
+    if(k.includes('•') || k.includes('*')){
+      localStorage.removeItem('openai_api_key');
+      return '';
+    }
+    return k;
+  } catch(e){
+    console.error('localStorage 접근 실패:', e);
+    return '';
+  }
+}
 
 async function callAI(system,user){
-  const apiKey=getApiKey();
+  const apiKey = getApiKey();
   if(!apiKey){throw new Error('API 키 없음');}
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system,messages:[{role:'user',content:user}]})
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 1500,
+      temperature: 0.9,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user }
+      ]
+    })
   });
+
   if(!res.ok){
-    const err=await res.json().catch(()=>({}));
-    throw new Error((err&&err.error&&err.error.message)||'API 오류 '+res.status);
+    const err = await res.json().catch(()=>({}));
+    const msg = (err && err.error && err.error.message) || ('OpenAI API 오류 ' + res.status);
+    throw new Error(msg);
   }
-  const d=await res.json();
-  return (d.content&&d.content.map(b=>b.text||'').join(''))||'';
+
+  const d = await res.json();
+  // OpenAI 응답 형식: data.choices[0].message.content
+  if(d.choices && d.choices.length > 0 && d.choices[0].message){
+    return d.choices[0].message.content || '';
+  }
+  return '';
 }
 
 function act(id){const e=document.getElementById(id);if(e){e.classList.add('active');e.classList.remove('done');}}
@@ -1370,9 +1613,27 @@ function doCopy(textId,btnId){
 function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000);}
 function hideErr(){document.getElementById('errMsg').style.display='none';}
 
+// 관리자 페이지 이동 (키보드 단축키: Ctrl+Shift+A)
+document.addEventListener('keydown', (e)=>{
+  if(e.ctrlKey && e.shiftKey && (e.key==='A'||e.key==='a')){
+    e.preventDefault();
+    window.location.href='admin.html';
+  }
+});
+
 // ═══ 초기화 ═══
 window.addEventListener('load',()=>{
   buildObjects();
+
+  // 방문 통계 기록
+  try {
+    const stats = JSON.parse(localStorage.getItem('usage_stats')||'{}');
+    stats.totalVisits = (stats.totalVisits||0) + 1;
+    stats.firstVisit = stats.firstVisit || new Date().toISOString();
+    stats.lastVisit = new Date().toISOString();
+    localStorage.setItem('usage_stats', JSON.stringify(stats));
+  } catch(e){}
+
   try{
     if(localStorage.getItem('darkMode_v3')==='1'){
       document.body.classList.add('dark');
@@ -1381,9 +1642,11 @@ window.addEventListener('load',()=>{
   }catch(e){}
   const saved=getApiKey();
   if(saved){
-    document.getElementById('apiKeyInput').value='sk-ant-••••••••••••••••';
-    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키 있음.';
+    document.getElementById('apiKeyInput').value='sk-••••••••••••••••';
+    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키 있음 (새로 저장할 땐 먼저 삭제 후 입력).';
     document.getElementById('apiKeyStatus').style.color='#22c55e';
+  } else {
+    document.getElementById('apiKeyStatus').textContent='API 키를 입력하면 AI 대본 자동생성이 활성화됩니다.';
   }
   updateSummary();
 });
