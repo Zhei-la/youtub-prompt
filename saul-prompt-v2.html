@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>쇼츠 3D 프롬프트 생성기</title>
+<title>오늘의 참견 — 프롬프트 생성기</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -215,7 +215,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="다크/라이트">🌙</button>
 
 <header>
-  <div class="logo">쇼츠 3D 프롬프트 생성기</div>
+  <div class="logo">오늘의 참견</div>
   <div class="tagline">자취생 · 직장인 · 사물 의인화 AI 영상 <span class="byline">by 제일라</span></div>
 </header>
 
@@ -397,10 +397,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </div>
 
 <footer style="text-align:center;padding:20px 0 30px;border-top:1px solid var(--border);margin-top:20px;">
-  <div style="font-size:10px;color:var(--muted);">쇼츠 3D 프롬프트 생성기 · by 제일라</div>
-  <div style="font-size:9px;color:var(--muted);margin-top:4px;opacity:0.4;">
-    <a href="admin.html" style="color:inherit;text-decoration:none;">·</a>
-  </div>
+  <div style="font-size:10px;color:var(--muted);">오늘의 참견 · by 제일라</div>
 </footer>
 
 <script>
@@ -1514,30 +1511,6 @@ async function generate(){
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
-  // 통계 기록 (관리자 페이지용)
-  try {
-    const stats = JSON.parse(localStorage.getItem('usage_stats')||'{}');
-    stats.totalGenerates = (stats.totalGenerates||0) + 1;
-    stats.lastGenerate = new Date().toISOString();
-    // 일별
-    const today = new Date().toISOString().split('T')[0];
-    if(!stats.daily) stats.daily = {};
-    stats.daily[today] = (stats.daily[today]||0) + 1;
-    // 컨셉별
-    if(!stats.byConcept) stats.byConcept = {};
-    stats.byConcept[S.concept] = (stats.byConcept[S.concept]||0) + 1;
-    // 국가별
-    if(!stats.byCountry) stats.byCountry = {};
-    stats.byCountry[S.country] = (stats.byCountry[S.country]||0) + 1;
-    // 스타일별
-    if(!stats.byStyle) stats.byStyle = {};
-    stats.byStyle[S.style] = (stats.byStyle[S.style]||0) + 1;
-    // 사물별 (Top 10 추적용)
-    if(!stats.byObject) stats.byObject = {};
-    stats.byObject[S.obj] = (stats.byObject[S.obj]||0) + 1;
-    localStorage.setItem('usage_stats', JSON.stringify(stats));
-  } catch(e){}
-
   // 대본 탭 세팅
   currentScriptLang='native';
   updateScriptDisplay();
@@ -1766,26 +1739,9 @@ function doCopy(textId,btnId){
 function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000);}
 function hideErr(){document.getElementById('errMsg').style.display='none';}
 
-// 관리자 페이지 이동 (키보드 단축키: Ctrl+Shift+A)
-document.addEventListener('keydown', (e)=>{
-  if(e.ctrlKey && e.shiftKey && (e.key==='A'||e.key==='a')){
-    e.preventDefault();
-    window.location.href='admin.html';
-  }
-});
-
 // ═══ 초기화 ═══
 window.addEventListener('load',()=>{
   buildObjects();
-
-  // 방문 통계 기록
-  try {
-    const stats = JSON.parse(localStorage.getItem('usage_stats')||'{}');
-    stats.totalVisits = (stats.totalVisits||0) + 1;
-    stats.firstVisit = stats.firstVisit || new Date().toISOString();
-    stats.lastVisit = new Date().toISOString();
-    localStorage.setItem('usage_stats', JSON.stringify(stats));
-  } catch(e){}
 
   try{
     if(localStorage.getItem('darkMode_v3')==='1'){
