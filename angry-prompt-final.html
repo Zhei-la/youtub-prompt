@@ -219,7 +219,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
     <div class="chip" data-val="building" onclick="selCat(this)">🏢 건물·구조물</div>
     <div class="chip" data-val="kitchen" onclick="selCat(this)">🍳 주방용품</div>
     <div class="chip" data-val="tool" onclick="selCat(this)">🔧 공구·장비</div>
-    <div class="chip" data-val="person" onclick="selCat(this)">🧑 인물 <span class="badge-real">실사</span></div>
   </div>
 </div>
 
@@ -254,15 +253,9 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
   <div class="chips" id="styleChips">
     <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
-    <div class="chip" data-val="realistic" onclick="selStyle(this)">📷 실사</div>
     <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
-    <div class="chip" data-val="ai_film" onclick="selStyle(this)">🎥 AI 영화</div>
     <div class="chip" data-val="comic" onclick="selStyle(this)">💥 코믹 만화</div>
-    <div class="chip" data-val="dark" onclick="selStyle(this)">🌑 다크 시네마틱</div>
-    <div class="chip" data-val="webtoon" onclick="selStyle(this)">📱 웹툰</div>
     <div class="chip" data-val="claymation" onclick="selStyle(this)">🧸 클레이메이션</div>
-    <div class="chip" data-val="cutout" onclick="selStyle(this)">✂️ 컷아웃</div>
-    <div class="chip" data-val="sketch" onclick="selStyle(this)">✏️ 스케치</div>
   </div>
   <div class="style-note" id="styleNote"></div>
 </div>
@@ -361,9 +354,7 @@ const DB = {
   kitchen:{objs:[{kr:'🍳 프라이팬',en:'frying pan'},{kr:'🔪 식칼',en:'kitchen knife'},{kr:'🥄 국자',en:'ladle'},{kr:'🫕 냄비',en:'cooking pot'},{kr:'☕ 커피 머신',en:'coffee machine'},{kr:'🍽️ 접시',en:'dinner plate'}],
     locs:[{kr:'이른 아침 주방',en:'on a kitchen countertop in the early morning'},{kr:'식당 주방 러시아워',en:'inside a restaurant kitchen during rush hour'}]},
   tool:{objs:[{kr:'🔧 렌치',en:'wrench'},{kr:'🔨 망치',en:'hammer'},{kr:'🪛 드라이버',en:'screwdriver'},{kr:'🧰 공구함',en:'toolbox'}],
-    locs:[{kr:'공사 현장',en:'at a dusty construction site'},{kr:'차고 작업대',en:'on a garage workbench under a work lamp'}]},
-  person:{objs:[{kr:'👨‍💼 직장인 남성',en:'angry office worker man'},{kr:'👩‍💼 직장인 여성',en:'furious businesswoman'},{kr:'👴 화난 할아버지',en:'enraged elderly grandfather'},{kr:'👵 화난 할머니',en:'furious elderly grandmother'},{kr:'👨‍🍳 요리사',en:'angry chef'},{kr:'👮 경찰관',en:'furious police officer'}],
-    locs:[{kr:'회의실',en:'in a corporate meeting room'},{kr:'법정',en:'in a courtroom'},{kr:'지하철 안',en:'inside a crowded subway train'},{kr:'교실 칠판 앞',en:'in front of a classroom blackboard'}]}
+    locs:[{kr:'공사 현장',en:'at a dusty construction site'},{kr:'차고 작업대',en:'on a garage workbench under a work lamp'}]}
 };
 
 // 크기 힌트
@@ -401,23 +392,16 @@ const AMBIENT_BY_CAT = {
   fashion:'fabric folds barely shifting, tag fluttering, display light reflecting',
   building:'passersby blurred in deep background, traffic light changing color, a leaflet or bag tumbling',
   kitchen:'steam rising from pots or kettle, condensation on windows, oil sizzling visually',
-  tool:'dust particles from recent work, a loose screw on the surface, light flicker from work lamp',
-  person:'hair or clothing edges moving, background people blurred, ambient environmental detail'
+  tool:'dust particles from recent work, a loose screw on the surface, light flicker from work lamp'
 };
 
 function getAmbient(cat){return AMBIENT_BY_CAT[cat]||'subtle ambient motion — dust in light, fabric edges faintly moving, gentle environmental life';}
 
 const STYLE_PROMPTS = {
   pixar:{note:'🎬 픽사 3D',base:'Pixar-style 3D animation, highly expressive cartoon face on the object, two slim stylized arms emerging naturally from either side, warm volumetric studio lighting, vibrant colors, cinematic illumination, Pixar-quality render'},
-  realistic:{note:'📷 실사',base:'photorealistic cinematic still, subtle human-like expression embedded on the object surface (no cartoon arms, no limbs), shot on ARRI Alexa 85mm f/2.0, natural practical lighting with soft shadows, subtle desaturated color grade, fine film grain'},
   anime:{note:'🌸 애니',base:'Studio Ghibli inspired anime illustration, clean hand-drawn ink linework, cel shading, expressive anime eyes and small stylized arms, atmospheric anime background'},
-  ai_film:{note:'🎥 AI 영화',base:'Cinematic AI film still, hyper-realistic material detail with dramatic single key light and deep shadows, teal-orange film grade, Villeneuve-esque wide composition, anamorphic lens flare'},
   comic:{note:'💥 코믹',base:'bold comic book style, thick black ink outlines, halftone dot shading, high contrast flat saturated colors, dynamic action lines, Marvel panel pop-art energy'},
-  dark:{note:'🌑 다크',base:'dark cinematic still, extreme chiaroscuro with single overhead key light, near-monochrome desaturated palette with cold blue accent, heavy atmospheric tension'},
-  webtoon:{note:'📱 웹툰',base:'Korean webtoon digital illustration, clean vector-like linework, flat color fills with soft gradient shading, oversized expressive eyes, bright high-key colors'},
-  claymation:{note:'🧸 클레이',base:'stop-motion claymation style, handcrafted clay character with visible fingerprint marks, short stubby clay arms, warm studio lighting, Laika Animation tactile aesthetic'},
-  cutout:{note:'✂️ 컷아웃',base:'cut-out paper animation style, flat cardboard cutout with visible torn edges, articulated paper-puppet construction, layered paper diorama, Terry Gilliam aesthetic'},
-  sketch:{note:'✏️ 스케치',base:'hand-drawn pencil and ink sketch style, rough expressive linework with visible hatching, warm paper texture, slightly wobbly boiling lines'}
+  claymation:{note:'🧸 클레이',base:'stop-motion claymation style, handcrafted clay character with visible fingerprint marks, short stubby clay arms, warm studio lighting, Laika Animation tactile aesthetic'}
 };
 
 const MOOD_MAP = {
@@ -441,15 +425,9 @@ const MOOD_MAP = {
 };
 const STYLE_MOODS = {
   pixar:['angry','furious','scolding','crying_angry','chibi_rage','dramatic_wind'],
-  realistic:['suppressed','disappointed','cold_rage','breaking_point','righteous','annoyed'],
   anime:['chibi_rage','spark_eye','dramatic_wind','cute_angry','furious','crying_angry'],
-  ai_film:['cold_rage','suppressed','breaking_point','righteous','threatening','disappointed'],
   comic:['angry','furious','chibi_rage','dramatic_wind','scolding','threatening'],
-  dark:['cold_rage','suppressed','threatening','breaking_point','disappointed','righteous'],
-  webtoon:['cute_angry','chibi_rage','spark_eye','annoyed','scolding','crying_angry'],
-  claymation:['clay_squash','clay_wobble','angry','furious','scolding','cute_angry'],
-  cutout:['clay_squash','cute_angry','angry','scolding','annoyed','chibi_rage'],
-  sketch:['angry','furious','righteous','breaking_point','scolding','dramatic_wind']
+  claymation:['clay_squash','clay_wobble','angry','furious','scolding','cute_angry']
 };
 const MOOD_LABELS = {
   angry:'😤 분노',furious:'🤬 격분',annoyed:'😒 짜증',scolding:'☝️ 훈계',threatening:'😈 위협',crying_angry:'😭 울분',
@@ -490,15 +468,9 @@ const TOPICS = [
 
 const STYLE_DIALOGUE_TONE = {
   pixar:'과장되고 감정적이지만 귀엽고 따뜻한 픽사 캐릭터 톤',
-  realistic:'실제 사람이 조곤조곤 말하듯 차분하지만 설득력 있는 톤',
   anime:'애니 캐릭터처럼 아주 감정적이고 드라마틱, 감탄사 강조',
-  ai_film:'영화 명대사처럼 짧고 강렬하며 철학적',
   comic:'만화 말풍선 느낌. 굵고 강한 짧은 문장에 임팩트',
-  dark:'조용하고 서늘하게. 낮고 느린 말투',
-  webtoon:'한국 웹툰 밈 말투. "진짜요?" "어이없네" 같은 현실 반응',
-  claymation:'어설프지만 귀여운 순수한 분노',
-  cutout:'연극적이고 과장된 선언 투. 짧고 간결',
-  sketch:'낙서하듯 거칠고 솔직한 일기 같은 톤'
+  claymation:'어설프지만 귀여운 순수한 분노'
 };
 
 // ═══ STATE ═══
@@ -822,7 +794,6 @@ async function generate(){
   } else dialogueEN=dialogue;
 
   const moodEn=MOOD_MAP[S.mood]||MOOD_MAP.angry;
-  const isPerson=S.cat==='person';
   const ratio='9:16 vertical short-form';
   const platform='Kling / Veo / Runway | Max: 60s';
   const objEn=S.objEn||S.obj;
@@ -843,12 +814,9 @@ async function generate(){
 
   const imagePrompt = styleTpl.base + '.\n\n' +
     'MAIN SUBJECT: a ' + objEn + ' with ' + moodEn + '. ' +
-    (isPerson ? '' : 'The object retains its natural appearance but has an expressive human-like face. ') +
-    (S.style==='realistic'
-      ? 'No cartoon arms or exaggerated limbs — emotion conveyed purely through the intense facial expression embedded on the object surface.'
-      : 'Two small stylized arms emerge naturally from either side — capture one arm mid-gesture as if making a sharp accusatory point, the other arm tense or raised. No legs — object rests solidly on its natural base.'
-    ) + '\n\n' +
-    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-RANT — mouth open in active angry speech, eyes directly glaring at the viewer, '+(S.style==='realistic'?'face leaning slightly forward with intense expression, clearly IN THE MIDDLE OF speaking':'one arm raised mid-accusation gesture as if pointing at the viewer, body angled forward slightly, visibly IN MID-SENTENCE')+'. This is a FROZEN MOMENT from a heated monologue — NOT a still idle pose. Viewer must immediately feel "this thing is yelling at me RIGHT NOW."\n\n' +
+    'The object retains its natural appearance but has an expressive human-like face. ' +
+    'Two small stylized arms emerge naturally from either side — capture one arm mid-gesture as if making a sharp accusatory point, the other arm tense or raised. No legs — object rests solidly on its natural base.' + '\n\n' +
+    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-RANT — mouth open in active angry speech, eyes directly glaring at the viewer, one arm raised mid-accusation gesture as if pointing at the viewer, body angled forward slightly, visibly IN MID-SENTENCE. This is a FROZEN MOMENT from a heated monologue — NOT a still idle pose. Viewer must immediately feel "this thing is yelling at me RIGHT NOW."\n\n' +
     '⚠️ REAL-WORLD SCALE (CRITICAL): the ' + objEn + ' must be ' + sizeHint + ' Proportions must feel like a real photograph where this object naturally sits in its actual environment.\n\n' +
     '🏠 NATIVE HABITAT SCENE (CRITICAL — the object MUST be in its real native location): ' + enhancedLoc + '.\n\n' +
     'BACKGROUND DETAIL (rich but focused): ' + enhancedProps + '. The scene feels lived-in, authentic, visually interesting. Background detail is sharp enough to enjoy but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first.\n\n' +
@@ -866,10 +834,8 @@ async function generate(){
     '- Lip/mouth animation synced naturally to the Korean spoken words below\n' +
     '- Subtle eye blinks and micro-expressions (brow raises, squints, glares)\n' +
     '- Very gentle idle breathing on the body\n' +
-    (S.style==='realistic'
-      ? '- NO arm/limb motion (realistic style has no arms)\n- Tiny natural head tilt variations\n'
-      : '- If arms are visible in the uploaded image, SMALL gestures only — hand returns to the pose shown between gestures\n- Arms do NOT leave the pose silhouette from the uploaded image\n'
-    ) +
+    '- If arms are visible in the uploaded image, SMALL gestures only — hand returns to the pose shown between gestures\n' +
+    '- Arms do NOT leave the pose silhouette from the uploaded image\n' +
     '- Camera: STATIC or extremely slow 5% push-in. No pans, no tilts, no sudden moves.\n\n' +
     '🌿 AMBIENT BACKGROUND LIFE (subtle but alive — this makes the scene breathe): ' + ambient + '. These ambient motions should be GENTLE and PERIPHERAL — they add life without stealing attention from the talking subject. DO NOT add large background action, people walking, dramatic environment changes.\n\n' +
     '❌ DO NOT ADD: dramatic action, big body movement, pose changes, scene transitions, camera cuts, zoom-outs, characters entering/leaving, large prop movement.\n\n' +
