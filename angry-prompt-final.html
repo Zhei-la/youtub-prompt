@@ -386,6 +386,27 @@ const SIZE_HINTS = {
 };
 function getSizeHint(k){return SIZE_HINTS[OBJ_SIZE[k]||'default'];}
 
+// 카테고리별 주변 ambient motion (너무 잡스럽지 않게 1-2 포인트)
+const AMBIENT_BY_CAT = {
+  food:'steam rising from nearby food, condensation droplets slowly forming on cold drinks, a napkin corner barely fluttering',
+  object:'fabric or paper edges slightly moving, dust particles drifting through light, a stray item on the floor nearby',
+  electronics:'screen glow pulsing subtly, charging indicator light blinking, cable slightly trembling',
+  furniture:'curtain edges gently swaying, dust particles in sunbeams, a small houseplant leaf barely moving',
+  vehicle:'exhaust steam in cold air or wheel reflections, a stray leaf or litter tumbling in the breeze nearby',
+  animal:'small fur/feather movement from breathing, whiskers or ears twitching, background foliage gently swaying',
+  nature:'wind through grass/branches, small insects or dust in the air, subtle light rays shifting',
+  toy:'other small toys scattered around, dust particles in the light, a thread hanging from a nearby plushie',
+  stationery:'paper edges fluttering from AC, a pencil slightly rolling, eraser dust floating',
+  sports:'dust or chalk in the air, a cone or marker slightly rocking, distant players blurred in background',
+  fashion:'fabric folds barely shifting, tag fluttering, display light reflecting',
+  building:'passersby blurred in deep background, traffic light changing color, a leaflet or bag tumbling',
+  kitchen:'steam rising from pots or kettle, condensation on windows, oil sizzling visually',
+  tool:'dust particles from recent work, a loose screw on the surface, light flicker from work lamp',
+  person:'hair or clothing edges moving, background people blurred, ambient environmental detail'
+};
+
+function getAmbient(cat){return AMBIENT_BY_CAT[cat]||'subtle ambient motion — dust in light, fabric edges faintly moving, gentle environmental life';}
+
 const STYLE_PROMPTS = {
   pixar:{note:'🎬 픽사 3D',base:'Pixar-style 3D animation, highly expressive cartoon face on the object, two slim stylized arms emerging naturally from either side, warm volumetric studio lighting, vibrant colors, cinematic illumination, Pixar-quality render'},
   realistic:{note:'📷 실사',base:'photorealistic cinematic still, subtle human-like expression embedded on the object surface (no cartoon arms, no limbs), shot on ARRI Alexa 85mm f/2.0, natural practical lighting with soft shadows, subtle desaturated color grade, fine film grain'},
@@ -642,12 +663,36 @@ async function aiRandom(step){
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
 async function genDialogue(regen){
-  if(!S.obj){showErr('오브젝트를 먼저 선택해주세요.');return;}
-  if(!S.topic){showErr('공감 주제를 먼저 선택해주세요.');return;}
-  if(!getApiKey()){showErr('API 키를 먼저 입력하고 저장해주세요.');return;}
+  console.log('[angry genDialogue] 시작, S=', JSON.stringify({obj:S.obj, topic:S.topic, topicDesc:S.topicDesc, style:S.style, dur:S.dur}));
+
+  const dialogueEl = document.getElementById('dialogue');
+  if(!dialogueEl){
+    alert('❌ 페이지 오류: dialogue 요소 없음. 새로고침 해주세요.');
+    return;
+  }
+
+  dialogueEl.placeholder = '⏳ 대사 생성 준비 중...';
+
+  if(!S.obj){
+    dialogueEl.placeholder = '⚠️ 오브젝트를 먼저 선택해주세요 (Step 2)';
+    showErr('오브젝트를 먼저 선택해주세요.');
+    return;
+  }
+  if(!S.topic){
+    dialogueEl.placeholder = '⚠️ 공감 주제를 먼저 선택해주세요 (Step 6)';
+    showErr('공감 주제를 먼저 선택해주세요.');
+    return;
+  }
+  if(!getApiKey()){
+    dialogueEl.placeholder = '⚠️ API 키를 먼저 저장해주세요 (상단 🔑)';
+    showErr('API 키를 먼저 입력하고 저장해주세요.');
+    return;
+  }
 
   const btns=document.querySelectorAll('.dialogue-btns .btn-sm');
   btns.forEach(b=>b.disabled=true);
+
+  dialogueEl.placeholder = '⏳ AI가 대사를 생성하고 있습니다...';
 
   const styleTone=STYLE_DIALOGUE_TONE[S.style]||'자연스러운 한국어 구어체';
 
@@ -728,12 +773,19 @@ ${BAN_RULES}
 이 오브젝트(${S.obj})가 "${S.topicDesc}" 하는 사람에게 1인칭으로 화내는 대사를, 위 예시 수준 정보 밀도로 생성.${avoid}`;
 
   try {
+    console.log('[angry genDialogue] callAI 호출 직전');
     const txt = await callAI(systemPrompt, userPrompt);
+    console.log('[angry genDialogue] callAI 성공, 길이:', txt.length);
+    if(!txt || txt.trim().length===0){
+      throw new Error('AI가 빈 응답을 반환함. API 키 또는 쿼터 확인.');
+    }
     document.getElementById('dialogue').value = txt.trim();
+    document.getElementById('dialogue').placeholder = "주제 선택 후 'AI 공감 대사 생성' 클릭";
     usedDialogues.push(txt.trim());
     if(usedDialogues.length>10) usedDialogues.shift();
   } catch(e){
-    console.error('대사 생성 에러:',e);
+    console.error('[angry genDialogue] 에러:',e);
+    document.getElementById('dialogue').placeholder = '❌ 대사 생성 실패: '+e.message+' (F12 콘솔 확인)';
     showErr('대사 생성 실패: '+e.message);
   } finally {
     btns.forEach(b=>b.disabled=false);
@@ -777,32 +829,58 @@ async function generate(){
   const locEn=S.locEn||S.loc;
   const styleTpl=STYLE_PROMPTS[S.style];
   const sizeHint=getSizeHint(S.obj);
+  // 카테고리 기반 fallback ambient + AI 시도로 덮어쓰기
+  let ambient = getAmbient(S.cat);
+  let enhancedLoc = locEn;
+  let enhancedProps = 'contextually relevant items placed naturally around the subject';
+
+  const aiScene = await getScene(objEn, S.cat);
+  if(aiScene && aiScene.loc){
+    enhancedLoc = aiScene.loc;
+    if(aiScene.props) enhancedProps = aiScene.props;
+    if(aiScene.ambient) ambient = aiScene.ambient;
+  }
 
   const imagePrompt = styleTpl.base + '.\n\n' +
     'MAIN SUBJECT: a ' + objEn + ' with ' + moodEn + '. ' +
     (isPerson ? '' : 'The object retains its natural appearance but has an expressive human-like face. ') +
     (S.style==='realistic'
-      ? 'No cartoon arms or exaggerated limbs — emotion conveyed purely through the facial expression embedded on the object surface.'
-      : 'Two small stylized arms emerge naturally from either side, one pointing accusingly at the viewer, the other raised in frustration. No legs — object rests solidly on its natural base.'
+      ? 'No cartoon arms or exaggerated limbs — emotion conveyed purely through the intense facial expression embedded on the object surface.'
+      : 'Two small stylized arms emerge naturally from either side — capture one arm mid-gesture as if making a sharp accusatory point, the other arm tense or raised. No legs — object rests solidly on its natural base.'
     ) + '\n\n' +
+    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-RANT — mouth open in active angry speech, eyes directly glaring at the viewer, '+(S.style==='realistic'?'face leaning slightly forward with intense expression, clearly IN THE MIDDLE OF speaking':'one arm raised mid-accusation gesture as if pointing at the viewer, body angled forward slightly, visibly IN MID-SENTENCE')+'. This is a FROZEN MOMENT from a heated monologue — NOT a still idle pose. Viewer must immediately feel "this thing is yelling at me RIGHT NOW."\n\n' +
     '⚠️ REAL-WORLD SCALE (CRITICAL): the ' + objEn + ' must be ' + sizeHint + ' Proportions must feel like a real photograph where this object naturally sits in its actual environment.\n\n' +
-    'SCENE & BACKGROUND: ' + locEn + '. Background should feel lived-in, authentic, visually interesting — visible and detailed but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first while still enjoying the surrounding details.\n\n' +
-    'FRAMING: ' + ratio + '. No text overlays, no subtitles, no captions, no watermarks. Highly detailed background, masterpiece quality.';
+    '🏠 NATIVE HABITAT SCENE (CRITICAL — the object MUST be in its real native location): ' + enhancedLoc + '.\n\n' +
+    'BACKGROUND DETAIL (rich but focused): ' + enhancedProps + '. The scene feels lived-in, authentic, visually interesting. Background detail is sharp enough to enjoy but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first.\n\n' +
+    'AMBIENT LIFE (subtle but present — 1-2 gentle motion points captured in the frame): ' + ambient + '. These ambient hints should read clearly in the still — hint at life and movement in the environment without cluttering the composition.\n\n' +
+    'FRAMING: ' + ratio + '. The subject takes 40-55% of the frame, positioned to emphasize speaking energy. No text overlays, no subtitles, no captions, no watermarks. Highly detailed background with cinematic depth, masterpiece quality.';
 
-  const videoPrompt = 'An AI short-form video: the ' + objEn + ' (with ' + moodEn + ') speaks directly to camera in a venting, confrontational tone.\n\n' +
-    '⚠️ SCALE RULE (CRITICAL): the ' + objEn + ' must be ' + sizeHint + ' This proportion must hold throughout every frame — never cartoonishly enlarged, never suspiciously shrunken.\n\n' +
-    'SCENE: ' + locEn + '. The object is the main subject in sharp focus; the surrounding environment stays visible and atmospheric, detailed but softer, so the viewer clearly sees WHERE the scene takes place.\n\n' +
-    'DIALOGUE — delivered out loud: "' + dialogueEN + '"\n\n' +
-    'PERFORMANCE: vents with relatable frustration — like a friend complaining about someone who just left the room. Building natural irritation, pointed anger, never theatrical. Natural conversational pacing.\n\n' +
-    'MOTION: subtle idle breathing and expressive movement synced to speech. ' +
+  const videoPrompt = '🎬 IMAGE-TO-VIDEO — PRESERVE THE UPLOADED IMAGE EXACTLY\n\n' +
+    '═══════════════════════════════════════════════════════════════\n' +
+    '⚠️ THIS IS AN IMAGE-TO-VIDEO TASK, NOT TEXT-TO-VIDEO.\n' +
+    'The uploaded still image IS the video. Do NOT reinterpret it, do NOT redesign, do NOT restyle, do NOT reframe, do NOT change pose or composition. Treat the uploaded image as frame 1 and ONLY add the minimal natural motion described below. Everything else — character design, colors, lighting, camera angle, background composition, pose — stays IDENTICAL to the uploaded image.\n' +
+    '═══════════════════════════════════════════════════════════════\n\n' +
+    'SUBJECT: the exact ' + objEn + ' from the uploaded image. Lock character design, colors, materials, proportions, and pose to match the image exactly.\n\n' +
+    'SCENE: the exact environment from the uploaded image (' + enhancedLoc + '). Lock background layout, props, lighting, and camera angle — no reframing.\n\n' +
+    '🎯 CHARACTER MOTION (MINIMAL — DO NOT ADD DYNAMIC ACTION):\n' +
+    '- Lip/mouth animation synced naturally to the Korean spoken words below\n' +
+    '- Subtle eye blinks and micro-expressions (brow raises, squints, glares)\n' +
+    '- Very gentle idle breathing on the body\n' +
     (S.style==='realistic'
-      ? 'No cartoon arm gestures — emotion via facial expression and slight body lean.'
-      : 'Small stylized arm gestures matching dialogue beats — finger jabs during blame, raised hand in disbelief. Feet/base stay planted.'
-    ) + ' Camera mostly static with a slow gentle push-in.\n\n' +
-    'LIGHTING: motivated by the scene\'s natural light sources. Background objects stay still, providing context without distracting.\n\n' +
-    'VOICE: adult Korean speaker, clear direct tone, scolding but human. Clean dry audio, no echo, no reverb, no music. Lip sync to spoken words. No growling, no creature sounds.\n\n' +
+      ? '- NO arm/limb motion (realistic style has no arms)\n- Tiny natural head tilt variations\n'
+      : '- If arms are visible in the uploaded image, SMALL gestures only — hand returns to the pose shown between gestures\n- Arms do NOT leave the pose silhouette from the uploaded image\n'
+    ) +
+    '- Camera: STATIC or extremely slow 5% push-in. No pans, no tilts, no sudden moves.\n\n' +
+    '🌿 AMBIENT BACKGROUND LIFE (subtle but alive — this makes the scene breathe): ' + ambient + '. These ambient motions should be GENTLE and PERIPHERAL — they add life without stealing attention from the talking subject. DO NOT add large background action, people walking, dramatic environment changes.\n\n' +
+    '❌ DO NOT ADD: dramatic action, big body movement, pose changes, scene transitions, camera cuts, zoom-outs, characters entering/leaving, large prop movement.\n\n' +
+    'DIALOGUE — the object speaks this line out loud in natural Korean (use these EXACT words as the spoken script, preserving all nuance and emotional delivery):\n\n"' + dialogue + '"\n\n' +
+    (dialogueEN && dialogueEN !== dialogue ? '[English reference for voice/lip-sync timing only — do NOT speak English]: "' + dialogueEN + '"\n\n' : '') +
+    'PERFORMANCE TONE: vents with relatable frustration — natural irritation building through the dialogue, never theatrical. Pointed anger matching the uploaded image\'s expression.\n\n' +
+    'LIGHTING: 100% identical to the uploaded image — same direction, color temperature, shadow positions, and mood.\n\n' +
+    'VOICE: adult Korean speaker, clear direct tone, scolding but human. Clean dry audio, no echo, no reverb, no music. Lip sync to the Korean spoken words above. No growling, no creature sounds.\n\n' +
     'LANGUAGE: Korean (YouTube Shorts pacing).\n\n' +
-    'OUTPUT: Duration ~' + (S.dur==='30'?'30':'10') + 's. Aspect ' + ratio + '. Zero on-screen text, no subtitles, no overlays. [Platform: ' + platform + ']';
+    'OUTPUT: Duration ~' + (S.dur==='30'?'30':'10') + 's. Aspect ' + ratio + '. Zero on-screen text, no subtitles, no overlays.\n\n' +
+    '⚠️ FINAL REMINDER: The uploaded image IS the scene. Character moves only via lip sync + blinks + breathing. Background has small ambient motion (as described). Reject the urge to add "cinematic action." [Platform: ' + platform + ' — Image-to-Video mode REQUIRED]';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -874,24 +952,58 @@ function getApiKey(){
   }catch(e){return '';}
 }
 
+// ═══ Railway 프록시 설정 ═══
+const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+
 async function callAI(system,user){
   const apiKey=getApiKey();
   if(!apiKey)throw new Error('API 키 없음');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{
+  const res=await fetch(PROXY_URL + '/openai/chat',{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+    headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      model:'gpt-4o',max_tokens:2000,temperature:0.95,
-      presence_penalty:0.3,frequency_penalty:0.3,
-      messages:[{role:'system',content:system},{role:'user',content:user}]
+      apiKey: apiKey,
+      system: system,
+      user: user,
+      max_tokens: 2000,
+      temperature: 0.95
     })
   });
   if(!res.ok){
     const err=await res.json().catch(()=>({}));
-    throw new Error((err?.error?.message)||'OpenAI API 오류 '+res.status);
+    throw new Error((err && err.error)||'프록시 API 오류 '+res.status);
   }
   const d=await res.json();
-  return d.choices?.[0]?.message?.content||'';
+  return d.text || '';
+}
+
+// ═══ 사물 맞춤 배경 + ambient 동적 생성 ═══
+async function getScene(object, category){
+  const apiKey = getApiKey();
+  if(!apiKey) return null;
+
+  try {
+    const res = await fetch(PROXY_URL + '/openai/scene', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        object: object,
+        country: 'kr',
+        category: category
+      })
+    });
+    if(!res.ok) return null;
+    const d = await res.json();
+    return {
+      loc: d.loc || '',
+      props: d.props || '',
+      ambient: d.ambient || ''
+    };
+  } catch(e){
+    console.error('[getScene] error:', e);
+    return null;
+  }
 }
 
 // ═══ 유틸 ═══
@@ -963,3 +1075,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
