@@ -268,7 +268,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="step-hd">
     <div class="step-num">2</div>
     <div class="step-title">사물 선택</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandomObj()">🎲 AI 생성</button></div>
+    <div class="step-actions"><span style="font-size:10px;color:var(--muted);">👇 각 카테고리별로 AI 생성 가능</span></div>
   </div>
   <div id="objectGroups"></div>
   <div class="input-row">
@@ -970,7 +970,7 @@ function buildObjects(){
     const g=groups[key];
     const div=document.createElement('div');
     div.className='category-group';
-    div.innerHTML='<div class="cat-group-hd"><div class="cat-group-title">'+g.title+'</div></div><div class="chips" id="group-'+key+'"></div>';
+    div.innerHTML='<div class="cat-group-hd"><div class="cat-group-title">'+g.title+'</div><button class="btn-sm" onclick="aiRandomObjGroup(\''+key+'\')">🎲 AI 생성</button></div><div class="chips" id="group-'+key+'"></div>';
     wrap.appendChild(div);
     const chipWrap=div.querySelector('#group-'+key);
     g.items.forEach(it=>{
@@ -1079,31 +1079,48 @@ function selVoice(el){
   el.classList.add('active');S.voice=el.dataset.val;
 }
 
-// ═══ AI 랜덤 ═══
-async function aiRandomObj(){
+// ═══ AI 랜덤 — 카테고리별 ═══
+async function aiRandomObjGroup(groupKey){
   if(!getApiKey()){
     showErr('API 키를 먼저 입력하고 저장해주세요. (상단 🔑 입력란)');
     return;
   }
-  const btn = document.querySelector('[onclick="aiRandomObj()"]');
+  const groupInfo = OBJECTS[S.country][groupKey];
+  if(!groupInfo){showErr('그룹을 찾을 수 없음: '+groupKey);return;}
+  const groupTitle = groupInfo.title;
+  const isHome = groupKey === 'home';
+  const isKR = S.country === 'kr';
+
+  const btn = document.querySelector('button[onclick="aiRandomObjGroup(\''+groupKey+'\')"]');
   const originalText = btn.textContent;
   btn.textContent = '⏳ 생성 중...';
   btn.disabled = true;
+
   try {
+    const countryDesc = isKR ? '한국' : '일본';
+    const categoryDesc = isHome
+      ? (isKR
+        ? '한국 자취생이 집에서 매일 쓰거나 접하는 생활 가전/생활용품/주방/욕실 사물 (예: 세탁기, 냉장고, 전자레인지, 청소기, 변기, 샴푸통, 옷걸이, 이불, 베개, 쓰레기통 등)'
+        : '日本の一人暮らしが家で毎日使う生活家電・日用品・キッチン・浴室アイテム')
+      : (isKR
+        ? '한국 직장인이 회사/사무실에서 매일 쓰거나 접하는 사무용품/업무환경 사물 (예: 사무용 의자, 복합기, 파티션, 마우스, 커피머신, 스테이플러, 탕비실 전자레인지, 회의실 화이트보드, 출입카드 등)'
+        : '日本のサラリーマンがオフィスで毎日使う事務用品・業務環境アイテム');
+
+    const already = Array.from(document.querySelectorAll('#group-'+groupKey+' .chip')).map(c=>c.dataset.kr).join(', ');
+
     const r = await callAI(
-      '너는 ' + (S.country==='kr'?'한국':'일본') + ' 자취생/직장인이 일상에서 접하는 사물 생성기다. 반드시 JSON만 반환. 설명·주석·코드블록 표시 없이.\n포맷: {"items":[{"kr":"이모지 + 한글명","en":"English name","jp":"日本語"}]}\n예: {"items":[{"kr":"🍳 프라이팬","en":"frying pan","jp":"フライパン"}]}',
-      '독특하고 재미있는, 영상 콘텐츠에 쓸만한 일상 사물 6개 생성. 이모지 포함. JSON만.'
+      '너는 '+countryDesc+' 일상 사물 큐레이터다. 반드시 JSON만 반환. 설명·주석·코드블록 금지.\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語"}]}\n\n** 필수 규칙 **\n1. '+categoryDesc+' 에 해당하는 사물만 생성.\n2. 절대 카테고리 외 엉뚱한 사물 넣지 말 것 ("행운양말", "무지개", "마법봉" 같은 것 금지)\n3. 실제로 "사물의 참견" 컨셉(사물이 사람에게 잔소리/꿀팁)이 재미있게 성립하는 사물만\n4. 공감도 높고 영상 소재로 쓰기 좋은 사물 우선',
+      '카테고리: '+groupTitle+' ('+categoryDesc+')\n\n이 카테고리에 속하는, '+countryDesc+' 사람들이 일상에서 공감할 만한 사물 6개 생성. 이모지 포함.\n\n이미 선택지에 있는 것들 (중복 금지): '+already+'\n\nJSON만 출력.'
     );
     let cleaned = r.replace(/```json|```/g,'').trim();
-    // JSON 추출 (혹시 앞뒤에 설명 붙었을 경우)
     const m = cleaned.match(/\{[\s\S]*\}/);
     if(m) cleaned = m[0];
     const d = JSON.parse(cleaned);
     if(!d.items || !Array.isArray(d.items) || d.items.length===0){
       throw new Error('응답 형식 오류');
     }
-    const firstGroup = document.querySelector('#objectGroups .chips');
-    if(firstGroup){
+    const targetGroup = document.getElementById('group-'+groupKey);
+    if(targetGroup){
       d.items.forEach(o=>{
         const kr = o.kr || o.en || '사물';
         const en = o.en || o.kr;
@@ -1115,18 +1132,22 @@ async function aiRandomObj(){
         c.dataset.jp = jp;
         c.textContent = '✨ '+kr;
         c.onclick = ()=>selObj('✨ '+kr, en, jp);
-        firstGroup.appendChild(c);
+        targetGroup.appendChild(c);
       });
-      // 마지막 생성 요소로 스크롤
-      firstGroup.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+      targetGroup.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
     }
   } catch(e){
     console.error('AI 랜덤 오브젝트 에러:', e);
-    showErr('AI 생성 실패: ' + e.message + ' (콘솔 F12에서 상세 확인)');
+    showErr('AI 생성 실패: ' + e.message);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
   }
+}
+
+// Backward compat
+async function aiRandomObj(){
+  await aiRandomObjGroup('home');
 }
 
 async function aiRandomSit(){
@@ -1141,46 +1162,52 @@ async function aiRandomSit(){
   btn.disabled = true;
 
   const isJP = S.country==='jp';
-  const conceptDesc = S.concept==='tip'
-    ? '이 사물을 잘못 사용하는 생활 습관/실수 (꿀팁·경고로 풀어낼 수 있는 것)'
-    : '이 사물 주변에서 벌어지는 민폐 행동 (공감 유발형)';
+  const isTip = S.concept==='tip';
+  const countryDesc = isJP ? '일본' : '한국';
 
-  const jpCultureHints = `
-일본 문화를 최대한 다양하게 반영해서 **매번 다른 각도**로 뽑아줘. 뻔한 거 말고:
-- 편의점(コンビニ) 문화, 다이소(100均), 도큐한즈 같은 생활
-- 지하철/만원전철, 우선석, 스이카 카드, 역무원 문화
-- 회사 문화: 한코(印鑑), 품의서(稟議書), 회식(飲み会), 전배(転勤), 정시퇴근
-- 일본 주거: 1K/1DK 좁은 방, 유니트버스, 타타미, 베란다 빨래, 후톤
-- 쓰레기 분리배출(燃えるゴミ/燃えないゴミ/資源ゴミ), 초세밀한 분별 규칙
-- 여름: 후키, 모기 퇴치, 풍령, 에어컨 전기세 전쟁
-- 겨울: 코타츠, 전기담요, 결로
-- 식문화: 오니기리, 벤토, 라멘집 룰, 컨비니
-- 일본식 매너 강박: 소리 안 내기, 길에서 음식 금지, 이어폰
-각 상황은 "그 사물과 직접 관련된 일본 생활 디테일" 이어야 함.`;
+  // 이미 있는 상황들 (중복 방지)
+  const existing = Array.from(document.querySelectorAll('#sitChips .chip')).map(c=>c.textContent.replace(/^✨\s*/,'')).join(', ');
 
-  const krCultureHints = `
-한국 자취생/직장인 일상의 진짜 공감 포인트 다양하게. 매번 다른 각도로:
-- 자취방 좁은 원룸, 복도식 아파트, 베란다
-- 배달앱 문화, 편의점 도시락, 1인가구 음식
-- 지하철 2호선, 환승, KTX
-- 회사 문화: 야근, 회식, 카톡, 월급날, 연차 눈치
-- 가전 관리: 필터 청소 미루기, 전기세, 수도요금
-- 쓰레기 분리수거, 음식물쓰레기 종량제
-- 계절별: 장마, 폭염, 한파, 미세먼지`;
+  // 사물 특화된 예시로 AI에게 명확히 가이드
+  const tipExamples = isJP
+    ? `[例 - 洗濯機]: "ファスナー開けたまま洗濯", "柔軟剤を多く入れすぎ", "脱水後すぐ放置"
+[例 - 冷蔵庫]: "ドアの開けっぱなし", "熱いもの入れる", "奥の食材忘れる"
+[例 - エアコン]: "フィルター掃除しない", "つけっぱなし外出", "設定温度低すぎ"`
+    : `[예 - 세탁기]: "지퍼 안 잠그고 돌림", "세제 너무 많이 넣음", "빨래 다 돌리고 방치"
+[예 - 냉장고]: "문 오래 열어두기", "뜨거운 거 바로 넣기", "안쪽 음식 썩을 때까지 방치"
+[예 - 에어컨]: "필터 청소 안함", "켜놓고 외출", "설정온도 너무 낮게"`;
+
+  const complaintExamples = isJP
+    ? `[例 - ゴミ箱]: "横に捨てる", "分別しない", "袋を縛らない"
+[例 - トイレットペーパー]: "使い切って補充しない", "芯捨てずそのまま", "端っこ折る"
+[例 - シンク]: "食器溜めっぱなし", "排水口髪の毛放置", "油流す"`
+    : `[예 - 쓰레기통]: "옆에 버리고 감", "분리수거 안함", "꽉 찼는데 그냥 쑤셔넣음"
+[예 - 화장지]: "다 쓰고 안 채움", "심만 남기고 버림", "한꺼번에 많이 씀"
+[예 - 싱크대]: "그릇 쌓아두기", "배수구 머리카락 방치", "기름 그대로 버림"`;
 
   try {
-    const r = await callAI(
-      '너는 ' + (isJP?'일본':'한국') + ' 자취생/직장인 공감형 상황 생성기다.\n'
-      + '반드시 JSON만 반환. 설명·주석·코드블록 금지.\n'
-      + (isJP
-        ? '포맷: {"items":[{"kr":"한국어 짧은 설명","jp":"일본어 원문 상황"}, ...]}'
-        : '포맷: {"items":[{"kr":"한국어 상황 설명","jp":""}, ...]}')
-      + '\n반드시 매번 다른 각도로 생성. 뻔한 것 말고 신선하게.',
+    const systemPrompt = '너는 ' + countryDesc + ' 자취생/직장인이 공감할 만한, **사물 중심** 상황 생성기다.\n\n' +
+      '** 철저한 규칙 **\n' +
+      '1. 상황은 반드시 **선택된 사물과 직접 관련**되어야 함. 사물 없이도 성립하는 일반 상황 금지.\n' +
+      '2. ' + countryDesc + ' 사람 누구나 "아 맞아 그거!" 공감할 수 있는 현실적 상황만.\n' +
+      '3. 신박하거나 특이한 것 말고 **흔하지만 콕 집어주면 고개 끄덕이는** 상황.\n' +
+      '4. 뜬금없는 컨셉(판타지, 미신, 과장) 금지.\n' +
+      '5. 반드시 JSON만. 설명/주석/코드블록 금지.\n\n' +
+      (isJP
+        ? '포맷: {"items":[{"kr":"한국어 짧은 설명","jp":"일본어 원문"}, ...]}'
+        : '포맷: {"items":[{"kr":"한국어 상황","jp":""}, ...]}');
 
-      '사물: ' + S.obj + '\n컨셉: ' + conceptDesc + '\n'
-      + (isJP?jpCultureHints:krCultureHints)
-      + '\n\n6개의 상황을 생성. 반드시 JSON만. 각 상황은 15자 내외로 간결하게.'
-    );
+    const conceptDirection = isTip
+      ? '사물이 "너 이거 잘못하고 있어" 하고 꿀팁·경고를 줄 수 있는 **잘못된 사용법/관리 실수** 상황.\n\n' + tipExamples
+      : '사물이 "너 진짜 왜 그래?" 하고 한탄할 수 있는 **민폐/게으름/습관** 상황.\n\n' + complaintExamples;
+
+    const userPrompt = '선택된 사물: ' + S.obj + '\n\n' +
+      '위 사물에 대한 상황 6개 생성. 위 사물에 **직접적으로 관련**되고 ' + countryDesc + ' 일상에서 정말 흔히 일어나는 공감형 상황만.\n\n' +
+      conceptDirection + '\n\n' +
+      (existing ? '이미 있는 상황 (중복 금지): ' + existing + '\n\n' : '') +
+      '각 상황은 15자 내외, 동사 포함 구체적으로. JSON만 출력.';
+
+    const r = await callAI(systemPrompt, userPrompt);
     let cleaned = r.replace(/```json|```/g,'').trim();
     const m = cleaned.match(/\{[\s\S]*\}/);
     if(m) cleaned = m[0];
@@ -1202,11 +1229,12 @@ async function aiRandomSit(){
     if(sitChips.lastElementChild) sitChips.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
   } catch(e){
     console.error('AI 랜덤 상황 에러:', e);
-    showErr('AI 생성 실패: ' + e.message + ' (콘솔 F12에서 상세 확인)');
+    showErr('AI 생성 실패: ' + e.message);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
   }
+
 }
 
 // ═══ 대본 AI 생성 ═══
@@ -1852,4 +1880,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
