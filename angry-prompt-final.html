@@ -270,10 +270,18 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </div>
 
 <div class="step" id="s6">
-  <div class="step-hd"><div class="step-num">6</div><div class="step-title">공감 주제 · 대사</div></div>
+  <div class="step-hd">
+    <div class="step-num">6</div>
+    <div class="step-title">공감 주제 · 대사</div>
+    <div class="step-actions"><button class="btn-sm" onclick="aiRandomTopic()">🎲 AI 생성</button></div>
+  </div>
   <div class="dialogue-box">
     <div class="sec-label">📌 공감 주제</div>
-    <div class="chips topic-chips" id="topicChips" style="margin-bottom:16px;"></div>
+    <div class="chips topic-chips" id="topicChips" style="margin-bottom:10px;"></div>
+    <div class="input-row" style="margin-bottom:16px;">
+      <input type="text" id="topicInput" placeholder="직접 입력: 예) 세탁기에 양말 짝 잃어버림">
+      <button class="add-btn" onclick="addCustomTopic()">+</button>
+    </div>
     <div class="sec-label">⏱️ 대사 길이</div>
     <div class="chips" id="durChips" style="margin-bottom:14px;">
       <div class="chip active" data-val="10" onclick="selDur(this)">⚡ 10초</div>
@@ -492,6 +500,105 @@ function buildTopics(){
   });
 }
 
+// ═══ 주제 직접 입력 ═══
+function addCustomTopic(){
+  const input = document.getElementById('topicInput');
+  const val = (input.value || '').trim();
+  if(!val) return;
+  const wrap = document.getElementById('topicChips');
+  const d = document.createElement('div');
+  d.className = 'chip active';
+  d.textContent = '✏️ ' + val;
+  document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.remove('active'));
+  d.onclick = ()=>{
+    document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.remove('active'));
+    d.classList.add('active');
+    S.topic = 'custom';
+    S.topicDesc = val;
+  };
+  wrap.appendChild(d);
+  S.topic = 'custom';
+  S.topicDesc = val;
+  input.value = '';
+  d.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ═══ AI 주제 랜덤 생성 (선택된 사물 기반) ═══
+async function aiRandomTopic(){
+  if(!S.obj){
+    showErr('오브젝트를 먼저 선택해주세요 (Step 2).');
+    return;
+  }
+  if(!getApiKey()){
+    showErr('API 키를 먼저 입력하고 저장해주세요.');
+    return;
+  }
+  const btn = document.querySelector('[onclick="aiRandomTopic()"]');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+
+  const existing = Array.from(document.querySelectorAll('#topicChips .chip')).map(c=>c.textContent.replace(/^(✨|✏️)\s*/,'')).join(', ');
+
+  try {
+    const systemPrompt = '너는 한국 사람 누구나 공감할 "오브젝트가 화낼 만한 상황" 생성기다.\n\n' +
+      '** 철저한 규칙 **\n' +
+      '1. 주제는 반드시 **선택된 오브젝트와 직접 관련된 민폐/잘못된 행동/습관**.\n' +
+      '2. 오브젝트 입장에서 "야 너 이러지 마!" 하고 쏘아붙일 수 있는 상황.\n' +
+      '3. 한국 사람 99%가 "아 맞아 그런 사람 있지!" 공감할 수 있는 현실적 상황만.\n' +
+      '4. 판타지/미신/과장 금지. 일상에서 정말 자주 벌어지는 것만.\n' +
+      '5. 신박하려고 하지 말고 **뻔하지만 딱 공감되는** 포인트 뽑아라.\n' +
+      '6. 반드시 JSON만 반환. 설명/주석/코드블록 금지.\n\n' +
+      '포맷: {"items":[{"label":"짧은 태그(10자 내외, 이모지 포함)","desc":"구체적 상황 설명(15~25자)"}, ...]}';
+
+    const examples = '[예시 - 쓰레기통 오브젝트]\n' +
+      '- {"label":"🗑️ 옆에 버리기", "desc":"쓰레기통 바로 옆 바닥에 던지는 사람"}\n' +
+      '- {"label":"♻️ 분리수거 안함", "desc":"플라스틱을 일반쓰레기에 그냥 넣는 사람"}\n' +
+      '- {"label":"📦 안 눌러 담음", "desc":"쓰레기 꽉 찼는데 그냥 쑤셔넣기만 하는 사람"}\n\n' +
+      '[예시 - 세탁기 오브젝트]\n' +
+      '- {"label":"🧦 양말 뭉치", "desc":"양말 안 풀고 뭉친 채로 넣는 사람"}\n' +
+      '- {"label":"💧 세제 과다", "desc":"세제를 권장량의 2배씩 넣는 사람"}\n' +
+      '- {"label":"⏰ 빨래 방치", "desc":"다 돌아간 빨래 몇 시간째 안 꺼내는 사람"}';
+
+    const userPrompt = '선택된 오브젝트: ' + S.obj + '\n\n' +
+      '이 오브젝트가 화낼 만한 상황 6개 생성.\n\n' +
+      examples + '\n\n' +
+      (existing ? '이미 있는 주제 (중복 금지): ' + existing + '\n\n' : '') +
+      '해당 오브젝트와 직접 관련 있고, 한국 사람이 보면 즉시 공감할 상황만. JSON만 출력.';
+
+    const r = await callAI(systemPrompt, userPrompt);
+    let cleaned = r.replace(/```json|```/g,'').trim();
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if(m) cleaned = m[0];
+    const d = JSON.parse(cleaned);
+    if(!d.items || !Array.isArray(d.items) || d.items.length===0){
+      throw new Error('응답 형식 오류');
+    }
+    const wrap = document.getElementById('topicChips');
+    d.items.forEach(it=>{
+      const label = it.label || '✨ 주제';
+      const desc = it.desc || it.label;
+      const c = document.createElement('div');
+      c.className = 'chip';
+      c.textContent = '✨ ' + label.replace(/^✨\s*/, '');
+      c.onclick = ()=>{
+        document.querySelectorAll('#topicChips .chip').forEach(x=>x.classList.remove('active'));
+        c.classList.add('active');
+        S.topic = 'ai-' + Math.random().toString(36).slice(2,8);
+        S.topicDesc = desc;
+      };
+      wrap.appendChild(c);
+    });
+    if(wrap.lastElementChild) wrap.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e){
+    console.error('AI 주제 생성 에러:', e);
+    showErr('AI 주제 생성 실패: ' + e.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
 function selCat(el){
   document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');S.cat=el.dataset.val;
@@ -590,12 +697,34 @@ async function aiRandom(step){
     const btn=document.querySelector('#s'+step+' .btn-sm');
     const ot=btn.textContent;btn.textContent='⏳...';btn.disabled=true;
     try{
+      // 카테고리별 엄격한 가이드라인
+      const CAT_GUIDE = {
+        food: '한국 사람이 자주 먹는 음식/식품/디저트 (예: 김밥, 떡볶이, 라면, 치킨, 삼겹살, 아이스크림). 판타지나 희귀한 것 금지',
+        object: '일상에서 매일 쓰는 생활 사물 (예: 휴대폰, 이어폰, 안경, 지갑, 열쇠, 머리끈, 우산). 판타지 아이템 금지',
+        electronics: '전자제품/가전 (예: TV, 냉장고, 세탁기, 노트북, 선풍기, 가습기, 공유기)',
+        furniture: '가구/인테리어 (예: 침대, 소파, 책상, 옷장, 식탁, 의자, 커튼)',
+        vehicle: '탈것/운송수단 (예: 자동차, 자전거, 킥보드, 지하철, 버스)',
+        animal: '실제 동물 (예: 강아지, 고양이, 햄스터, 앵무새). 판타지 몬스터 금지',
+        nature: '자연물 (예: 나무, 꽃, 구름, 바다, 바위, 잔디)',
+        toy: '장난감/인형 (예: 곰인형, 레고, 피규어, 블록, 딱지)',
+        stationery: '문구류 (예: 연필, 지우개, 노트, 볼펜, 가위, 풀, 자)',
+        sports: '스포츠 용품 (예: 축구공, 농구공, 요가매트, 덤벨, 줄넘기)',
+        fashion: '패션 아이템 (예: 티셔츠, 청바지, 운동화, 가방, 모자, 선글라스)',
+        building: '건물/공간 (예: 카페, 편의점, 학교, 병원, 은행, 지하철역)',
+        kitchen: '주방용품 (예: 프라이팬, 도마, 칼, 컵, 접시, 냄비, 주걱)',
+        tool: '공구/장비 (예: 망치, 드라이버, 렌치, 톱, 전동드릴)'
+      };
+      const guide = CAT_GUIDE[S.cat] || '이 카테고리에 속하는 흔한 일상 아이템만';
+      const already = Array.from(document.querySelectorAll('#'+(isObj?'objChips':'locChips')+' .chip')).map(c=>c.textContent).join(', ');
+
       const sys = isObj
-        ? '한국 일상 오브젝트 생성기. 반드시 JSON만. 포맷: {"items":[{"kr":"이모지 + 한글명","en":"English"}]}'
-        : '배경 장소 생성기. 반드시 JSON만. 포맷: {"items":[{"kr":"한글 장소","en":"English location phrase"}]}';
+        ? '너는 한국 일상 오브젝트 큐레이터다.\n\n** 필수 규칙 **\n1. ' + guide + '\n2. 절대 카테고리 외 엉뚱한 것 넣지 말 것 ("행운양말", "마법봉", "유니콘" 같은 것 금지)\n3. 오브젝트 참견/화내기 컨셉에 어울리는 친숙한 사물만\n4. 한국 사람이 보면 "아 이거!" 즉시 알아보는 것만\n5. 반드시 JSON만. 설명·주석·코드블록 금지.\n\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name"}]}'
+        : '배경 장소 생성기. 선택된 오브젝트가 자연스럽게 있을 만한 실제 한국 일상 공간.\n반드시 JSON만. 포맷: {"items":[{"kr":"한글 장소","en":"English location phrase"}]}';
+
       const usr = isObj
-        ? '카테고리: '+S.cat+'\n재미있는 오브젝트 6개. 이모지 포함. JSON만.'
-        : '카테고리: '+S.cat+', 오브젝트: '+(S.obj||'미지정')+'\n어울리는 장소 5개. JSON만.';
+        ? '카테고리: '+S.cat+' ('+guide+')\n\n이 카테고리에 속하는 한국 일상 오브젝트 6개 생성. 이모지 포함, 판타지/엉뚱한 것 금지.\n\n'+(already?'이미 있는 것 (중복 금지): '+already+'\n\n':'')+'JSON만.'
+        : '카테고리: '+S.cat+', 오브젝트: '+(S.obj||'미지정')+'\n이 오브젝트가 자연스럽게 있을 만한 한국 실제 공간 5개. JSON만.';
+
       const r=await callAI(sys,usr);
       let cleaned=r.replace(/```json|```/g,'').trim();
       const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
@@ -1041,4 +1170,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
