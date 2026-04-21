@@ -1572,28 +1572,24 @@ async function generate(){
   const objEn=S.objEn||S.obj;
   const sizeHint = getSizeHint(S.obj);
 
-  // 웹툰 전용: 이전 배경 참조
-  const webtoonBgRef = (S.style==='webtoon') ? (document.getElementById('webtoonBgRef')||{}).value||'' : '';
-  const sceneLoc = webtoonBgRef.trim()
-    ? scene.loc + ' (the SAME location setting as the previous scene described here: "' + webtoonBgRef.trim() + '")'
-    : scene.loc;
-  const sceneProps = webtoonBgRef.trim()
-    ? scene.props + '. IMPORTANT: match the existing scene elements from the previous frame reference — same room, same furniture layout, same color palette, same lighting, but focus on a different corner/angle where the current object ('+objEn+') naturally lives. Think of it like another character in the same house.'
-    : scene.props;
+  // 사물의 작동 모션 (역동성)
+  const fnMotion = getFunctionMotion(S.obj);
 
-  const imagePrompt = 'A '+objEn+' featuring '+(S.concept==='tip'?'a knowing, slightly exasperated human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer as if about to teach a lesson':'a visibly annoyed human-like expression — sharply furrowed eyebrows, slightly clenched teeth, exaggerated bulging cartoon eyes')+'.\n' +
-    'The face is drawn directly onto the surface of the '+objEn+' — eyes, nose, and mouth painted or embedded on the object itself. Do NOT replace or morph the object into a real human face. The '+objEn+' keeps its natural shape and material.\n' +
-    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. One arm is '+(S.concept==='tip'?'gesturing upward as if explaining a point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'resting or mid-motion':'lifted as if scolding')+'. No legs or feet. The character remains grounded, sitting or resting naturally on its base without any floating effect.\n' +
-    'The entire object must be visible in the frame — show the full character body, not just the upper part. Medium to wide shot composition so the viewer sees the object as a whole character within its environment.\n' +
-    '\n' +
-    'Style: '+styleTpl.base+'.\n' +
-    'Real-world scale: the '+objEn+' must be '+sizeHint+'.\n' +
-    '\n' +
-    'Scene: '+sceneLoc+'.\n' +
-    'Background details: '+sceneProps+'. The setting feels lived-in and authentic — multiple realistic props naturally placed, not empty or minimalist. Background stays softer in focus than the subject.\n' +
-    'Subtle environmental life: '+scene.ambient+'.\n' +
-    '\n' +
-    'Vertical 9:16 composition, cinematic lighting, highly detailed. No text overlays, no subtitles, no captions, no watermarks, no UI.';
+  const expressionDesc = (S.concept==='tip')
+    ? 'a knowing human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer'
+    : 'an annoyed human-like expression — sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes';
+
+  const oneArm = (S.concept==='tip') ? 'gesturing upward as if explaining a point' : 'pointed forcefully toward the viewer';
+  const otherArm = (S.concept==='tip') ? 'resting or mid-motion' : 'lifted as if scolding';
+
+  const imagePrompt = 'A '+objEn+' featuring '+expressionDesc+'. ' +
+    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
+    'One arm is '+oneArm+', while the other is '+otherArm+'. ' +
+    'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
+    'The '+objEn+' retains its natural texture with fine surface details — the face is drawn directly onto the object surface, do NOT replace or morph it into a real human face. ' +
+    'Scene: '+scene.loc+' — depicted in a realistic setting with natural lighting, '+scene.props+'. ' +
+    (fnMotion ? 'Background liveliness: '+fnMotion+', plus '+scene.ambient+'. ' : 'Background liveliness: '+scene.ambient+'. ') +
+    'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text overlays, no subtitles, no captions, no watermarks.';
 
   // ═ 영상 프롬프트 ═
   const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
@@ -1602,41 +1598,31 @@ async function generate(){
   const isTip=S.concept==='tip';
 
   const functionMotion = getFunctionMotion(S.obj);
+  const moveAdjective = isTip ? 'measured, instructive' : 'angry';
+  const verbingEn = isTip ? 'speaking' : 'yelling';
 
   const videoPrompt =
-    'Animate this character with '+(isTip?'measured, instructive':'angry, venting')+' upper-body movement.\n' +
-    'The character is '+(isTip?'speaking':'yelling')+' in natural Korean: "'+scriptOriginal+'"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change to polite form (존댓말), do not paraphrase, do not add or remove words. Every word exactly as written.\n' +
-    '\n' +
-    'Character motion rules:\n' +
-    '- The character body stays grounded and mostly still. No floating, no jumping, no large body shifts.\n' +
-    '- Mouth opens and closes naturally, synced to the Korean speech.\n' +
-    '- Eyes blink occasionally, eyebrows react to the dialogue emotion.\n' +
-    '- Face stays as part of the object surface — NOT a separate human face. Do NOT morph the object into a human. The eyes, mouth, and brows are drawn on the object itself.\n' +
-    '- Hands/arms make small natural gestures that match the dialogue beats (light finger point, palm raise). Gestures return to rest after each beat. Arms stay attached and visible only in their natural position.\n' +
-    '- Character remains in the same position as the uploaded image. No pose changes.\n' +
-    '\n' +
-    'Scene & background (KEEP FROM UPLOADED IMAGE):\n' +
-    '- Use the uploaded image as the first frame. Preserve background, props, labels, colors, and composition exactly.\n' +
-    '- Setting: '+scene.loc+'.\n' +
-    '\n' +
-    'Background life — this is where the scene becomes visually interesting:\n' +
-    (functionMotion
-      ? '- '+functionMotion+'\n'
-      : ''
-    ) +
-    '- '+scene.ambient+'\n' +
-    '- These background motions should be clearly visible and satisfying to watch, but not distract from the talking character.\n' +
-    '\n' +
-    'Camera: static shot, maybe a 3% slow push-in. No pans, tilts, cuts, or zooms.\n' +
-    '\n' +
-    'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker. Clean dry sound — no echo, no reverb, no hollow sound, no music. No roaring, no creature sounds, no monster sounds.\n' +
-    '\n' +
-    'Final render rules (CRITICAL):\n' +
-    '- No text, no subtitles, no captions appearing in the video.\n' +
-    '- No watermarks, no logos, no UI.\n' +
-    '- Duration ~'+(S.dur==='30'?'30':'10')+' seconds. 9:16 vertical.\n' +
-    '- Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
+    'Animate this character with '+moveAdjective+' upper-body movement.\n' +
+    'The character is '+verbingEn+' in natural Korean: "'+scriptOriginal+'"\n' +
+    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase, do not add or remove words.\n' +
+    'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
+    'Gestures naturally match the tone and flow of the dialogue:\n' +
+    'pointing one finger directly at the camera when '+(isTip?'emphasizing a key point':'accusing')+',\n' +
+    'raising both open palms in a "'+(isTip?'listen up':'why would you do that')+'" gesture\n' +
+    'when expressing '+(isTip?'a warning or important advice':'frustration or disbelief')+'.\n' +
+    'Gestures should feel reactive and conversational, not mechanical or repetitive.\n' +
+    'Mouth opens and closes as if speaking '+(isTip?'firmly':'angrily')+'.\n' +
+    'Eyebrows '+(isTip?'arch with concern, eyes lock onto the viewer':'furrow deeply, eyes bulge with rage')+'.\n' +
+    'The character stays grounded — no floating or jumping.\n' +
+    'Camera mostly static with a slight zoom-in.\n' +
+    'Exaggerated, Pixar-style animation.\n' +
+    (functionMotion ? 'Background liveliness: '+functionMotion+'. This makes the scene feel alive without distracting from the talking character.\n' : '') +
+    'Audio: '+(isTip?'calm but firm Korean adult voice':'angry adult Korean voice with scolding tone')+'.\n' +
+    'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
+    'No roaring, no monster sounds, no creature sounds.\n' +
+    'No text, no subtitles, no captions appearing in the video.\n' +
+    'The character\'s face must remain as the object —\n' +
+    'do NOT replace or morph into a real human face';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
