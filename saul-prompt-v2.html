@@ -299,13 +299,25 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
   <div class="chips" id="styleChips">
     <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
-    <div class="chip" data-val="realistic" onclick="selStyle(this)">📷 실사</div>
     <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
     <div class="chip" data-val="webtoon" onclick="selStyle(this)">📱 웹툰</div>
     <div class="chip" data-val="sketch" onclick="selStyle(this)">✏️ 스케치</div>
     <div class="chip" data-val="claymation" onclick="selStyle(this)">🧸 클레이메이션</div>
   </div>
   <div class="style-note" id="styleNote"></div>
+  <!-- 웹툰 전용: 배경 참조 + 스토리 이어쓰기 -->
+  <div id="webtoonExtras" style="display:none;margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border);">
+    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:0.5px;">📱 웹툰 전용 옵션</div>
+    <div style="font-size:12px;margin-bottom:12px;">
+      <div style="margin-bottom:6px;color:var(--sub);">🏠 이전 배경 유지 (여러 사물이 같은 집에서 대화)</div>
+      <textarea id="webtoonBgRef" rows="2" placeholder="직전 영상의 배경 설명을 붙여넣어주세요. 예) 자취방 거실, 왼쪽에 소파, 중앙에 작은 TV 테이블, 오른쪽 창문에 연베이지 커튼, 모노스테라 화분..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="font-size:12px;">
+      <div style="margin-bottom:6px;color:var(--sub);">💬 이전 대사에서 이어쓰기</div>
+      <textarea id="webtoonPrevScript" rows="2" placeholder="이전 사물이 한 대사를 붙여넣어주세요. 예) 에어컨: '야 선풍기, 왜 내 앞에서 돌고 있냐?' — 이 대사를 받아서 자연스럽게 반응/대답하는 대본이 생성됩니다" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;">💡 이 두 옵션을 채우면 <b>같은 배경 + 이어지는 스토리</b>로 생성됩니다. 여러 사물이 대화하는 영상 편집에 최적!</div>
+  </div>
 </div>
 
 <!-- S5: 대본 -->
@@ -789,14 +801,12 @@ const SITUATIONS = {
 
 // ═══ 스타일 템플릿 (배경 디테일 강화) ═══
 const STYLE_TEMPLATES = {
-  pixar:{note:'🎬 픽사 3D — 캐릭터 표정 강조, 따뜻한 조명',
-    base:'Pixar-style 3D animation, expressive cartoon character face on the object with two small stylized arms, warm volumetric studio lighting, vibrant colors, cinematic depth of field, highly detailed, masterpiece quality'},
-  realistic:{note:'📷 실사 — 자연스러운 조명, 실제 카메라 렌즈 느낌',
-    base:'photorealistic cinematic still, subtle human-like expression embedded on the object surface (no cartoon arms), shot on Sony Venice 85mm f/2.0, naturally motivated practical lighting, shallow depth of field, subtle desaturated color grade, fine film grain'},
+  pixar:{note:'🎬 픽사 3D — 사물 전체 보이게, 팔다리 달린 캐릭터, 따뜻한 조명',
+    base:'Pixar-style 3D animated character, the entire object is clearly visible in the frame from top to bottom with cartoon face embedded on its surface and two slender stylized arms extending from its sides, warm volumetric studio lighting, vibrant saturated colors, cinematic composition showing the whole character in its environment, highly detailed Pixar render quality, masterpiece quality'},
   anime:{note:'🌸 애니 — 셀 쉐이딩, 큰 눈, 감정 과장',
     base:'Studio Ghibli style anime illustration, clean hand-drawn linework, cel shading, the object has expressive anime eyes and small stylized arms, atmospheric background'},
-  webtoon:{note:'📱 웹툰 — 깔끔한 디지털 선화, 세로 구도 잘 맞음',
-    base:'Korean webtoon digital illustration, clean vector-like outlines, flat color fills with soft gradient shading, chibi-proportioned character on the object, bright high-key colors'},
+  webtoon:{note:'📱 웹툰 — 손그림 라인, 사물 표면에 얼굴이 스케치된 듯한 스타일',
+    base:'Korean webtoon hand-drawn illustration style, a realistic sketched human face rendered directly onto the object surface with visible pencil and ink linework (furrowed brow, serious eyes, defined nose, pursed lips), cross-hatching and rough shading details, the face features look hand-drawn on the object rather than being cartoonish, slightly exaggerated expression but maintained realistic proportions, thin stylized arms sketched in matching line art coming out of the object sides, warm paper-like texture on the background, slightly imperfect wobbly lines adding hand-drawn charm, muted natural color palette with soft accent colors'},
   sketch:{note:'✏️ 스케치 — 연필/잉크 손그림 느낌',
     base:'hand-drawn pencil and ink sketch animation style, rough expressive linework, visible cross-hatching, warm paper texture, slightly wobbly boiling lines'},
   claymation:{note:'🧸 클레이메이션 — 손으로 만든 점토 느낌, Laika 스튜디오 풍',
@@ -939,7 +949,6 @@ const VOICE_EN = {
 const DIALOGUE_TONE = {
   kr:{
     pixar:'픽사 캐릭터처럼 감정적이고 과장되지만 귀엽고 따뜻하게. 감탄사 활용.',
-    realistic:'실제 사람이 조곤조곤 설명하는 것처럼 차분하지만 설득력 있게. 과장 없이.',
     anime:'애니메이션 캐릭터처럼 아주 감정적으로. "진짜진짜!" "너무해!" 같은 강조 많이.',
     webtoon:'한국 웹툰 말투. 밈적 요소 포함. "에휴", "진짜 어이없네", "아 좀!" 같은 구어체.',
     sketch:'일기 쓰듯 솔직하고 담백하게. 꾸밈없는 말투.',
@@ -947,7 +956,6 @@ const DIALOGUE_TONE = {
   },
   jp:{
     pixar:'ピクサーキャラのように感情豊かで大げさだが可愛く温かく。感嘆符多めに。',
-    realistic:'実際の人がしっとり説明するように、落ち着いていて説得力のある口調。',
     anime:'アニメキャラのように感情的に。「もう！」「本当に！」「ひどいよ！」などの強調多め。ツッコミ調も混ぜて。',
     webtoon:'日本のSNS動画風のテンポ。「えっ？」「マジで？」「ねぇちょっと〜」など日常的な口語。オチつきで。',
     sketch:'日記のように素直で飾らない口調。',
@@ -1090,6 +1098,11 @@ function selStyle(el){
   const note=document.getElementById('styleNote');
   note.textContent=STYLE_TEMPLATES[S.style].note;
   note.style.display='block';
+  // 웹툰 스타일일 때만 추가 옵션 표시
+  const extras=document.getElementById('webtoonExtras');
+  if(extras){
+    extras.style.display = (S.style==='webtoon') ? 'block' : 'none';
+  }
   done('s3');act('s4');
   updateSummary();
 }
@@ -1468,19 +1481,25 @@ ${BAN_RULES_KR}
 "내 대본의 모든 문장이 구체적인 정보를 담고 있나? 영양가 없는 감성 문장 없나? 독자가 실제로 뭔가 배우거나 공감할 요소가 있나?"
 없으면 다시 써.`;
 
+  // 웹툰 스타일: 이전 대사 이어쓰기 지시 추가
+  const webtoonPrev = (S.style==='webtoon') ? (document.getElementById('webtoonPrevScript')||{}).value||'' : '';
+  const continuationHint = webtoonPrev.trim()
+    ? '\n\n📖 이어쓰기 요청: 이전 사물이 이런 말을 했어:\n"'+webtoonPrev.trim()+'"\n\n이 대사를 듣고 자연스럽게 반응/대꾸/말대답하는 대본을 써. 같은 대화 흐름이라는 걸 느낄 수 있게, 하지만 이번 사물의 성격으로. (예: 이전 사물이 "야 선풍기!" 라고 했으면, "뭐 임마? 왜 나한테 그래?" 같은 대꾸로 시작)'
+    : '';
+
   const userPrompt = isJP
     ? `物: ${S.objJp||S.objEn||S.obj}
 状況: ${S.sitAI||S.sit}
 コンセプト: ${isTip?'ライフハック/警告 (具体的な情報)':'愚痴/マナー指摘 (共感)'}
 長さ: ${S.dur==='30'?'30秒':'10秒'}
 
-この物が「${S.sitAI||S.sit}」という状況について一人称で話す台本を、参考例のレベルで生成。${avoid}`
+この物が「${S.sitAI||S.sit}」という状況について一人称で話す台本を、参考例のレベルで生成。${avoid}${continuationHint}`
     : `사물: ${S.obj}
 상황: ${S.sitAI||S.sit}
 컨셉: ${isTip?'꿀팁/경고 (구체적 정보)':'민폐 지적/한탄 (공감)'}
 길이: ${S.dur==='30'?'30초':'10초'}
 
-이 사물이 "${S.sitAI||S.sit}" 이라는 상황에 대해 1인칭으로 말하는 대본을, 위 참고 예시 수준의 정보 밀도로 생성해줘.${avoid}`;
+이 사물이 "${S.sitAI||S.sit}" 이라는 상황에 대해 1인칭으로 말하는 대본을, 위 참고 예시 수준의 정보 밀도로 생성해줘.${avoid}${continuationHint}`;
 
   try {
     console.log('[genDialogue] callAI 호출 직전');
@@ -1586,18 +1605,25 @@ async function generate(){
   const objEn=S.objEn||S.obj;
   const sizeHint = getSizeHint(S.obj);
 
+  // 웹툰 전용: 이전 배경 참조
+  const webtoonBgRef = (S.style==='webtoon') ? (document.getElementById('webtoonBgRef')||{}).value||'' : '';
+  const sceneLoc = webtoonBgRef.trim()
+    ? scene.loc + ' (the SAME location setting as the previous scene described here: "' + webtoonBgRef.trim() + '")'
+    : scene.loc;
+  const sceneProps = webtoonBgRef.trim()
+    ? scene.props + '. IMPORTANT: match the existing scene elements from the previous frame reference — same room, same furniture layout, same color palette, same lighting, but focus on a different corner/angle where the current object ('+objEn+') naturally lives. Think of it like another character in the same house.'
+    : scene.props;
+
   const imagePrompt = 'A '+objEn+' featuring '+(S.concept==='tip'?'a knowing, slightly exasperated human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer as if about to teach a lesson':'a visibly annoyed human-like expression — sharply furrowed eyebrows, slightly clenched teeth, exaggerated bulging cartoon eyes')+'.\n' +
     'The face is drawn directly onto the surface of the '+objEn+' — eyes, nose, and mouth painted or embedded on the object itself. Do NOT replace or morph the object into a real human face. The '+objEn+' keeps its natural shape and material.\n' +
-    (S.style==='realistic'
-      ? 'No arms or limbs present. Emotion conveyed only through the facial expression on the object surface.\n'
-      : 'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. One arm is '+(S.concept==='tip'?'gesturing upward as if explaining a point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'resting or mid-motion':'lifted as if scolding')+'. No legs or feet. The character remains grounded, sitting or resting naturally on its base without any floating effect.\n'
-    ) +
+    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. One arm is '+(S.concept==='tip'?'gesturing upward as if explaining a point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'resting or mid-motion':'lifted as if scolding')+'. No legs or feet. The character remains grounded, sitting or resting naturally on its base without any floating effect.\n' +
+    'The entire object must be visible in the frame — show the full character body, not just the upper part. Medium to wide shot composition so the viewer sees the object as a whole character within its environment.\n' +
     '\n' +
     'Style: '+styleTpl.base+'.\n' +
     'Real-world scale: the '+objEn+' must be '+sizeHint+'.\n' +
     '\n' +
-    'Scene: '+scene.loc+'.\n' +
-    'Background details: '+scene.props+'. The setting feels lived-in and authentic — multiple realistic props naturally placed, not empty or minimalist. Background stays softer in focus than the subject.\n' +
+    'Scene: '+sceneLoc+'.\n' +
+    'Background details: '+sceneProps+'. The setting feels lived-in and authentic — multiple realistic props naturally placed, not empty or minimalist. Background stays softer in focus than the subject.\n' +
     'Subtle environmental life: '+scene.ambient+'.\n' +
     '\n' +
     'Vertical 9:16 composition, cinematic lighting, highly detailed. No text overlays, no subtitles, no captions, no watermarks, no UI.';
@@ -1620,10 +1646,7 @@ async function generate(){
     '- Mouth opens and closes naturally, synced to the Korean speech.\n' +
     '- Eyes blink occasionally, eyebrows react to the dialogue emotion.\n' +
     '- Face stays as part of the object surface — NOT a separate human face. Do NOT morph the object into a human. The eyes, mouth, and brows are drawn on the object itself.\n' +
-    (S.style==='realistic'
-      ? '- No arm movement (no arms in realistic style).\n'
-      : '- Hands/arms make small natural gestures that match the dialogue beats (light finger point, palm raise). Gestures return to rest after each beat. Arms stay attached and visible only in their natural position.\n'
-    ) +
+    '- Hands/arms make small natural gestures that match the dialogue beats (light finger point, palm raise). Gestures return to rest after each beat. Arms stay attached and visible only in their natural position.\n' +
     '- Character remains in the same position as the uploaded image. No pose changes.\n' +
     '\n' +
     'Scene & background (KEEP FROM UPLOADED IMAGE):\n' +
