@@ -854,6 +854,31 @@ function getSizeHint(objKey){
   return SIZE_HINTS[cat];
 }
 
+// ═══ 사물의 자연 작동 모션 (세탁기는 돌아가고, 전자레인지는 턴테이블 돌고 등) ═══
+const FUNCTION_MOTION = {
+  '🌀 세탁기': 'the drum visibly spinning behind the glass door with tumbling laundry inside — actual washing cycle in progress with water suds visible, the machine body gently vibrating from the spin',
+  '🧊 냉장고': 'interior fridge light pulsing faintly when face moves, condensation droplets slowly forming on the door handle, ice cubes occasionally clinking faintly inside',
+  '❄️ 에어컨': 'the front louvers/fins gently oscillating up and down, visible cool mist or air puffing out from the vent, fan blades faintly spinning behind the grill',
+  '🚿 샤워기': 'water actively streaming out in a continuous spray, steam rising visibly, water droplets bouncing off the tiled wall',
+  '🍚 전기밥솥': 'active steam billowing continuously from the top vent, pressure valve gently rocking, condensation forming on the lid edge',
+  '⏰ 알람시계': 'digital numbers faintly flickering/ticking second by second, LED colon blinking, hour hand visibly crawling if analog',
+  '🚰 싱크대': 'water slowly dripping from the faucet into a dish below, soap bubbles drifting on the water surface, drain gurgling quietly',
+  '💼 노트북': 'screen content subtly changing/refreshing, notification dot blinking, keyboard backlight pulsing, charging indicator LED breathing',
+  '⌨️ 키보드': 'keyboard backlight pulsing in wave pattern, one key occasionally pressing down as if typing by itself',
+  '🖥️ 모니터': 'screen content animating naturally (cursor blinking, notifications popping), power LED pulsing, subtle screen flicker',
+  '🧹 청소기': 'bristle roller spinning visibly at the base, dust particles being pulled into the intake, LED power indicator glowing',
+  '📠 팩스기': 'paper slowly feeding through with indicator LED blinking, fax receiving light pulsing',
+  '🥤 자판기': 'interior LED lights cycling through colors, displayed items occasionally glowing as if highlighted, coin slot LED blinking',
+  '☕ 커피잔': 'steam actively rising and curling upward, tiny ripples in the coffee surface',
+  '🍜 컵라면': 'thick steam rising continuously from the top, noodles occasionally bobbing in the broth',
+  '🍱 편의점 도시락': 'visible condensation inside the plastic lid, food steam escaping through the opening',
+  '📧 이메일 받은편지함': 'new email notifications popping up on the screen one by one, unread count number incrementing, icons flashing',
+  'default': ''
+};
+function getFunctionMotion(objKey){
+  return FUNCTION_MOTION[objKey] || FUNCTION_MOTION['default'] || '';
+}
+
 const SCENE_PROPS = {
   kr:{
     '🧊 냉장고':{loc:'inside a small Korean one-room apartment kitchen — refrigerator sitting in its natural kitchen corner',props:'the fridge is the main subject. Around it: kitchen counter with rice cooker and instant coffee sticks, magnetic takeout menu flyers stuck on the fridge door (one slightly curled at the corner), a small dish rack with a couple of drying plates, a hanging apron on a nearby hook, warm apartment lighting from a ceiling fixture',ambient:'faint steam rising from the nearby rice cooker vent, a takeout flyer trembling slightly when the fridge moves'},
@@ -1561,14 +1586,21 @@ async function generate(){
   const objEn=S.objEn||S.obj;
   const sizeHint = getSizeHint(S.obj);
 
-  const imagePrompt = styleTpl.base+'.\n\n'+
-    'MAIN SUBJECT: a '+objEn+' with a personified face showing '+(S.concept==='tip'?'a knowing, slightly exasperated expression (about to teach the viewer something important)':'a visibly annoyed, frustrated expression (about to call someone out)')+'.\n\n'+
-    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-SPEECH — mouth wide open in active urgent speech (visible teeth/inner mouth), eyes directly engaging the viewer with intense focus, '+(S.style==='realistic'?'face leaning forward dramatically, expression fully alive and animated (NO arms/limbs — emotion through face and slight body tilt only)':'TWO stylized arms breaking free from the object body — ONE arm raised high in urgent gesture (pointing up or outward as if emphasizing a point), OTHER arm extended outward mid-motion (waving or shaking in emphasis). Arms should feel ALIVE and mid-action, not just decorative. The body itself should feel slightly tilted/leaning toward the viewer as if physically coming forward to speak')+'. This is a FROZEN MOMENT from an active monologue — the object looks like it is POPPING OUT of the scene to warn/teach the viewer. Viewer should feel the object is ALIVE and URGENT right now.\n\n'+
-    '⚠️ REAL-WORLD SCALE (CRITICAL): the '+objEn+' must be '+sizeHint+'. Do NOT make it cartoonishly oversized or shrunken. Proportions must feel like a real photograph where this object naturally sits in its real environment.\n\n'+
-    '🏠 NATIVE HABITAT SCENE (CRITICAL — the object MUST be in its real native location, NOT on an empty blank background): '+scene.loc+'.\n\n'+
-    'BACKGROUND DETAIL (MUST be rich and lived-in — the #1 mistake to avoid is a minimalist/empty background): '+scene.props+'. Fill the scene with 5-8 specific, realistic props that belong in this location (tools, ingredients, containers, accessories, dishware, storage, window, lighting fixtures, decorations). The environment should feel authentic and busy — like a real home/office that people actually use daily. Background is slightly softer focus than the subject, but still visually rich enough that the viewer enjoys noticing details. AVOID: clean empty backgrounds, minimalist studio shots, negative space.\n\n'+
-    'AMBIENT LIFE (subtle but present — 1-2 points of gentle environmental motion captured in the frame): '+scene.ambient+'. This ambient detail should read clearly in the still — hint at life and movement in the environment without cluttering the composition.\n\n'+
-    'FRAMING: 9:16 vertical short-form composition. The subject takes 40-55% of the frame, positioned to emphasize the speaking energy. No text overlays, no subtitles, no captions, no watermarks, no UI elements. Highly detailed background with realistic scale, cinematic depth, masterpiece quality.';
+  const imagePrompt = 'A '+objEn+' featuring '+(S.concept==='tip'?'a knowing, slightly exasperated human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer as if about to teach a lesson':'a visibly annoyed human-like expression — sharply furrowed eyebrows, slightly clenched teeth, exaggerated bulging cartoon eyes')+'.\n' +
+    'The face is drawn directly onto the surface of the '+objEn+' — eyes, nose, and mouth painted or embedded on the object itself. Do NOT replace or morph the object into a real human face. The '+objEn+' keeps its natural shape and material.\n' +
+    (S.style==='realistic'
+      ? 'No arms or limbs present. Emotion conveyed only through the facial expression on the object surface.\n'
+      : 'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. One arm is '+(S.concept==='tip'?'gesturing upward as if explaining a point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'resting or mid-motion':'lifted as if scolding')+'. No legs or feet. The character remains grounded, sitting or resting naturally on its base without any floating effect.\n'
+    ) +
+    '\n' +
+    'Style: '+styleTpl.base+'.\n' +
+    'Real-world scale: the '+objEn+' must be '+sizeHint+'.\n' +
+    '\n' +
+    'Scene: '+scene.loc+'.\n' +
+    'Background details: '+scene.props+'. The setting feels lived-in and authentic — multiple realistic props naturally placed, not empty or minimalist. Background stays softer in focus than the subject.\n' +
+    'Subtle environmental life: '+scene.ambient+'.\n' +
+    '\n' +
+    'Vertical 9:16 composition, cinematic lighting, highly detailed. No text overlays, no subtitles, no captions, no watermarks, no UI.';
 
   // ═ 영상 프롬프트 ═
   const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
@@ -1576,39 +1608,45 @@ async function generate(){
   const scriptForGuide = scriptEN||script;
   const isTip=S.concept==='tip';
 
-  const videoPrompt = '🚨 CRITICAL RULES — READ FIRST, MUST OBEY:\n\n' +
-    '1. ❌ ABSOLUTELY NO TEXT ON SCREEN. NO subtitles. NO captions. NO Korean text overlays. NO English text. NO watermarks. NO logos. NO UI. NO dialogue bubbles. ZERO text of any kind anywhere in the frame. This is the #1 rule.\n\n' +
-    '2. ✅ USE THE UPLOADED IMAGE AS FRAME 1 EXACTLY. Do NOT re-imagine, re-generate, or re-compose the scene. The uploaded image IS the starting frame. Every visual element (character design, face, pose, arms, colors, lighting, background, camera angle, composition, style) must match the uploaded image with 100% fidelity. If you cannot preserve the exact visual, fail gracefully — do not make up a new scene.\n\n' +
-    '3. 🎙️ VERBATIM DIALOGUE. The Korean script below is LOCKED. Speak it WORD-FOR-WORD. Do not paraphrase. Do not translate. Do not convert to 존댓말 (polite form) if the script is in 반말 (casual). Do not add words. Do not skip words. Do not reorder words. Say EXACTLY what is written.\n\n' +
-    '═══════════════════════════════════════════════════════════════\n' +
-    '🎬 IMAGE-TO-VIDEO TASK (NOT text-to-video)\n' +
-    '═══════════════════════════════════════════════════════════════\n\n' +
-    'SUBJECT: the exact ' + objEn + ' character from the uploaded image. Match the uploaded image 1:1 (design, colors, face, expression start, arms position, body shape).\n\n' +
-    'SCENE: the exact environment from the uploaded image (' + scene.loc + '). Do NOT redesign the background. Do NOT change props. Do NOT reframe.\n\n' +
-    '🎯 MOTION (minimal, only these):\n' +
-    '- Lip sync animated precisely to the Korean words below\n' +
-    '- Natural eye blinks, brow raises, small facial micro-expressions matching the emotion\n' +
-    '- Gentle idle breathing\n' +
-    (S.style === 'realistic'
-      ? '- NO arm movement (no arms in realistic style)\n- Minimal head tilts\n'
-      : '- If arms are visible in the uploaded image, small natural gestures synced to speech beats — arms return to their position from the uploaded image between gestures. Arms NEVER leave their silhouette from the image.\n'
+  const functionMotion = getFunctionMotion(S.obj);
+
+  const videoPrompt =
+    'Animate this character with '+(isTip?'measured, instructive':'angry, venting')+' upper-body movement.\n' +
+    'The character is '+(isTip?'speaking':'yelling')+' in natural Korean: "'+scriptOriginal+'"\n' +
+    'Speak the Korean script VERBATIM — do not translate, do not change to polite form (존댓말), do not paraphrase, do not add or remove words. Every word exactly as written.\n' +
+    '\n' +
+    'Character motion rules:\n' +
+    '- The character body stays grounded and mostly still. No floating, no jumping, no large body shifts.\n' +
+    '- Mouth opens and closes naturally, synced to the Korean speech.\n' +
+    '- Eyes blink occasionally, eyebrows react to the dialogue emotion.\n' +
+    '- Face stays as part of the object surface — NOT a separate human face. Do NOT morph the object into a human. The eyes, mouth, and brows are drawn on the object itself.\n' +
+    (S.style==='realistic'
+      ? '- No arm movement (no arms in realistic style).\n'
+      : '- Hands/arms make small natural gestures that match the dialogue beats (light finger point, palm raise). Gestures return to rest after each beat. Arms stay attached and visible only in their natural position.\n'
     ) +
-    '- Camera: STATIC. At most a 3% gentle push-in over the whole duration. No pans, no tilts, no cuts, no zooms.\n\n' +
-    '🌿 AMBIENT BACKGROUND (subtle only): ' + scene.ambient + '. Tiny and peripheral. Must not distract from the talking subject.\n\n' +
-    '❌ DO NOT ADD: new scenes, scene transitions, new characters, big movements, dramatic camera work, text overlays, subtitles, captions, watermarks.\n\n' +
-    '═══════════════════════════════════════════════════════════════\n' +
-    '🎙️ VERBATIM SPOKEN SCRIPT (speak word-for-word in Korean):\n' +
-    '═══════════════════════════════════════════════════════════════\n\n' +
-    '"' + scriptOriginal + '"\n\n' +
-    '⚠️ The Korean words above are the FINAL spoken script. Do not modify. Do not politeify. Do not paraphrase. Speak exactly those words in that order.\n\n' +
-    (scriptEN && scriptEN !== script ? '(Optional English reference for lip-sync timing only — NEVER spoken aloud: "' + scriptForGuide + '")\n\n' : '') +
-    'PERFORMANCE: ' + (isTip
-      ? 'measured, knowing tone — like a friend giving advice with a hint of frustration. Natural pauses.'
-      : 'relatable venting — irritated friend tone, never theatrical.'
-    ) + '\n\n' +
-    'VOICE: ' + voiceDesc + '. Natural ' + (S.country === 'jp' ? 'Japanese' : 'Korean') + ' speaker. Clean dry audio, no echo, no reverb, no music. Accurate lip sync.\n\n' +
-    'LIGHTING: identical to the uploaded image.\n\n' +
-    'OUTPUT: Duration ~' + (S.dur === '30' ? '30s' : '10s') + '. 9:16 vertical. ZERO on-screen text. ZERO subtitles. ZERO captions. ZERO watermarks. [Platform: Kling / Veo / Runway — Image-to-Video mode REQUIRED, text-free output]';
+    '- Character remains in the same position as the uploaded image. No pose changes.\n' +
+    '\n' +
+    'Scene & background (KEEP FROM UPLOADED IMAGE):\n' +
+    '- Use the uploaded image as the first frame. Preserve background, props, labels, colors, and composition exactly.\n' +
+    '- Setting: '+scene.loc+'.\n' +
+    '\n' +
+    'Background life — this is where the scene becomes visually interesting:\n' +
+    (functionMotion
+      ? '- '+functionMotion+'\n'
+      : ''
+    ) +
+    '- '+scene.ambient+'\n' +
+    '- These background motions should be clearly visible and satisfying to watch, but not distract from the talking character.\n' +
+    '\n' +
+    'Camera: static shot, maybe a 3% slow push-in. No pans, tilts, cuts, or zooms.\n' +
+    '\n' +
+    'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker. Clean dry sound — no echo, no reverb, no hollow sound, no music. No roaring, no creature sounds, no monster sounds.\n' +
+    '\n' +
+    'Final render rules (CRITICAL):\n' +
+    '- No text, no subtitles, no captions appearing in the video.\n' +
+    '- No watermarks, no logos, no UI.\n' +
+    '- Duration ~'+(S.dur==='30'?'30':'10')+' seconds. 9:16 vertical.\n' +
+    '- Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
