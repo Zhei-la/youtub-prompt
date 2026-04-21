@@ -856,47 +856,47 @@ function getSizeHint(objKey){
 
 const SCENE_PROPS = {
   kr:{
-    '🧊 냉장고':{loc:'inside a small Korean one-room apartment kitchen',props:'refrigerator as main subject in the foreground, kitchen counter beside it with a rice cooker and some instant coffee sticks, magnetic takeout menus stuck on the fridge door, a small dish rack nearby, warm apartment lighting'},
-    '🌀 세탁기':{loc:'in a Korean apartment laundry corner (veranda-style)',props:'front-load washing machine as main subject, laundry basket with clothes nearby, detergent bottles on a small shelf, a clothesline with hanging t-shirts in the background, morning daylight through sliding windows'},
-    '🛏️ 침대':{loc:'in a Korean one-room studio bedroom',props:'unmade bed with crumpled blanket as main subject, nightstand with a half-empty water cup and a smartphone, a laundry pile in the corner, soft morning light'},
-    '⏰ 알람시계':{loc:'on a wooden bedside table in a dim Korean bedroom at early morning',props:'digital alarm clock as main subject glowing red numbers, smartphone beside it face-down, a half-empty water bottle, rumpled sheets visible at the edge of the frame'},
-    '🔌 충전기':{loc:'plugged into a wall outlet beside a bed in a Korean one-room',props:'phone charger cable as main subject, smartphone with low battery icon next to it, messy power strip with tangled cables, dim warm lamp light'},
-    '🗑️ 쓰레기통':{loc:'in a Korean apartment kitchen corner',props:'overflowing kitchen trash can as main subject, food waste visible on top, floor slightly messy around it, recycling bags stacked against the wall'},
-    '🚰 싱크대':{loc:'in a small Korean apartment kitchen',props:'kitchen sink piled with unwashed dishes as main subject, sponge and dish soap visible, water droplets on stainless steel, a Korean side dish container on the counter beside it'},
-    '🪞 거울':{loc:'in a Korean unit bathroom',props:'bathroom mirror as main subject with water spots and toothpaste splatter, sink below with a toothbrush cup and soap, fluorescent bathroom lighting'},
-    '❄️ 에어컨':{loc:'mounted on the wall of a Korean apartment living room',props:'wall-mounted air conditioner as main subject, remote control on a nearby table, sofa partially visible, summer daylight through window'},
-    '🚿 샤워기':{loc:'in a Korean apartment bathroom shower area',props:'shower head as main subject with water droplets, tiled wall behind, shampoo bottles on a small shelf, slight steam in the air'},
-    '🍚 전기밥솥':{loc:'on a Korean kitchen countertop',props:'electric rice cooker as main subject with steam rising from its vent, a wooden rice scoop beside it, kimchi container on the counter, stainless steel backsplash'},
-    '☕ 커피잔':{loc:'on an office desk in a Korean corporate setting',props:'coffee mug as main subject, laptop and keyboard in the background, scattered documents, pen holder, soft office lighting'},
-    '⌨️ 키보드':{loc:'on an office desk',props:'office keyboard as main subject, monitor partially visible in background, mouse beside it, a coffee mug and some documents'},
-    '🖥️ 사무용 책상':{loc:'in a Korean office cubicle',props:'cluttered office desk as main subject, monitor with spreadsheet, keyboard, mouse, stacks of documents, coffee mug, sticky notes on monitor frame'},
-    '💳 통장':{loc:'on a small table in a Korean apartment',props:'bank account book as main subject, a smartphone showing banking app nearby, a pen, some receipts scattered around'},
-    '📧 이메일 받은편지함':{loc:'on a laptop screen in a home office',props:'laptop screen showing email inbox as main subject, coffee mug beside laptop, scattered notes and a pen, warm desk lamp'},
-    '💼 노트북':{loc:'on a bed in a Korean one-room',props:'laptop as main subject on rumpled blanket, charger cable trailing off the bed, a half-eaten snack bag nearby'},
-    '🧻 화장지 롤':{loc:'on a toilet paper holder in a Korean bathroom',props:'toilet paper roll as main subject, bathroom tile wall behind, a small shelf with backup rolls, bathroom fluorescent lighting'},
-    '🦷 칫솔':{loc:'in a bathroom toothbrush holder',props:'toothbrush standing in a cup as main subject, toothpaste tube beside it, bathroom sink behind, mirror reflection'},
-    '🧹 청소기':{loc:'on the floor of a Korean one-room apartment',props:'stick vacuum cleaner as main subject, dust and hair visible on the floor around it, a laundry pile and scattered items in the background'},
-    'default':{loc:'in a typical Korean one-room apartment',props:'the subject object in the foreground with natural apartment context in the background — warm daily lighting, other lived-in objects scattered around naturally'}
+    '🧊 냉장고':{loc:'inside a small Korean one-room apartment kitchen — refrigerator sitting in its natural kitchen corner',props:'the fridge is the main subject. Around it: kitchen counter with rice cooker and instant coffee sticks, magnetic takeout menu flyers stuck on the fridge door (one slightly curled at the corner), a small dish rack with a couple of drying plates, a hanging apron on a nearby hook, warm apartment lighting from a ceiling fixture',ambient:'faint steam rising from the nearby rice cooker vent, a takeout flyer trembling slightly when the fridge moves'},
+    '🌀 세탁기':{loc:'in a Korean apartment laundry corner on the veranda',props:'the washing machine is the main subject. Around it: laundry basket overflowing with clothes, detergent and fabric softener bottles on a plastic shelf, a drying rack with hanging t-shirts and socks behind, morning daylight through frosted sliding windows, a few stray socks on the floor',ambient:'hanging clothes swaying very slightly in the air, soft shadows moving from the breeze, window reflections shifting'},
+    '🛏️ 침대':{loc:'in a Korean one-room studio bedroom at morning',props:'the bed with crumpled blanket is the main subject. Around it: nightstand with half-empty water cup and face-down smartphone, a messy laundry pile in the corner, a wall calendar with circled dates, curtains partially drawn letting morning light in, a pair of slippers on the floor',ambient:'dust particles drifting through sunbeams, curtains barely fluttering'},
+    '⏰ 알람시계':{loc:'on a wooden bedside table in a dim Korean bedroom at early morning',props:'the digital alarm clock glowing red numbers is the main subject. Around it: smartphone beside it face-down charging, a half-empty water bottle with condensation, rumpled sheets and a pillow at frame edge, a small lamp turned off, a novel or magazine face-down',ambient:'digital clock numbers faintly flickering, thin dawn light slowly brightening through curtains'},
+    '🔌 충전기':{loc:'plugged into a wall outlet beside a bed in a Korean one-room',props:'the phone charger cable is the main subject, snaking from the wall. Around it: smartphone with cracked low battery icon next to it, a messy power strip with tangled cables (earbuds, laptop charger), dim warm lamp light, a water bottle',ambient:'faint charging indicator pulse, subtle warm light flicker'},
+    '🗑️ 쓰레기통':{loc:'in a Korean apartment kitchen corner next to the entrance',props:'the overflowing trash can is the main subject. Around it: food waste and crumpled plastic bags visible on top, the floor around it slightly messy with a stray wrapper, recycling bags stacked against the wall, a broom leaning in the corner, scuffed baseboards',ambient:'a tiny fly hovering nearby, plastic bag rustling faintly'},
+    '🚰 싱크대':{loc:'in a small Korean apartment kitchen',props:'the sink piled with unwashed dishes is the main subject. Around it: sponge and dish soap bottle on the edge, water droplets and residue on stainless steel, a Korean side dish container (banchan) on the counter beside, dish rack with upside-down bowls, window above with partially drawn curtain',ambient:'a slow water drip from the faucet, steam hint from the drain'},
+    '🪞 거울':{loc:'in a Korean unit bathroom',props:'the bathroom mirror with water spots and toothpaste splatter is the main subject. Around it: sink below with toothbrush cup and hand soap, fluorescent bathroom lighting, a hanging towel, hair dryer cord visible, small shelf with skincare bottles',ambient:'condensation slowly forming on edges, toothbrush cup water surface slightly rippling'},
+    '❄️ 에어컨':{loc:'mounted on the wall of a Korean apartment living room',props:'the wall-mounted air conditioner is the main subject. Around it: remote control on a nearby table, sofa partially visible with a cushion, summer daylight through a window with sheer curtain, a small indoor plant, ceiling molding',ambient:'sheer curtain gently drifting, indoor plant leaves barely swaying from airflow'},
+    '🚿 샤워기':{loc:'in a Korean apartment bathroom shower area',props:'the showerhead with water droplets is the main subject. Around it: tiled wall with small grout lines, shampoo and body wash bottles on a shelf, a loofah hanging on a hook, bath mat edge visible, faint steam hovering',ambient:'water drops occasionally falling from the showerhead, gentle steam drifting upward'},
+    '🍚 전기밥솥':{loc:'on a Korean kitchen countertop',props:'the electric rice cooker with steam rising from its vent is the main subject. Around it: wooden rice scoop beside it, kimchi container on the counter, a Korean soy sauce bottle, a small dish with seasoned soybeans, stainless steel backsplash, wall-mounted spice rack',ambient:'active steam billowing from the cooker vent, gentle rising heat distortion above'},
+    '☕ 커피잔':{loc:'on an office desk in a Korean corporate setting',props:'the coffee mug is the main subject. Around it: laptop and keyboard, scattered documents with highlighter marks, pen holder with multiple pens, a desk calendar, sticky notes on monitor frame, a small potted succulent, soft office lighting',ambient:'steam rising from the coffee mug, office light reflecting off monitor, a sticky note corner fluttering from AC airflow'},
+    '⌨️ 키보드':{loc:'on an office desk',props:'the mechanical keyboard is the main subject. Around it: monitor partially visible with code or document, mouse beside it, a coffee mug with steam, scattered documents, a pen holder, sticky notes',ambient:'monitor screen faint glow, steam from coffee, dust particles in light'},
+    '🖥️ 사무용 책상':{loc:'in a Korean office cubicle',props:'the cluttered office desk is the main subject. Around it: monitor with spreadsheet visible, keyboard and mouse, stacks of documents, coffee mug, sticky notes on monitor frame, a small plastic plant, calendar, office chair partially visible',ambient:'monitor glow shifting, fluorescent ceiling light humming visually, papers edge fluttering from AC'},
+    '💳 통장':{loc:'on a small table in a Korean apartment',props:'the bank account book is the main subject. Around it: smartphone showing banking app nearby, a pen, scattered receipts, a calculator, a cup of water, documents in a folder',ambient:'phone screen faintly glowing, paper edges slightly lifting'},
+    '📧 이메일 받은편지함':{loc:'on a laptop screen in a home office',props:'the laptop screen showing email inbox is the main subject. Around it: coffee mug beside laptop, scattered notes and a pen, warm desk lamp glow, a small plant, keyboard partially visible',ambient:'screen notifications occasionally blinking in, desk lamp warmth, steam from coffee'},
+    '💼 노트북':{loc:'on a bed in a Korean one-room',props:'the laptop is the main subject on rumpled blanket. Around it: charger cable trailing off the bed, half-eaten snack bag, a water bottle, smartphone, pillow partially visible',ambient:'laptop screen soft glow, blanket creases catching shifting light'},
+    '🧻 화장지 롤':{loc:'on a toilet paper holder in a Korean bathroom',props:'the toilet paper roll is the main subject. Around it: bathroom tile wall behind, a small shelf with backup rolls, bathroom fluorescent lighting, a wet wipe container, small trash bin below',ambient:'tile condensation, slight draft making the loose end of paper flutter'},
+    '🦷 칫솔':{loc:'in a bathroom toothbrush holder beside the sink',props:'the toothbrush standing in a cup is the main subject. Around it: toothpaste tube squeezed from the middle beside it, bathroom sink with water droplets, mirror reflection, soap dispenser, hand towel',ambient:'water drop slowly falling from the faucet, cup water faintly rippling'},
+    '🧹 청소기':{loc:'on the floor of a Korean one-room apartment living area',props:'the stick vacuum cleaner is the main subject. Around it: dust bunnies and hair visible on the floor, a laundry pile, scattered items (a sock, a receipt), the corner of a sofa, carpet edge, a window letting in diagonal light',ambient:'dust particles swirling in the light beams, a stray piece of lint drifting'},
+    'default':{loc:'in a typical Korean one-room apartment where this object naturally lives',props:'the object in the foreground with authentic Korean apartment context — other lived-in items placed naturally around it, warm daily lighting from a ceiling fixture, contextually relevant smaller objects visible but not distracting',ambient:'subtle ambient motion — dust in light, fabric or paper edges faintly moving, natural light shifts'}
   },
   jp:{
-    '🍱 편의점 도시락':{loc:'on a small table in a Japanese one-room apartment (1K)',props:'convenience store bento box as main subject with plastic lid, wooden chopsticks beside it, an open can of green tea, Japanese-style low table (chabudai), tatami mat partially visible'},
-    '🧊 냉장고':{loc:'in a small Japanese 1K apartment kitchen',props:'small refrigerator as main subject, Japanese magnetic memo board on the door, kitchen corner with a rice cooker and soy sauce bottle on counter, tight urban apartment setting'},
-    '🌀 세탁기':{loc:'on the balcony of a Japanese apartment (typical setup)',props:'Japanese-style top-load washing machine as main subject, laundry pole with hanging clothes behind it, detergent bottles on a plastic shelf, concrete balcony floor'},
-    '🛌 후톤 이불':{loc:'on a tatami floor in a Japanese apartment',props:'futon bedding as main subject laid out on tatami mats, shoji screen in the background, a small pillow, warm morning light coming through paper screens'},
-    '🛁 욕조':{loc:'in a Japanese unit bath',props:'deep Japanese ofuro bathtub as main subject, tiled bathroom wall, shower head on the wall, bath stool and small bucket beside it, gentle steam'},
-    '🍜 컵라면':{loc:'on a desk in a Japanese 1K apartment at night',props:'instant cup ramen as main subject with steam rising, disposable chopsticks beside it, a laptop open in the background, scattered manga or documents, small desk lamp'},
-    '🗑️ 분리수거통 (연소/불연)':{loc:'in the kitchen corner of a Japanese apartment',props:'two labeled trash bins (燃えるゴミ and 燃えないゴミ) as main subjects, Japanese recycling posters on the wall, plastic bags tied and ready, small kitchen space'},
-    '🚃 통근 전철':{loc:'inside a crowded Japanese commuter train during rush hour',props:'packed train interior as main subject view, hanging straps (tsurikawa), salarymen in suits partially visible, yellow line on the floor, advertisements overhead in Japanese'},
-    '🔴 도장(한코)':{loc:'on a Japanese office desk',props:'personal hanko seal as main subject standing upright, red ink pad (shuniku) beside it, stacked documents with rows of seal marks, ballpoint pen, typical Japanese corporate desk'},
-    '🍺 회식 잔':{loc:'at an izakaya table during a nomikai',props:'beer mug (jokki) as main subject, wooden izakaya table, edamame bowl and small sake cup nearby, warm lantern lighting, blurred izakaya atmosphere in the background'},
-    '👔 넥타이':{loc:'hanging on a doorknob in a Japanese apartment entrance',props:'necktie as main subject hanging loose, suit jacket on a hanger behind it, leather shoes (kakato) in the entry (genkan) area, shoe horn beside'},
-    '📠 팩스기':{loc:'on a Japanese office desk',props:'fax machine as main subject, stacks of A4 paper beside it, a landline phone, sticky notes (fusen) with Japanese writing, fluorescent office lighting'},
-    '🥤 자판기':{loc:'in a Japanese office break area',props:'Japanese office vending machine as main subject with various can drinks visible (coffee, cola, tea), small change tray, tile floor, warm indoor lighting'},
-    '⏰ 알람시계':{loc:'on a tatami floor beside a futon',props:'alarm clock as main subject, smartphone beside it, futon corner visible, early morning blue light through shoji screen'},
-    '🚲 자전거':{loc:'parked outside a Japanese apartment building',props:'mamachari bicycle as main subject with front basket, old apartment facade behind it, other bikes parked in a row, narrow street'},
-    '🏢 타임카드':{loc:'beside a time card punch machine at a Japanese office entrance',props:'time card rack as main subject with rows of cards, punch clock machine beside it, company bulletin board with notices in Japanese'},
-    '🍙 오니기리 도시락':{loc:'on a desk at a Japanese office during lunch',props:'onigiri lunchbox as main subject with rice balls visible, wrapped seaweed, small tea bottle beside it, office desk setting'},
-    'default':{loc:'in a typical Japanese 1K urban apartment',props:'the subject object in the foreground with authentic Japanese apartment context — tatami or wood floor, tight compact space, warm diffused Japanese daily lighting'}
+    '🍱 편의점 도시락':{loc:'on a small table in a Japanese 1K apartment at dinner time',props:'the konbini bento box with plastic lid is the main subject. Around it: wooden disposable chopsticks, an open can of green tea with condensation, soy sauce packet, used konbini plastic bag crumpled beside, tatami visible at frame edge, a small TV remote',ambient:'steam rising from the opened bento, can condensation droplets forming'},
+    '🧊 냉장고':{loc:'in a small Japanese 1K apartment kitchen',props:'the compact fridge is the main subject. Around it: Japanese magnetic memo board on the door, kitchen corner with rice cooker, soy sauce bottle, a hanging apron, mini trash bin, tight urban apartment setting',ambient:'memo paper edges fluttering, a small magnet slightly trembling'},
+    '🌀 세탁기':{loc:'on the balcony of a Japanese apartment (typical setup)',props:'the Japanese top-load washer is the main subject. Around it: laundry pole with hanging clothes and socks, detergent bottles on plastic shelf, concrete balcony floor, futon clip, a bird on the railing in the background',ambient:'hanging laundry swaying gently in the breeze, distant city sounds implied'},
+    '🛌 후톤 이불':{loc:'on a tatami floor in a Japanese apartment',props:'the futon bedding is the main subject laid on tatami. Around it: shoji screen in the background, small pillow, folded yukata, morning light through paper screens, a small low lamp, slippers at the edge',ambient:'soft light filtering through shoji, dust particles in the beams'},
+    '🛁 욕조':{loc:'in a Japanese unit bath',props:'the deep ofuro bathtub is the main subject. Around it: tiled bathroom wall, wall showerhead, bath stool and small bucket, shampoo bottles on a shelf, a rolled towel, gentle steam',ambient:'steam actively rising from the water, water surface faintly rippling'},
+    '🍜 컵라면':{loc:'on a desk in a Japanese 1K apartment at night',props:'the instant cup ramen with steam is the main subject. Around it: disposable chopsticks, a laptop open in the background (screen glowing), scattered manga or documents, small desk lamp, can of beer or tea, eraser dust',ambient:'active steam rising from the ramen, laptop screen glow shifting, desk lamp warm flicker'},
+    '🗑️ 분리수거통 (연소/불연)':{loc:'in the kitchen corner of a Japanese apartment',props:'two labeled trash bins (燃えるゴミ and 燃えないゴミ) are main subjects. Around them: Japanese recycling posters on the wall with schedule, plastic bags tied and ready, small kitchen space, crumpled flyer on floor',ambient:'a poster corner fluttering, bag plastic faintly crinkling'},
+    '🚃 통근 전철':{loc:'inside a crowded Japanese commuter train during morning rush',props:'packed train interior is the main subject view. Around it: hanging straps (tsurikawa), salarymen in suits partially visible, yellow floor line, Japanese overhead advertisements, window showing blurred passing scenery',ambient:'hanging straps swaying rhythmically, scenery blur outside window, advertisement reflections'},
+    '🔴 도장(한코)':{loc:'on a Japanese office desk',props:'the personal hanko seal is the main subject standing upright. Around it: red ink pad (shuniku), stacked documents with rows of seal marks, ballpoint pen, a calendar page, typical Japanese corporate desk setting, coffee cup',ambient:'fluorescent light faintly humming, paper edges slightly lifting from AC'},
+    '🍺 회식 잔':{loc:'at an izakaya table during a nomikai',props:'the beer mug (jokki) with foam is the main subject. Around it: wooden izakaya table, edamame bowl with discarded shells, small sake cup, warm lantern lighting, blurred izakaya atmosphere with other patrons in background, yakitori sticks',ambient:'beer foam slowly settling, lantern light flickering warmly, background figures gently moving'},
+    '👔 넥타이':{loc:'hanging on a doorknob in a Japanese apartment entrance (genkan)',props:'the necktie is the main subject hanging loose. Around it: suit jacket on a hanger behind it, leather shoes aligned in the genkan, shoe horn on the step, umbrella in a stand, keys on a small shelf',ambient:'tie swaying very slightly, warm entrance light'},
+    '📠 팩스기':{loc:'on a Japanese office desk',props:'the fax machine is the main subject. Around it: stacks of A4 paper, landline phone, sticky notes (fusen) in Japanese, pen holder, fluorescent office lighting, name plate, coffee cup',ambient:'fax indicator light blinking, paper edges fluttering'},
+    '🥤 자판기':{loc:'in a Japanese office break area',props:'the vending machine is the main subject with cans visible (coffee, cola, tea). Around it: small change tray, tile floor, warm indoor lighting, a trash bin beside, bulletin board with notices',ambient:'machine indicator lights gently pulsing, fluorescent overhead light'},
+    '⏰ 알람시계':{loc:'on a tatami floor beside a futon',props:'the alarm clock is the main subject. Around it: smartphone face-down, futon corner visible, early morning blue light through shoji, a water glass, a novel face-down, slippers',ambient:'clock display faint flicker, shoji light gradually brightening'},
+    '🚲 자전거':{loc:'parked outside a Japanese apartment building',props:'the mamachari bicycle with front basket is the main subject. Around it: old apartment facade, other bikes parked in a row, narrow street, vending machine visible down the road, a stray cat',ambient:'basket contents trembling from breeze, distant cat movement'},
+    '🏢 타임카드':{loc:'beside a time card punch machine at a Japanese office entrance',props:'the time card rack with rows of cards is the main subject. Around it: punch clock machine, company bulletin board with notices in Japanese, a wall clock, entrance floor mat',ambient:'fluorescent light gentle flicker, a notice paper corner fluttering'},
+    '🍙 오니기리 도시락':{loc:'on a desk at a Japanese office during lunch',props:'the onigiri lunchbox with rice balls is the main subject. Around it: wrapped seaweed packet, small tea bottle, chopsticks, office desk with papers, monitor partially visible, pen',ambient:'subtle office ambient light, monitor screen glow shifting'},
+    'default':{loc:'in a typical Japanese 1K urban apartment where this object naturally lives',props:'the object in the foreground with authentic Japanese apartment context — tatami or wood floor, tight compact space, warm diffused Japanese daily lighting, contextually relevant smaller objects visible but not distracting',ambient:'subtle ambient motion — light filtering through paper screens, dust in beams, fabric edges faintly moving'}
   }
 };
 
@@ -1213,13 +1213,37 @@ async function aiRandomSit(){
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
 async function genDialogue(regen){
-  if(!S.obj){showErr('사물을 선택해주세요.');return;}
-  if(!S.sit){showErr('상황을 선택해주세요.');return;}
-  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요.');return;}
+  console.log('[genDialogue] 시작, S=', JSON.stringify({obj:S.obj, sit:S.sit, concept:S.concept, country:S.country, style:S.style, dur:S.dur}));
+
+  const dialogueEl = document.getElementById('dialogue');
+  if(!dialogueEl){
+    alert('❌ 페이지 오류: dialogue 요소를 찾을 수 없음. 새로고침 해주세요.');
+    return;
+  }
+
+  // 즉시 시각적 피드백 - 버튼이 반응하는지 확인 가능
+  dialogueEl.placeholder = '⏳ 대본 생성 준비 중...';
+
+  if(!S.obj){
+    dialogueEl.placeholder = '⚠️ 사물을 먼저 선택해주세요 (Step 1)';
+    showErr('사물을 선택해주세요.');
+    return;
+  }
+  if(!S.sit){
+    dialogueEl.placeholder = '⚠️ 상황을 먼저 선택해주세요 (Step 2)';
+    showErr('상황을 선택해주세요.');
+    return;
+  }
+  if(!getApiKey()){
+    dialogueEl.placeholder = '⚠️ API 키를 먼저 저장해주세요 (상단 🔑)';
+    showErr('API 키를 먼저 입력하고 저장해주세요.');
+    return;
+  }
 
   const btns=document.querySelectorAll('.dialogue-btns .btn-sm');
   btns.forEach(b=>b.disabled=true);
 
+  dialogueEl.placeholder = '⏳ AI가 대본을 생성하고 있습니다...';
   const isTip=S.concept==='tip';
   const isJP=S.country==='jp';
   const styleTone=(DIALOGUE_TONE[S.country]||DIALOGUE_TONE.kr)[S.style]||'자연스러운 구어체';
@@ -1406,11 +1430,19 @@ ${BAN_RULES_KR}
 이 사물이 "${S.sitAI||S.sit}" 이라는 상황에 대해 1인칭으로 말하는 대본을, 위 참고 예시 수준의 정보 밀도로 생성해줘.${avoid}`;
 
   try {
+    console.log('[genDialogue] callAI 호출 직전');
     const txt=await callAI(systemPrompt, userPrompt);
+    console.log('[genDialogue] callAI 성공, 길이:', txt.length);
+    if(!txt || txt.trim().length===0){
+      throw new Error('AI가 빈 응답을 반환함. API 키 또는 쿼터 확인.');
+    }
     document.getElementById('dialogue').value=txt.trim();
+    document.getElementById('dialogue').placeholder='주제 선택 후 AI 대본 생성 클릭';
     usedScripts.push(txt.trim());
     if(usedScripts.length>10) usedScripts.shift();
   } catch(e){
+    console.error('[genDialogue] 에러:', e);
+    document.getElementById('dialogue').placeholder='❌ 대본 생성 실패: '+e.message+' (F12 콘솔 확인)';
     showErr('대본 생성 실패: '+e.message);
   } finally {
     btns.forEach(b=>b.disabled=false);
@@ -1479,34 +1511,70 @@ async function generate(){
 
   // ═ 이미지 프롬프트 ═
   const styleTpl=STYLE_TEMPLATES[S.style];
-  const scene=SCENE_PROPS[S.country][S.obj]||SCENE_PROPS[S.country]['default'];
+  // 1) 먼저 SCENE_PROPS 하드코딩 시도 (빠름)
+  let scene = SCENE_PROPS[S.country][S.obj];
+  // 2) 없으면 Railway 프록시로 AI에게 실시간 생성 요청
+  if(!scene){
+    const aiScene = await getScene(S.objEn||S.obj, S.country);
+    if(aiScene && aiScene.loc){
+      scene = aiScene;
+    } else {
+      scene = SCENE_PROPS[S.country]['default'];
+    }
+  }
+  // ambient가 없는 기존 데이터는 fallback 추가
+  if(!scene.ambient){
+    scene = {
+      loc: scene.loc,
+      props: scene.props,
+      ambient: 'subtle ambient life — dust particles in light beams, fabric or paper edges faintly moving, natural environmental detail'
+    };
+  }
   const objEn=S.objEn||S.obj;
   const sizeHint = getSizeHint(S.obj);
 
   const imagePrompt = styleTpl.base+'.\n\n'+
-    'MAIN SUBJECT: a '+objEn+' with a personified face showing subtle emotion — the subject is clearly in the foreground, sharp focus, the star of the frame.\n\n'+
-    '⚠️ REAL-WORLD SCALE (CRITICAL): the '+objEn+' must be '+sizeHint+'. Do NOT make it cartoonishly oversized or shrunken relative to its surroundings. Proportions must feel like a real photograph where this object naturally sits in its real environment.\n\n'+
-    'SCENE & BACKGROUND: '+scene.loc+'. Background detail: '+scene.props+'. The background should feel lived-in and authentic — visible but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first, but the environment gives contextual richness and visual interest (the viewer should enjoy noticing the background details even though the main focus is the object).\n\n'+
-    'EXPRESSION CONTEXT: '+(S.concept==='tip'?'the object is about to explain a common mistake or helpful tip — its expression is knowing, slightly exasperated, wanting to teach the viewer':'the object is visibly annoyed at something someone did — frustrated but controlled')+'.\n\n'+
-    'FRAMING: 9:16 vertical short-form composition. No text overlays, no subtitles, no captions, no watermarks, no UI elements. Highly detailed background with realistic scale, masterpiece quality.';
+    'MAIN SUBJECT: a '+objEn+' with a personified face showing '+(S.concept==='tip'?'a knowing, slightly exasperated expression (about to teach the viewer something important)':'a visibly annoyed, frustrated expression (about to call someone out)')+'.\n\n'+
+    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-SPEECH — mouth open in active speech, eyes directly engaging the viewer, '+(S.style==='realistic'?'face leaning slightly forward, expression intense and alive (NO arms/limbs — emotion through face only)':'one small stylized arm raised mid-gesture as if making a point, the other arm at its side or gesturing, body angled slightly forward')+'. This is a FROZEN MOMENT from an active monologue — NOT a still idle pose. The viewer should immediately feel "this thing is talking to me RIGHT NOW."\n\n'+
+    '⚠️ REAL-WORLD SCALE (CRITICAL): the '+objEn+' must be '+sizeHint+'. Do NOT make it cartoonishly oversized or shrunken. Proportions must feel like a real photograph where this object naturally sits in its real environment.\n\n'+
+    '🏠 NATIVE HABITAT SCENE (CRITICAL — the object MUST be in its real native location): '+scene.loc+'.\n\n'+
+    'BACKGROUND DETAIL (rich but focused — this makes the scene feel alive): '+scene.props+'. The background feels lived-in and authentic — clearly visible and richly detailed but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first, but the environment gives strong contextual richness. The viewer should enjoy noticing the thoughtful background details (3-5 specific props visible, not empty).\n\n'+
+    'AMBIENT LIFE (subtle but present — 1-2 points of gentle environmental motion captured in the frame): '+scene.ambient+'. This ambient detail should read clearly in the still — hint at life and movement in the environment without cluttering the composition.\n\n'+
+    'FRAMING: 9:16 vertical short-form composition. The subject takes 40-55% of the frame, positioned to emphasize the speaking energy. No text overlays, no subtitles, no captions, no watermarks, no UI elements. Highly detailed background with realistic scale, cinematic depth, masterpiece quality.';
 
   // ═ 영상 프롬프트 ═
   const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
-  const scriptForVideo=scriptEN||script;
+  const scriptOriginal = script;
+  const scriptForGuide = scriptEN||script;
   const isTip=S.concept==='tip';
 
-  const videoPrompt = 'An AI short-form video: the '+objEn+' (with a subtle personified face) speaks directly to camera.\n\n'+
-    '⚠️ SCALE RULE (CRITICAL): the '+objEn+' must be '+sizeHint+'. The object must maintain its real-world proportion relative to the surrounding environment throughout the entire video — never cartoonishly oversized, never suspiciously shrunk. Every frame must look like a real scene where the object naturally lives.\n\n'+
-    'SCENE: '+scene.loc+'. '+scene.props+'. The object is the main subject in sharp focus; the surrounding environment stays visible and atmospheric but softer, so the viewer clearly sees WHERE the scene takes place. Background elements are still but detailed — they give the scene a lived-in feeling.\n\n'+
-    'DIALOGUE — the object delivers the following monologue out loud: "'+scriptForVideo+'"\n\n'+
-    'PERFORMANCE: '+(isTip
-      ? 'the object speaks like a knowing expert — measured pacing, slight exasperation early that softens into helpful advice at the end. It wants the viewer to LEARN and SAVE this video. Natural pauses between the three beats (problem → warning → solution).'
-      : 'the object vents with relatable frustration — like a friend complaining about someone who just left the room. Building emotion, natural irritation, never theatrical.')+'\n\n'+
-    'MOTION: the object has subtle idle breathing and small expressive movements synced to speech. '+(S.style==='realistic'?'No cartoon arm gestures — emotion conveyed purely through facial expression and slight body lean.':'Small stylized arm gestures matching the dialogue beats.')+' Camera stays mostly static with a very slow gentle push-in over the course of the scene.\n\n'+
-    'LIGHTING: motivated by the scene\'s natural light sources. Other objects in the background remain still and do not distract — they provide visual context and interest, not action.\n\n'+
-    'VOICE: '+voiceDesc+'. Clean dry audio recording, no room echo, no reverb tail, no background music unless ambient. Lip/mouth animation syncs naturally to the spoken words.\n\n'+
-    (S.country==='jp'?'LANGUAGE: Japanese (natural spoken Japanese, SNS short-form pacing).':'LANGUAGE: Korean (natural spoken Korean, YouTube Shorts pacing).')+'\n\n'+
-    'OUTPUT: Duration target '+(S.dur==='30'?'~30 seconds':'~10 seconds')+'. Aspect ratio 9:16 vertical. Zero on-screen text, no subtitles, no captions, no overlays, no watermarks. [Platform: Kling / Veo / Runway compatible]';
+  const videoPrompt = '🎬 IMAGE-TO-VIDEO — PRESERVE THE UPLOADED IMAGE EXACTLY\n\n'+
+    '═══════════════════════════════════════════════════════════════\n'+
+    '⚠️ THIS IS AN IMAGE-TO-VIDEO TASK, NOT TEXT-TO-VIDEO.\n'+
+    'The uploaded still image IS the video. Do NOT reinterpret it, do NOT redesign, do NOT restyle, do NOT reframe, do NOT change pose or composition. Treat the uploaded image as frame 1 and ONLY add the minimal natural motion described below. Everything else — character design, colors, lighting, camera angle, background composition, pose — stays IDENTICAL to the uploaded image.\n'+
+    '═══════════════════════════════════════════════════════════════\n\n'+
+    'SUBJECT: the exact '+objEn+' from the uploaded image. Lock character design, colors, materials, proportions, and pose to match the image exactly.\n\n'+
+    'SCENE: the exact environment from the uploaded image ('+scene.loc+'). Lock background layout, props, lighting, and camera angle — no reframing, no new props.\n\n'+
+    '🎯 CHARACTER MOTION (MINIMAL — DO NOT ADD DYNAMIC ACTION):\n'+
+    '- Lip/mouth animation synced naturally to the Korean spoken words below\n'+
+    '- Subtle eye blinks and micro-expressions (brow raises, slight squints)\n'+
+    '- Very gentle idle breathing on the body\n'+
+    (S.style==='realistic'
+      ? '- NO arm/limb motion (realistic style has no arms)\n- Tiny natural head tilt variations\n'
+      : '- If arms are visible in the uploaded image, SMALL gestures only — hand returns to the pose shown in the image between gestures\n- Arms do NOT leave the pose silhouette established by the uploaded image\n')+
+    '- Camera: STATIC or extremely slow 5% push-in over the full duration. No pans, no tilts, no sudden moves.\n\n'+
+    '🌿 AMBIENT BACKGROUND LIFE (subtle but alive — this makes the scene breathe): '+scene.ambient+'. These ambient motions should be GENTLE and PERIPHERAL — they add life without stealing attention from the talking subject. DO NOT add large background action, people walking, dramatic environment changes, or anything distracting.\n\n'+
+    '❌ DO NOT ADD: dramatic action, big body movement, pose changes, scene transitions, camera cuts, zoom-outs, characters entering/leaving, large prop movement, weather changes.\n\n'+
+    'DIALOGUE — the object speaks this line out loud '+(S.country==='jp'?'in natural Japanese':'in natural Korean')+' (use these EXACT words as the spoken script, preserving all nuance, pauses, and emotional delivery):\n\n"'+scriptOriginal+'"\n\n'+
+    (scriptEN&&scriptEN!==script?'[English reference for voice/lip-sync timing only — do NOT speak English]: "'+scriptForGuide+'"\n\n':'')+
+    'PERFORMANCE TONE: '+(isTip
+      ? 'measured, knowing expert — slight exasperation softening into helpful advice. Natural pauses between beats.'
+      : 'relatable friend venting frustration — natural irritation building, never theatrical.')+'\n\n'+
+    'LIGHTING: 100% identical to the uploaded image — same direction, color temperature, shadow positions, and mood. Ambient light source motion (e.g., flicker) is allowed only if consistent with the scene.\n\n'+
+    'VOICE: '+voiceDesc+'. Clean dry audio, no room echo, no reverb tail, no background music. Lip/mouth animation syncs naturally to the '+(S.country==='jp'?'Japanese':'Korean')+' spoken words above.\n\n'+
+    'LANGUAGE: '+(S.country==='jp'?'Japanese (natural spoken Japanese, SNS short-form pacing).':'Korean (natural spoken Korean, YouTube Shorts pacing).')+'\n\n'+
+    'OUTPUT: Duration target '+(S.dur==='30'?'~30 seconds':'~10 seconds')+'. Aspect ratio 9:16 vertical. Zero on-screen text, no subtitles, no captions, no overlays, no watermarks.\n\n'+
+    '⚠️ FINAL REMINDER: The uploaded image IS the scene. Character moves only via lip sync + blinks + breathing. Background has small ambient motion only (as described). Reject the urge to add "cinematic action." [Platform: Kling / Veo / Runway — Image-to-Video mode REQUIRED]';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -1661,41 +1729,63 @@ function getApiKey(){
   }
 }
 
+// ═══ Railway 프록시 설정 ═══
+const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+
 async function callAI(system,user){
   const apiKey = getApiKey();
   if(!apiKey){throw new Error('API 키 없음');}
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const res = await fetch(PROXY_URL + '/openai/chat', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + apiKey
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      apiKey: apiKey,
+      system: system,
+      user: user,
       max_tokens: 2000,
-      temperature: 0.95,
-      presence_penalty: 0.3,
-      frequency_penalty: 0.3,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user }
-      ]
+      temperature: 0.95
     })
   });
 
   if(!res.ok){
     const err = await res.json().catch(()=>({}));
-    const msg = (err && err.error && err.error.message) || ('OpenAI API 오류 ' + res.status);
+    const msg = (err && err.error) || ('프록시 API 오류 ' + res.status);
     throw new Error(msg);
   }
 
   const d = await res.json();
-  // OpenAI 응답 형식: data.choices[0].message.content
-  if(d.choices && d.choices.length > 0 && d.choices[0].message){
-    return d.choices[0].message.content || '';
+  return d.text || '';
+}
+
+// ═══ 사물 맞춤 배경 + ambient 동적 생성 ═══
+async function getScene(object, country){
+  const apiKey = getApiKey();
+  if(!apiKey) return null;
+
+  try {
+    const res = await fetch(PROXY_URL + '/openai/scene', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        object: object,
+        country: country || 'kr'
+      })
+    });
+    if(!res.ok) return null;
+    const d = await res.json();
+    return {
+      loc: d.loc || '',
+      props: d.props || '',
+      ambient: d.ambient || ''
+    };
+  } catch(e){
+    console.error('[getScene] error:', e);
+    return null;
   }
-  return '';
 }
 
 function act(id){const e=document.getElementById(id);if(e){e.classList.add('active');e.classList.remove('done');}}
@@ -1762,3 +1852,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
