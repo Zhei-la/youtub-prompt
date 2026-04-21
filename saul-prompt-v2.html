@@ -1563,10 +1563,10 @@ async function generate(){
 
   const imagePrompt = styleTpl.base+'.\n\n'+
     'MAIN SUBJECT: a '+objEn+' with a personified face showing '+(S.concept==='tip'?'a knowing, slightly exasperated expression (about to teach the viewer something important)':'a visibly annoyed, frustrated expression (about to call someone out)')+'.\n\n'+
-    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-SPEECH — mouth open in active speech, eyes directly engaging the viewer, '+(S.style==='realistic'?'face leaning slightly forward, expression intense and alive (NO arms/limbs — emotion through face only)':'one small stylized arm raised mid-gesture as if making a point, the other arm at its side or gesturing, body angled slightly forward')+'. This is a FROZEN MOMENT from an active monologue — NOT a still idle pose. The viewer should immediately feel "this thing is talking to me RIGHT NOW."\n\n'+
+    '🎯 ACTIVE SPEAKING POSE (CRITICAL): capture the object CAPTURED MID-SPEECH — mouth wide open in active urgent speech (visible teeth/inner mouth), eyes directly engaging the viewer with intense focus, '+(S.style==='realistic'?'face leaning forward dramatically, expression fully alive and animated (NO arms/limbs — emotion through face and slight body tilt only)':'TWO stylized arms breaking free from the object body — ONE arm raised high in urgent gesture (pointing up or outward as if emphasizing a point), OTHER arm extended outward mid-motion (waving or shaking in emphasis). Arms should feel ALIVE and mid-action, not just decorative. The body itself should feel slightly tilted/leaning toward the viewer as if physically coming forward to speak')+'. This is a FROZEN MOMENT from an active monologue — the object looks like it is POPPING OUT of the scene to warn/teach the viewer. Viewer should feel the object is ALIVE and URGENT right now.\n\n'+
     '⚠️ REAL-WORLD SCALE (CRITICAL): the '+objEn+' must be '+sizeHint+'. Do NOT make it cartoonishly oversized or shrunken. Proportions must feel like a real photograph where this object naturally sits in its real environment.\n\n'+
-    '🏠 NATIVE HABITAT SCENE (CRITICAL — the object MUST be in its real native location): '+scene.loc+'.\n\n'+
-    'BACKGROUND DETAIL (rich but focused — this makes the scene feel alive): '+scene.props+'. The background feels lived-in and authentic — clearly visible and richly detailed but slightly softer focus than the subject, so the viewer\'s eye goes to the talking object first, but the environment gives strong contextual richness. The viewer should enjoy noticing the thoughtful background details (3-5 specific props visible, not empty).\n\n'+
+    '🏠 NATIVE HABITAT SCENE (CRITICAL — the object MUST be in its real native location, NOT on an empty blank background): '+scene.loc+'.\n\n'+
+    'BACKGROUND DETAIL (MUST be rich and lived-in — the #1 mistake to avoid is a minimalist/empty background): '+scene.props+'. Fill the scene with 5-8 specific, realistic props that belong in this location (tools, ingredients, containers, accessories, dishware, storage, window, lighting fixtures, decorations). The environment should feel authentic and busy — like a real home/office that people actually use daily. Background is slightly softer focus than the subject, but still visually rich enough that the viewer enjoys noticing details. AVOID: clean empty backgrounds, minimalist studio shots, negative space.\n\n'+
     'AMBIENT LIFE (subtle but present — 1-2 points of gentle environmental motion captured in the frame): '+scene.ambient+'. This ambient detail should read clearly in the still — hint at life and movement in the environment without cluttering the composition.\n\n'+
     'FRAMING: 9:16 vertical short-form composition. The subject takes 40-55% of the frame, positioned to emphasize the speaking energy. No text overlays, no subtitles, no captions, no watermarks, no UI elements. Highly detailed background with realistic scale, cinematic depth, masterpiece quality.';
 
@@ -1576,33 +1576,39 @@ async function generate(){
   const scriptForGuide = scriptEN||script;
   const isTip=S.concept==='tip';
 
-  const videoPrompt = '🎬 IMAGE-TO-VIDEO — PRESERVE THE UPLOADED IMAGE EXACTLY\n\n'+
-    '═══════════════════════════════════════════════════════════════\n'+
-    '⚠️ THIS IS AN IMAGE-TO-VIDEO TASK, NOT TEXT-TO-VIDEO.\n'+
-    'The uploaded still image IS the video. Do NOT reinterpret it, do NOT redesign, do NOT restyle, do NOT reframe, do NOT change pose or composition. Treat the uploaded image as frame 1 and ONLY add the minimal natural motion described below. Everything else — character design, colors, lighting, camera angle, background composition, pose — stays IDENTICAL to the uploaded image.\n'+
-    '═══════════════════════════════════════════════════════════════\n\n'+
-    'SUBJECT: the exact '+objEn+' from the uploaded image. Lock character design, colors, materials, proportions, and pose to match the image exactly.\n\n'+
-    'SCENE: the exact environment from the uploaded image ('+scene.loc+'). Lock background layout, props, lighting, and camera angle — no reframing, no new props.\n\n'+
-    '🎯 CHARACTER MOTION (MINIMAL — DO NOT ADD DYNAMIC ACTION):\n'+
-    '- Lip/mouth animation synced naturally to the Korean spoken words below\n'+
-    '- Subtle eye blinks and micro-expressions (brow raises, slight squints)\n'+
-    '- Very gentle idle breathing on the body\n'+
-    (S.style==='realistic'
-      ? '- NO arm/limb motion (realistic style has no arms)\n- Tiny natural head tilt variations\n'
-      : '- If arms are visible in the uploaded image, SMALL gestures only — hand returns to the pose shown in the image between gestures\n- Arms do NOT leave the pose silhouette established by the uploaded image\n')+
-    '- Camera: STATIC or extremely slow 5% push-in over the full duration. No pans, no tilts, no sudden moves.\n\n'+
-    '🌿 AMBIENT BACKGROUND LIFE (subtle but alive — this makes the scene breathe): '+scene.ambient+'. These ambient motions should be GENTLE and PERIPHERAL — they add life without stealing attention from the talking subject. DO NOT add large background action, people walking, dramatic environment changes, or anything distracting.\n\n'+
-    '❌ DO NOT ADD: dramatic action, big body movement, pose changes, scene transitions, camera cuts, zoom-outs, characters entering/leaving, large prop movement, weather changes.\n\n'+
-    'DIALOGUE — the object speaks this line out loud '+(S.country==='jp'?'in natural Japanese':'in natural Korean')+' (use these EXACT words as the spoken script, preserving all nuance, pauses, and emotional delivery):\n\n"'+scriptOriginal+'"\n\n'+
-    (scriptEN&&scriptEN!==script?'[English reference for voice/lip-sync timing only — do NOT speak English]: "'+scriptForGuide+'"\n\n':'')+
-    'PERFORMANCE TONE: '+(isTip
-      ? 'measured, knowing expert — slight exasperation softening into helpful advice. Natural pauses between beats.'
-      : 'relatable friend venting frustration — natural irritation building, never theatrical.')+'\n\n'+
-    'LIGHTING: 100% identical to the uploaded image — same direction, color temperature, shadow positions, and mood. Ambient light source motion (e.g., flicker) is allowed only if consistent with the scene.\n\n'+
-    'VOICE: '+voiceDesc+'. Clean dry audio, no room echo, no reverb tail, no background music. Lip/mouth animation syncs naturally to the '+(S.country==='jp'?'Japanese':'Korean')+' spoken words above.\n\n'+
-    'LANGUAGE: '+(S.country==='jp'?'Japanese (natural spoken Japanese, SNS short-form pacing).':'Korean (natural spoken Korean, YouTube Shorts pacing).')+'\n\n'+
-    'OUTPUT: Duration target '+(S.dur==='30'?'~30 seconds':'~10 seconds')+'. Aspect ratio 9:16 vertical. Zero on-screen text, no subtitles, no captions, no overlays, no watermarks.\n\n'+
-    '⚠️ FINAL REMINDER: The uploaded image IS the scene. Character moves only via lip sync + blinks + breathing. Background has small ambient motion only (as described). Reject the urge to add "cinematic action." [Platform: Kling / Veo / Runway — Image-to-Video mode REQUIRED]';
+  const videoPrompt = '🚨 CRITICAL RULES — READ FIRST, MUST OBEY:\n\n' +
+    '1. ❌ ABSOLUTELY NO TEXT ON SCREEN. NO subtitles. NO captions. NO Korean text overlays. NO English text. NO watermarks. NO logos. NO UI. NO dialogue bubbles. ZERO text of any kind anywhere in the frame. This is the #1 rule.\n\n' +
+    '2. ✅ USE THE UPLOADED IMAGE AS FRAME 1 EXACTLY. Do NOT re-imagine, re-generate, or re-compose the scene. The uploaded image IS the starting frame. Every visual element (character design, face, pose, arms, colors, lighting, background, camera angle, composition, style) must match the uploaded image with 100% fidelity. If you cannot preserve the exact visual, fail gracefully — do not make up a new scene.\n\n' +
+    '3. 🎙️ VERBATIM DIALOGUE. The Korean script below is LOCKED. Speak it WORD-FOR-WORD. Do not paraphrase. Do not translate. Do not convert to 존댓말 (polite form) if the script is in 반말 (casual). Do not add words. Do not skip words. Do not reorder words. Say EXACTLY what is written.\n\n' +
+    '═══════════════════════════════════════════════════════════════\n' +
+    '🎬 IMAGE-TO-VIDEO TASK (NOT text-to-video)\n' +
+    '═══════════════════════════════════════════════════════════════\n\n' +
+    'SUBJECT: the exact ' + objEn + ' character from the uploaded image. Match the uploaded image 1:1 (design, colors, face, expression start, arms position, body shape).\n\n' +
+    'SCENE: the exact environment from the uploaded image (' + scene.loc + '). Do NOT redesign the background. Do NOT change props. Do NOT reframe.\n\n' +
+    '🎯 MOTION (minimal, only these):\n' +
+    '- Lip sync animated precisely to the Korean words below\n' +
+    '- Natural eye blinks, brow raises, small facial micro-expressions matching the emotion\n' +
+    '- Gentle idle breathing\n' +
+    (S.style === 'realistic'
+      ? '- NO arm movement (no arms in realistic style)\n- Minimal head tilts\n'
+      : '- If arms are visible in the uploaded image, small natural gestures synced to speech beats — arms return to their position from the uploaded image between gestures. Arms NEVER leave their silhouette from the image.\n'
+    ) +
+    '- Camera: STATIC. At most a 3% gentle push-in over the whole duration. No pans, no tilts, no cuts, no zooms.\n\n' +
+    '🌿 AMBIENT BACKGROUND (subtle only): ' + scene.ambient + '. Tiny and peripheral. Must not distract from the talking subject.\n\n' +
+    '❌ DO NOT ADD: new scenes, scene transitions, new characters, big movements, dramatic camera work, text overlays, subtitles, captions, watermarks.\n\n' +
+    '═══════════════════════════════════════════════════════════════\n' +
+    '🎙️ VERBATIM SPOKEN SCRIPT (speak word-for-word in Korean):\n' +
+    '═══════════════════════════════════════════════════════════════\n\n' +
+    '"' + scriptOriginal + '"\n\n' +
+    '⚠️ The Korean words above are the FINAL spoken script. Do not modify. Do not politeify. Do not paraphrase. Speak exactly those words in that order.\n\n' +
+    (scriptEN && scriptEN !== script ? '(Optional English reference for lip-sync timing only — NEVER spoken aloud: "' + scriptForGuide + '")\n\n' : '') +
+    'PERFORMANCE: ' + (isTip
+      ? 'measured, knowing tone — like a friend giving advice with a hint of frustration. Natural pauses.'
+      : 'relatable venting — irritated friend tone, never theatrical.'
+    ) + '\n\n' +
+    'VOICE: ' + voiceDesc + '. Natural ' + (S.country === 'jp' ? 'Japanese' : 'Korean') + ' speaker. Clean dry audio, no echo, no reverb, no music. Accurate lip sync.\n\n' +
+    'LIGHTING: identical to the uploaded image.\n\n' +
+    'OUTPUT: Duration ~' + (S.dur === '30' ? '30s' : '10s') + '. 9:16 vertical. ZERO on-screen text. ZERO subtitles. ZERO captions. ZERO watermarks. [Platform: Kling / Veo / Runway — Image-to-Video mode REQUIRED, text-free output]';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -1812,6 +1818,35 @@ async function getScene(object, country){
     };
   } catch(e){
     console.error('[getScene] error:', e);
+    return null;
+  }
+}
+
+// ═══ 웹 검색 기반 정보 수집 (꿀팁/민폐 상황의 실제 정보) ═══
+async function getResearch(object, topic, country){
+  const apiKey = getApiKey();
+  if(!apiKey) return null;
+  try {
+    const res = await fetch(PROXY_URL + '/openai/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        object: object,
+        topic: topic,
+        country: country || 'kr'
+      })
+    });
+    if(!res.ok) return null;
+    const d = await res.json();
+    return {
+      reasons: d.reasons || [],
+      stats: d.stats || [],
+      common_mistakes: d.common_mistakes || [],
+      real_examples: d.real_examples || []
+    };
+  } catch(e){
+    console.error('[getResearch] error:', e);
     return null;
   }
 }
