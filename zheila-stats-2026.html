@@ -133,7 +133,6 @@ header{
     <input type="password" class="login-input" id="pwInput" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')tryLogin()">
     <button class="login-btn" onclick="tryLogin()">로그인</button>
     <div class="login-err" id="loginErr">비밀번호가 틀렸습니다.</div>
-    <div class="login-back" onclick="window.location.href='saul-prompt-v5.html'">← 메인 페이지로</div>
   </div>
 </div>
 
@@ -208,7 +207,6 @@ header{
     <div class="actions">
       <button class="action-btn" onclick="exportStats()">📥 통계 JSON 다운로드</button>
       <button class="action-btn danger" onclick="resetStats()">🗑️ 통계 초기화</button>
-      <button class="action-btn" onclick="window.location.href='saul-prompt-v5.html'">🏠 메인 페이지</button>
     </div>
   </div>
 </div>
@@ -414,4 +412,3 @@ window.addEventListener('load', ()=>{
 </script>
 </body>
 </html>
-
