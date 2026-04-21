@@ -300,24 +300,8 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="chips" id="styleChips">
     <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
     <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
-    <div class="chip" data-val="webtoon" onclick="selStyle(this)">📱 웹툰</div>
-    <div class="chip" data-val="sketch" onclick="selStyle(this)">✏️ 스케치</div>
-    <div class="chip" data-val="claymation" onclick="selStyle(this)">🧸 클레이메이션</div>
   </div>
   <div class="style-note" id="styleNote"></div>
-  <!-- 웹툰 전용: 배경 참조 + 스토리 이어쓰기 -->
-  <div id="webtoonExtras" style="display:none;margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border);">
-    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:0.5px;">📱 웹툰 전용 옵션</div>
-    <div style="font-size:12px;margin-bottom:12px;">
-      <div style="margin-bottom:6px;color:var(--sub);">🏠 이전 배경 유지 (여러 사물이 같은 집에서 대화)</div>
-      <textarea id="webtoonBgRef" rows="2" placeholder="직전 영상의 배경 설명을 붙여넣어주세요. 예) 자취방 거실, 왼쪽에 소파, 중앙에 작은 TV 테이블, 오른쪽 창문에 연베이지 커튼, 모노스테라 화분..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
-    </div>
-    <div style="font-size:12px;">
-      <div style="margin-bottom:6px;color:var(--sub);">💬 이전 대사에서 이어쓰기</div>
-      <textarea id="webtoonPrevScript" rows="2" placeholder="이전 사물이 한 대사를 붙여넣어주세요. 예) 에어컨: '야 선풍기, 왜 내 앞에서 돌고 있냐?' — 이 대사를 받아서 자연스럽게 반응/대답하는 대본이 생성됩니다" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
-    </div>
-    <div style="font-size:10px;color:var(--muted);margin-top:8px;">💡 이 두 옵션을 채우면 <b>같은 배경 + 이어지는 스토리</b>로 생성됩니다. 여러 사물이 대화하는 영상 편집에 최적!</div>
-  </div>
 </div>
 
 <!-- S5: 대본 -->
@@ -804,13 +788,7 @@ const STYLE_TEMPLATES = {
   pixar:{note:'🎬 픽사 3D — 사물 전체 보이게, 팔다리 달린 캐릭터, 따뜻한 조명',
     base:'Pixar-style 3D animated character, the entire object is clearly visible in the frame from top to bottom with cartoon face embedded on its surface and two slender stylized arms extending from its sides, warm volumetric studio lighting, vibrant saturated colors, cinematic composition showing the whole character in its environment, highly detailed Pixar render quality, masterpiece quality'},
   anime:{note:'🌸 애니 — 셀 쉐이딩, 큰 눈, 감정 과장',
-    base:'Studio Ghibli style anime illustration, clean hand-drawn linework, cel shading, the object has expressive anime eyes and small stylized arms, atmospheric background'},
-  webtoon:{note:'📱 웹툰 — 손그림 라인, 사물 표면에 얼굴이 스케치된 듯한 스타일',
-    base:'Korean webtoon hand-drawn illustration style, a realistic sketched human face rendered directly onto the object surface with visible pencil and ink linework (furrowed brow, serious eyes, defined nose, pursed lips), cross-hatching and rough shading details, the face features look hand-drawn on the object rather than being cartoonish, slightly exaggerated expression but maintained realistic proportions, thin stylized arms sketched in matching line art coming out of the object sides, warm paper-like texture on the background, slightly imperfect wobbly lines adding hand-drawn charm, muted natural color palette with soft accent colors'},
-  sketch:{note:'✏️ 스케치 — 연필/잉크 손그림 느낌',
-    base:'hand-drawn pencil and ink sketch animation style, rough expressive linework, visible cross-hatching, warm paper texture, slightly wobbly boiling lines'},
-  claymation:{note:'🧸 클레이메이션 — 손으로 만든 점토 느낌, Laika 스튜디오 풍',
-    base:'stop-motion claymation style, handcrafted clay character with visible fingerprint marks on the surface, short stubby clay arms, warm studio lighting, Laika Animation quality, tactile physical aesthetic'}
+    base:'Studio Ghibli style anime illustration, clean hand-drawn linework, cel shading, the object has expressive anime eyes and small stylized arms, atmospheric background'}
 };
 
 // ═══ 배경 상황별 소품 매핑 (이미지 프롬프트 디테일 강화용) ═══
@@ -949,17 +927,11 @@ const VOICE_EN = {
 const DIALOGUE_TONE = {
   kr:{
     pixar:'픽사 캐릭터처럼 감정적이고 과장되지만 귀엽고 따뜻하게. 감탄사 활용.',
-    anime:'애니메이션 캐릭터처럼 아주 감정적으로. "진짜진짜!" "너무해!" 같은 강조 많이.',
-    webtoon:'한국 웹툰 말투. 밈적 요소 포함. "에휴", "진짜 어이없네", "아 좀!" 같은 구어체.',
-    sketch:'일기 쓰듯 솔직하고 담백하게. 꾸밈없는 말투.',
-    claymation:'어린이 같이 순수한 분노나 삐침. 귀여운 투정 섞어서.'
+    anime:'애니메이션 캐릭터처럼 아주 감정적으로. "진짜진짜!" "너무해!" 같은 강조 많이.'
   },
   jp:{
     pixar:'ピクサーキャラのように感情豊かで大げさだが可愛く温かく。感嘆符多めに。',
-    anime:'アニメキャラのように感情的に。「もう！」「本当に！」「ひどいよ！」などの強調多め。ツッコミ調も混ぜて。',
-    webtoon:'日本のSNS動画風のテンポ。「えっ？」「マジで？」「ねぇちょっと〜」など日常的な口語。オチつきで。',
-    sketch:'日記のように素直で飾らない口調。',
-    claymation:'子供のように純粋な怒りや拗ね。可愛い愚痴を交えて。'
+    anime:'アニメキャラのように感情的に。「もう！」「本当に！」「ひどいよ！」などの強調多め。ツッコミ調も混ぜて。'
   }
 };
 
@@ -1098,11 +1070,6 @@ function selStyle(el){
   const note=document.getElementById('styleNote');
   note.textContent=STYLE_TEMPLATES[S.style].note;
   note.style.display='block';
-  // 웹툰 스타일일 때만 추가 옵션 표시
-  const extras=document.getElementById('webtoonExtras');
-  if(extras){
-    extras.style.display = (S.style==='webtoon') ? 'block' : 'none';
-  }
   done('s3');act('s4');
   updateSummary();
 }
