@@ -254,8 +254,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="chips" id="styleChips">
     <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
     <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
-    <div class="chip" data-val="comic" onclick="selStyle(this)">💥 코믹 만화</div>
-    <div class="chip" data-val="claymation" onclick="selStyle(this)">🧸 클레이메이션</div>
   </div>
   <div class="style-note" id="styleNote"></div>
 </div>
@@ -439,9 +437,7 @@ function getAmbient(cat){return AMBIENT_BY_CAT[cat]||'subtle ambient motion — 
 
 const STYLE_PROMPTS = {
   pixar:{note:'🎬 픽사 3D',base:'Pixar-style 3D animation, highly expressive cartoon face on the object, two slim stylized arms emerging naturally from either side, warm volumetric studio lighting, vibrant colors, cinematic illumination, Pixar-quality render'},
-  anime:{note:'🌸 애니',base:'Studio Ghibli inspired anime illustration, clean hand-drawn ink linework, cel shading, expressive anime eyes and small stylized arms, atmospheric anime background'},
-  comic:{note:'💥 코믹',base:'bold comic book style, thick black ink outlines, halftone dot shading, high contrast flat saturated colors, dynamic action lines, Marvel panel pop-art energy'},
-  claymation:{note:'🧸 클레이',base:'stop-motion claymation style, handcrafted clay character with visible fingerprint marks, short stubby clay arms, warm studio lighting, Laika Animation tactile aesthetic'}
+  anime:{note:'🌸 애니',base:'Studio Ghibli inspired anime illustration, clean hand-drawn ink linework, cel shading, expressive anime eyes and small stylized arms, atmospheric anime background'}
 };
 
 const MOOD_MAP = {
@@ -459,21 +455,16 @@ const MOOD_MAP = {
   chibi_rage:'super-deformed chibi rage, huge sweat drops, cross vein pop, huge angry eyes',
   spark_eye:'eyes sparking with electricity, steam rising from head',
   dramatic_wind:'dramatic hair flowing backward, eyes glowing white with power',
-  cute_angry:'puffed cheeks, tiny fists raised, adorable fury',
-  clay_squash:'clay face squashed, mouth stretched wide, brows mashed downward',
-  clay_wobble:'head trembling with anger, clay features flexing'
+  cute_angry:'puffed cheeks, tiny fists raised, adorable fury'
 };
 const STYLE_MOODS = {
   pixar:['angry','furious','scolding','crying_angry','chibi_rage','dramatic_wind'],
-  anime:['chibi_rage','spark_eye','dramatic_wind','cute_angry','furious','crying_angry'],
-  comic:['angry','furious','chibi_rage','dramatic_wind','scolding','threatening'],
-  claymation:['clay_squash','clay_wobble','angry','furious','scolding','cute_angry']
+  anime:['chibi_rage','spark_eye','dramatic_wind','cute_angry','furious','crying_angry']
 };
 const MOOD_LABELS = {
   angry:'😤 분노',furious:'🤬 격분',annoyed:'😒 짜증',scolding:'☝️ 훈계',threatening:'😈 위협',crying_angry:'😭 울분',
   suppressed:'🥶 억누른 분노',disappointed:'😞 깊은 실망',cold_rage:'🧊 냉정한 분노',breaking_point:'💥 한계폭발',righteous:'⚖️ 정의로운 분노',
-  chibi_rage:'👹 SD분노',spark_eye:'⚡ 눈에서 번개',dramatic_wind:'🌪️ 드라마틱',cute_angry:'🥺 귀엽지만 화남',
-  clay_squash:'🧱 클레이 찌그러짐',clay_wobble:'🫨 클레이 떨림'
+  chibi_rage:'👹 SD분노',spark_eye:'⚡ 눈에서 번개',dramatic_wind:'🌪️ 드라마틱',cute_angry:'🥺 귀엽지만 화남'
 };
 
 const TOPICS = [
@@ -508,9 +499,7 @@ const TOPICS = [
 
 const STYLE_DIALOGUE_TONE = {
   pixar:'과장되고 감정적이지만 귀엽고 따뜻한 픽사 캐릭터 톤',
-  anime:'애니 캐릭터처럼 아주 감정적이고 드라마틱, 감탄사 강조',
-  comic:'만화 말풍선 느낌. 굵고 강한 짧은 문장에 임팩트',
-  claymation:'어설프지만 귀여운 순수한 분노'
+  anime:'애니 캐릭터처럼 아주 감정적이고 드라마틱, 감탄사 강조'
 };
 
 // ═══ STATE ═══
