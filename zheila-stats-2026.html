@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>관리자 · 쇼츠 3D 프롬프트 생성기</title>
+<title>관리자 · 제일라 프롬프트 도구</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a0a;--surface:#111;--card:#1a1a1a;
   --border:#2a2a2a;--border2:#3a3a3a;
   --text:#f0f0f0;--muted:#888;--sub:#aaa;
-  --accent:#22c55e;--warn:#f59e0b;--red:#dc2626;--blue:#3b82f6;
+  --accent:#22c55e;--accent2:#16a34a;
+  --warn:#f59e0b;--red:#dc2626;--blue:#3b82f6;--purple:#a855f7;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
@@ -20,109 +21,38 @@ body{
 }
 
 /* Login */
-.login-wrap{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
-}
-.login-box{
-  background:var(--card);border:1px solid var(--border);border-radius:14px;
-  padding:40px 32px;max-width:380px;width:100%;text-align:center;
-}
+.login-wrap{ min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px; }
+.login-box{ background:var(--card);border:1px solid var(--border);border-radius:14px; padding:40px 32px;max-width:380px;width:100%;text-align:center; }
 .login-icon{font-size:42px;margin-bottom:12px;}
 .login-title{font-size:22px;font-weight:900;margin-bottom:4px;}
 .login-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
-.login-input{
-  width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;
-  color:var(--text);font-size:16px;padding:12px 16px;outline:none;text-align:center;
-  letter-spacing:3px;font-family:monospace;margin-bottom:12px;
-}
+.login-input{ width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px; color:var(--text);font-size:16px;padding:12px 16px;outline:none;text-align:center; letter-spacing:3px;font-family:monospace;margin-bottom:12px; }
 .login-input:focus{border-color:var(--accent);}
-.login-btn{
-  width:100%;padding:13px;border:none;border-radius:8px;
-  background:var(--accent);color:#000;font-size:15px;font-weight:700;cursor:pointer;
-  font-family:inherit;transition:opacity 0.2s;
-}
+.login-btn{ width:100%;padding:13px;border:none;border-radius:8px; background:var(--accent);color:#000;font-size:15px;font-weight:700;cursor:pointer; font-family:inherit;transition:opacity 0.2s; }
 .login-btn:hover{opacity:0.85;}
 .login-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
-.login-back{font-size:11px;color:var(--muted);cursor:pointer;margin-top:16px;text-decoration:underline;}
 
 /* Dashboard */
 .dashboard{display:none;padding:24px;}
 .dashboard.show{display:block;}
 header{
-  max-width:1000px;margin:0 auto 28px;display:flex;justify-content:space-between;align-items:center;
-  padding-bottom:16px;border-bottom:1px solid var(--border);
+  max-width:1100px;margin:0 auto 28px;display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;
 }
 .header-title{font-size:20px;font-weight:900;}
 .header-title small{font-size:11px;color:var(--muted);font-weight:400;margin-left:8px;letter-spacing:1px;}
-.logout-btn{
+.header-actions{display:flex;gap:8px;align-items:center;}
+.refresh-btn,.logout-btn{
   padding:7px 14px;border-radius:6px;border:1px solid var(--border2);
   background:transparent;color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;
 }
+.refresh-btn:hover{background:var(--accent);color:#000;border-color:var(--accent);}
 .logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red);}
 
-.container{max-width:1000px;margin:0 auto;}
+.container{max-width:1100px;margin:0 auto;}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
-.stat-card{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;
-}
-.stat-label{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
-.stat-value{font-size:32px;font-weight:900;color:var(--accent);line-height:1;}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:6px;}
-
-.section{margin-bottom:28px;}
-.section-title{
-  font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  margin-bottom:12px;color:var(--sub);
-}
-
-.bar-chart{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;}
-.bar-label{flex:0 0 130px;color:var(--sub);}
-.bar-wrap{flex:1;background:var(--surface);border-radius:4px;height:22px;overflow:hidden;position:relative;}
-.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#16a34a);border-radius:4px;transition:width 0.4s;}
-.bar-count{flex:0 0 50px;text-align:right;font-weight:700;color:var(--text);}
-
-.daily-chart{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;
-  display:flex;align-items:flex-end;gap:4px;height:180px;overflow-x:auto;
-}
-.day-bar{
-  flex:0 0 32px;background:var(--accent);border-radius:3px 3px 0 0;
-  position:relative;min-height:3px;transition:all 0.3s;
-  display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
-}
-.day-bar:hover{background:#16a34a;}
-.day-bar-label{
-  position:absolute;bottom:-22px;font-size:9px;color:var(--muted);
-  white-space:nowrap;transform:rotate(-45deg);transform-origin:center;
-}
-.day-bar-count{position:absolute;top:-18px;font-size:10px;color:var(--sub);font-weight:700;}
-
-.table{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-.table-row{display:flex;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;align-items:center;}
-.table-row:last-child{border-bottom:none;}
-.table-row .rank{flex:0 0 32px;color:var(--muted);font-weight:700;}
-.table-row .name{flex:1;color:var(--text);}
-.table-row .count{flex:0 0 60px;text-align:right;font-weight:700;color:var(--accent);}
-
-.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
-.action-btn{
-  padding:10px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;
-  color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;font-weight:700;
-}
-.action-btn:hover{background:var(--surface);color:var(--text);}
-.action-btn.danger:hover{background:var(--red);color:#fff;border-color:var(--red);}
-
-.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
-
-.warn-banner{
-  background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);
-  border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:var(--warn);
-}
-.quick-links{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px;
-}
+/* Quick links */
+.quick-links{ display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px; }
 .quick-link{
   display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:14px;
   text-decoration:none;color:var(--text);border:1px solid var(--border);
@@ -134,14 +64,83 @@ header{
 .quick-link-bmeme{background:linear-gradient(135deg,#7c2d9220,#a21caf10);border-color:rgba(217,70,239,0.3);}
 .quick-link-instatoon{background:linear-gradient(135deg,#78350f20,#d9770610);border-color:rgba(245,158,11,0.3);}
 .quick-link-charanim{background:linear-gradient(135deg,#064e3b20,#05966910);border-color:rgba(16,185,129,0.3);}
-.ql-badge-new{
-  display:inline-block;background:var(--accent);color:#000;font-size:9px;font-weight:900;
-  padding:2px 6px;border-radius:4px;margin-left:6px;letter-spacing:1px;vertical-align:middle;
-}
+.ql-badge-new{ display:inline-block;background:var(--accent);color:#000;font-size:9px;font-weight:900; padding:2px 6px;border-radius:4px;margin-left:6px;letter-spacing:1px;vertical-align:middle; }
 .ql-icon{font-size:32px;line-height:1;}
-.ql-body{flex:1;}
+.ql-body{flex:1;min-width:0;}
 .ql-title{font-size:15px;font-weight:800;margin-bottom:3px;}
 .ql-desc{font-size:11px;color:var(--muted);}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+.sum-card{ background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px; }
+.sum-card.accent{border-color:rgba(34,197,94,0.4);background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.02));}
+.sum-card.blue{border-color:rgba(59,130,246,0.4);background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(59,130,246,0.02));}
+.sum-card.purple{border-color:rgba(168,85,247,0.4);background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(168,85,247,0.02));}
+.sum-card.warn{border-color:rgba(245,158,11,0.4);background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.02));}
+.sum-label{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.sum-value{font-size:30px;font-weight:900;line-height:1;}
+.sum-card.accent .sum-value{color:var(--accent);}
+.sum-card.blue .sum-value{color:var(--blue);}
+.sum-card.purple .sum-value{color:var(--purple);}
+.sum-card.warn .sum-value{color:var(--warn);}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+
+/* Period grid (오늘/어제/7일/30일) */
+.period-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px;}
+.period-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.period-label{font-size:11px;color:var(--muted);letter-spacing:1px;font-weight:700;margin-bottom:10px;}
+.period-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;}
+.period-row:not(:last-child){border-bottom:1px solid var(--border);}
+.period-key{color:var(--sub);}
+.period-val{font-weight:900;color:var(--text);font-size:18px;}
+
+/* Section */
+.section{margin-bottom:28px;}
+.section-title{ font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase; margin-bottom:12px;color:var(--sub); display:flex;align-items:center;justify-content:space-between;}
+.section-title small{font-size:10px;color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none;}
+
+/* Apps table */
+.apps-table{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto;}
+.apps-table table{width:100%;border-collapse:collapse;min-width:720px;}
+.apps-table th,.apps-table td{padding:12px 14px;text-align:left;font-size:13px;border-bottom:1px solid var(--border);}
+.apps-table th{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:700;background:var(--surface);}
+.apps-table tr:last-child td{border-bottom:none;}
+.apps-table td.num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+.apps-table td.num.hot{color:var(--accent);}
+.apps-table td.app-name{font-weight:700;color:var(--text);}
+.apps-table td.app-icon{width:40px;font-size:20px;text-align:center;}
+
+/* Daily chart */
+.daily-chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.daily-chart{display:flex;align-items:flex-end;gap:3px;height:200px;overflow-x:auto;padding-bottom:30px;position:relative;}
+.day-bar{
+  flex:0 0 22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  position:relative;cursor:pointer;
+}
+.day-bar-vis,.day-bar-gen{
+  width:10px;border-radius:2px 2px 0 0;transition:opacity 0.2s;min-height:1px;
+}
+.day-bar-vis{background:var(--blue);}
+.day-bar-gen{background:var(--accent);}
+.day-bar-stack{display:flex;gap:1px;align-items:flex-end;height:100%;}
+.day-bar-label{position:absolute;bottom:-22px;font-size:9px;color:var(--muted);transform:rotate(-45deg);transform-origin:top left;left:8px;}
+.day-bar:hover .day-bar-vis,.day-bar:hover .day-bar-gen{opacity:0.7;}
+.chart-legend{display:flex;gap:14px;margin-top:14px;font-size:11px;color:var(--sub);}
+.chart-legend .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle;}
+
+/* Status / loading / error */
+.status-banner{ background:var(--surface);border:1px solid var(--border); border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:12px; display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px; }
+.status-banner.error{background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.3);color:#fca5a5;}
+.status-banner.ok{color:var(--muted);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.action-btn{ padding:10px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent; color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;font-weight:700; }
+.action-btn:hover{background:var(--surface);color:var(--text);}
+.action-btn.danger:hover{background:var(--red);color:#fff;border-color:var(--red);}
 </style>
 </head>
 <body>
@@ -152,17 +151,20 @@ header{
     <div class="login-icon">⚙️</div>
     <div class="login-title">관리자 페이지</div>
     <div class="login-sub">Admin Dashboard</div>
-    <input type="password" class="login-input" id="pwInput" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')tryLogin()">
+    <input type="password" class="login-input" id="pwInput" placeholder="관리자 토큰" onkeydown="if(event.key==='Enter')tryLogin()">
     <button class="login-btn" onclick="tryLogin()">로그인</button>
-    <div class="login-err" id="loginErr">비밀번호가 틀렸습니다.</div>
+    <div class="login-err" id="loginErr">토큰이 틀렸습니다.</div>
   </div>
 </div>
 
 <!-- 대시보드 -->
 <div class="dashboard" id="dashboard">
   <header>
-    <div class="header-title">⚙️ 관리자 대시보드 <small>쇼츠 3D 프롬프트 생성기</small></div>
-    <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <div class="header-title">⚙️ 관리자 대시보드 <small>제일라 프롬프트 도구</small></div>
+    <div class="header-actions">
+      <button class="refresh-btn" onclick="loadStats()" id="refreshBtn">🔄 새로고침</button>
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
   </header>
 
   <div class="container">
@@ -200,98 +202,124 @@ header{
       <a href="character-anim-prompt.html" class="quick-link quick-link-charanim">
         <div class="ql-icon">🎬</div>
         <div class="ql-body">
-          <div class="ql-title">캐릭터 애니메이션<span class="ql-badge-new">NEW</span></div>
+          <div class="ql-title">애니메이션 프롬프트 생성기<span class="ql-badge-new">NEW</span></div>
           <div class="ql-desc">픽사 3D 사람 캐릭터 쇼츠</div>
         </div>
       </a>
     </div>
 
-    <div class="warn-banner">
-      💡 이 통계는 이 브라우저에만 저장된 사용 기록입니다. 다른 브라우저/기기의 통계는 여기서 볼 수 없어요 (localStorage 기반). 향후 서버 기반 통계가 필요하면 Railway 백엔드 연결 필요.
+    <!-- 상태 배너 -->
+    <div class="status-banner ok" id="statusBanner">
+      <div><span class="spinner"></span>서버에서 통계 불러오는 중...</div>
     </div>
 
-    <!-- 핵심 통계 -->
-    <div class="grid">
-      <div class="stat-card">
-        <div class="stat-label">총 생성 횟수</div>
-        <div class="stat-value" id="totalGen">-</div>
-        <div class="stat-sub" id="lastGen">아직 없음</div>
+    <!-- 전체 요약 -->
+    <div class="summary-grid">
+      <div class="sum-card purple">
+        <div class="sum-label">총 고유 방문자</div>
+        <div class="sum-value" id="totalUniqueVisitors">-</div>
+        <div class="sum-sub">서로 다른 IP 기준</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">총 방문 횟수</div>
-        <div class="stat-value" id="totalVis">-</div>
-        <div class="stat-sub" id="firstVis">첫 방문: -</div>
+      <div class="sum-card blue">
+        <div class="sum-label">총 방문 횟수</div>
+        <div class="sum-value" id="totalVisits">-</div>
+        <div class="sum-sub">중복 포함 모든 방문</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">오늘 생성</div>
-        <div class="stat-value" id="todayGen">-</div>
-        <div class="stat-sub">이번 브라우저 기준</div>
+      <div class="sum-card accent">
+        <div class="sum-label">총 생성 횟수</div>
+        <div class="sum-value" id="totalGenerates">-</div>
+        <div class="sum-sub">"🔥 프롬프트 생성" 클릭</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">이번 주 생성</div>
-        <div class="stat-value" id="weekGen">-</div>
-        <div class="stat-sub">최근 7일</div>
+      <div class="sum-card warn">
+        <div class="sum-label">등록된 앱</div>
+        <div class="sum-value" id="totalApps">-</div>
+        <div class="sum-sub">트래킹 활성 앱 수</div>
       </div>
     </div>
 
-    <!-- 일별 추이 -->
+    <!-- 기간별 -->
     <div class="section">
-      <div class="section-title">📅 최근 14일 생성 추이</div>
-      <div class="daily-chart" id="dailyChart"></div>
+      <div class="section-title">📅 기간별 사용량 <small>전체 앱 합산</small></div>
+      <div class="period-grid" id="periodGrid"></div>
     </div>
 
-    <!-- 컨셉별 -->
+    <!-- 앱별 표 -->
     <div class="section">
-      <div class="section-title">💡 컨셉별 사용량</div>
-      <div class="bar-chart" id="conceptChart"></div>
+      <div class="section-title">📊 앱별 통계 <small>방문 / 생성 / 고유 방문자 (IP)</small></div>
+      <div class="apps-table">
+        <table id="appsTable">
+          <thead>
+            <tr>
+              <th></th>
+              <th>앱</th>
+              <th class="num">총 방문</th>
+              <th class="num">총 생성</th>
+              <th class="num">고유</th>
+              <th class="num">오늘 방문</th>
+              <th class="num">오늘 생성</th>
+              <th class="num">7일 방문</th>
+              <th class="num">7일 생성</th>
+            </tr>
+          </thead>
+          <tbody id="appsTableBody">
+            <tr><td colspan="9" class="empty">로딩 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- 국가별 -->
+    <!-- 일별 차트 -->
     <div class="section">
-      <div class="section-title">🌏 국가별 사용량</div>
-      <div class="bar-chart" id="countryChart"></div>
+      <div class="section-title">📈 최근 30일 추이 <small>전체 앱 합산</small></div>
+      <div class="daily-chart-wrap">
+        <div class="daily-chart" id="dailyChart"></div>
+        <div class="chart-legend">
+          <span><span class="dot" style="background:var(--blue);"></span>방문</span>
+          <span><span class="dot" style="background:var(--accent);"></span>생성</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 스타일별 -->
-    <div class="section">
-      <div class="section-title">🎨 스타일별 사용량</div>
-      <div class="bar-chart" id="styleChart"></div>
-    </div>
-
-    <!-- Top 사물 -->
-    <div class="section">
-      <div class="section-title">🏆 가장 많이 생성된 사물 Top 10</div>
-      <div class="table" id="topObjects"></div>
-    </div>
-
-    <!-- 액션 -->
     <div class="actions">
-      <button class="action-btn" onclick="exportStats()">📥 통계 JSON 다운로드</button>
-      <button class="action-btn danger" onclick="resetStats()">🗑️ 통계 초기화</button>
+      <button class="action-btn" onclick="exportStats()">📥 JSON 다운로드</button>
+      <button class="action-btn danger" onclick="resetStats()">🗑️ 서버 통계 초기화</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══ 설정 ═══
-// 관리자 비밀번호 — 원하면 여기서 변경하세요 (소스코드에 박히니까 절대 외부에 소스 노출 X)
-const ADMIN_PASSWORD = 'zheila2026';
-const SESSION_KEY = 'admin_session_v1';
+// ════════ 설정 ════════
+const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+const SESSION_KEY = 'admin_session_token_v2';
 
-// ═══ 로그인 ═══
+let currentToken = '';
+let currentStats = null;
+
+// ════════ 로그인 ════════
 function tryLogin(){
   const pw = document.getElementById('pwInput').value.trim();
-  if(pw === ADMIN_PASSWORD){
-    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e){}
-    showDashboard();
-  } else {
-    document.getElementById('loginErr').style.display='block';
-    document.getElementById('pwInput').value='';
-  }
+  if(!pw){ return; }
+  // 서버에 토큰 검증
+  fetch(`${PROXY_URL}/admin/stats`, { headers: { 'X-Admin-Token': pw } })
+    .then(r => {
+      if(r.ok){
+        currentToken = pw;
+        try { sessionStorage.setItem(SESSION_KEY, pw); } catch(e){}
+        showDashboard();
+      } else {
+        document.getElementById('loginErr').style.display='block';
+        document.getElementById('pwInput').value='';
+      }
+    })
+    .catch(err => {
+      document.getElementById('loginErr').textContent = '서버 연결 실패: ' + err.message;
+      document.getElementById('loginErr').style.display='block';
+    });
 }
 
 function logout(){
   try { sessionStorage.removeItem(SESSION_KEY); } catch(e){}
+  currentToken = '';
   document.getElementById('dashboard').classList.remove('show');
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('pwInput').value='';
@@ -304,147 +332,150 @@ function showDashboard(){
   loadStats();
 }
 
-// ═══ 통계 로드 ═══
-function getStats(){
+// ════════ 통계 로드 ════════
+async function loadStats(){
+  const banner = document.getElementById('statusBanner');
+  banner.className = 'status-banner ok';
+  banner.innerHTML = '<div><span class="spinner"></span>서버에서 통계 불러오는 중...</div>';
+  document.getElementById('refreshBtn').disabled = true;
+
   try {
-    return JSON.parse(localStorage.getItem('usage_stats') || '{}');
-  } catch(e){ return {}; }
+    const res = await fetch(`${PROXY_URL}/admin/stats`, { headers: { 'X-Admin-Token': currentToken } });
+    if(!res.ok){
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    currentStats = data;
+    render(data);
+    const updated = new Date(data.summary.lastUpdated);
+    banner.className = 'status-banner ok';
+    banner.innerHTML = `<div>✅ 마지막 업데이트: ${formatDate(updated)}</div><div style="font-size:11px;color:var(--muted);">서버: ${PROXY_URL.replace('https://','')}</div>`;
+  } catch (err) {
+    banner.className = 'status-banner error';
+    banner.innerHTML = `❌ 통계 로드 실패: ${err.message}`;
+  } finally {
+    document.getElementById('refreshBtn').disabled = false;
+  }
 }
 
-function loadStats(){
-  const stats = getStats();
+function render(data){
+  // Summary
+  document.getElementById('totalUniqueVisitors').textContent = data.summary.totalUniqueVisitors.toLocaleString();
+  document.getElementById('totalVisits').textContent = data.summary.totalVisits.toLocaleString();
+  document.getElementById('totalGenerates').textContent = data.summary.totalGenerates.toLocaleString();
+  document.getElementById('totalApps').textContent = data.summary.totalApps;
 
-  // 핵심 숫자
-  document.getElementById('totalGen').textContent = stats.totalGenerates || 0;
-  document.getElementById('totalVis').textContent = stats.totalVisits || 0;
+  // Period grid (전체 합산)
+  const sum = (key) => data.apps.reduce((acc, a) => ({
+    visits: acc.visits + a[key].visits,
+    generates: acc.generates + a[key].generates,
+    uniqueVisitors: acc.uniqueVisitors + a[key].uniqueVisitors,
+  }), {visits:0, generates:0, uniqueVisitors:0});
 
-  if(stats.lastGenerate){
-    const d = new Date(stats.lastGenerate);
-    document.getElementById('lastGen').textContent = '마지막: ' + formatDate(d);
-  }
-
-  if(stats.firstVisit){
-    const d = new Date(stats.firstVisit);
-    document.getElementById('firstVis').textContent = '첫 방문: ' + formatDate(d);
-  }
-
-  // 오늘 / 이번주
-  const today = new Date().toISOString().split('T')[0];
-  const daily = stats.daily || {};
-  document.getElementById('todayGen').textContent = daily[today] || 0;
-
-  let weekSum = 0;
-  for(let i=0; i<7; i++){
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const k = d.toISOString().split('T')[0];
-    weekSum += (daily[k] || 0);
-  }
-  document.getElementById('weekGen').textContent = weekSum;
-
-  // 일별 차트 (최근 14일)
-  renderDailyChart(daily);
-
-  // 분포 차트들
-  renderBarChart('conceptChart', stats.byConcept || {}, {
-    tip: '💡 꿀팁 알려주기',
-    complaint: '😤 민폐 지적'
+  const periods = [
+    { label: '오늘', data: sum('today') },
+    { label: '어제', data: sum('yesterday') },
+    { label: '최근 7일', data: sum('last7') },
+    { label: '최근 30일', data: sum('last30') },
+  ];
+  const pg = document.getElementById('periodGrid');
+  pg.innerHTML = '';
+  periods.forEach(p => {
+    const c = document.createElement('div');
+    c.className = 'period-card';
+    c.innerHTML = `
+      <div class="period-label">${p.label}</div>
+      <div class="period-row"><span class="period-key">고유 방문자</span><span class="period-val" style="color:var(--purple);">${p.data.uniqueVisitors}</span></div>
+      <div class="period-row"><span class="period-key">방문</span><span class="period-val" style="color:var(--blue);">${p.data.visits}</span></div>
+      <div class="period-row"><span class="period-key">생성</span><span class="period-val" style="color:var(--accent);">${p.data.generates}</span></div>
+    `;
+    pg.appendChild(c);
   });
 
-  renderBarChart('countryChart', stats.byCountry || {}, {
-    kr: '🇰🇷 한국',
-    jp: '🇯🇵 일본'
-  });
+  // Apps table
+  const tbody = document.getElementById('appsTableBody');
+  tbody.innerHTML = '';
+  if (!data.apps.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">아직 트래킹된 데이터가 없습니다. 앱에 접속해보세요.</td></tr>';
+  } else {
+    // 총 생성 많은 순으로 정렬
+    data.apps.sort((a,b) => b.totalGenerates - a.totalGenerates).forEach(a => {
+      const icon = APP_ICONS[a.appId] || '📱';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="app-icon">${icon}</td>
+        <td class="app-name">${escapeHtml(a.name)}</td>
+        <td class="num">${a.totalVisits.toLocaleString()}</td>
+        <td class="num hot">${a.totalGenerates.toLocaleString()}</td>
+        <td class="num">${a.uniqueVisitors.toLocaleString()}</td>
+        <td class="num">${a.today.visits}</td>
+        <td class="num hot">${a.today.generates}</td>
+        <td class="num">${a.last7.visits}</td>
+        <td class="num hot">${a.last7.generates}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-  renderBarChart('styleChart', stats.byStyle || {}, {
-    pixar: '🎬 픽사 3D',
-    realistic: '📷 실사',
-    anime: '🌸 애니메이션',
-    webtoon: '📱 웹툰',
-    sketch: '✏️ 스케치',
-    claymation: '🧸 클레이메이션'
-  });
-
-  // Top 사물
-  renderTopObjects(stats.byObject || {});
+  // Daily chart
+  renderDailyChart(data.dailyChart);
 }
+
+const APP_ICONS = {
+  'instatoon': '🎞️',
+  'character-anim': '🎬',
+  'saul': '🏠',
+  'angry': '😤',
+  'bmeme': '🤪',
+};
 
 function renderDailyChart(daily){
   const chart = document.getElementById('dailyChart');
   chart.innerHTML = '';
-  const days = [];
-  for(let i=13; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const k = d.toISOString().split('T')[0];
-    days.push({key:k, label: (d.getMonth()+1)+'/'+d.getDate(), count: daily[k]||0});
+  if (!daily.length) {
+    chart.innerHTML = '<div class="empty" style="margin:auto;">데이터 없음</div>';
+    return;
   }
-  const max = Math.max(...days.map(d=>d.count), 1);
-  days.forEach(d=>{
+  const max = Math.max(...daily.map(d => Math.max(d.visits, d.generates)), 1);
+  daily.forEach(d => {
     const bar = document.createElement('div');
     bar.className = 'day-bar';
-    bar.style.height = ((d.count/max)*100) + '%';
-    if(d.count>0){
-      const ct = document.createElement('span');
-      ct.className = 'day-bar-count';
-      ct.textContent = d.count;
-      bar.appendChild(ct);
+    bar.title = `${d.date}\n방문: ${d.visits} (고유 ${d.uniqueVisitors})\n생성: ${d.generates}`;
+    const stack = document.createElement('div');
+    stack.className = 'day-bar-stack';
+    const v = document.createElement('div');
+    v.className = 'day-bar-vis';
+    v.style.height = ((d.visits/max)*170) + 'px';
+    const g = document.createElement('div');
+    g.className = 'day-bar-gen';
+    g.style.height = ((d.generates/max)*170) + 'px';
+    stack.appendChild(v);
+    stack.appendChild(g);
+    bar.appendChild(stack);
+    // 라벨 (3일 간격으로만)
+    const dateObj = new Date(d.date);
+    if (dateObj.getDate() % 3 === 1 || daily.indexOf(d) === daily.length - 1) {
+      const lb = document.createElement('span');
+      lb.className = 'day-bar-label';
+      lb.textContent = (dateObj.getMonth()+1)+'/'+dateObj.getDate();
+      bar.appendChild(lb);
     }
-    const lb = document.createElement('span');
-    lb.className = 'day-bar-label';
-    lb.textContent = d.label;
-    bar.appendChild(lb);
-    bar.title = d.key + ': ' + d.count + '회 생성';
     chart.appendChild(bar);
   });
 }
 
-function renderBarChart(targetId, data, labels){
-  const el = document.getElementById(targetId);
-  el.innerHTML = '';
-  const entries = Object.entries(data);
-  if(entries.length===0){
-    el.innerHTML = '<div class="empty">아직 데이터가 없습니다.</div>';
-    return;
-  }
-  const max = Math.max(...entries.map(e=>e[1]));
-  entries.sort((a,b)=>b[1]-a[1]).forEach(([key,count])=>{
-    const row = document.createElement('div');
-    row.className = 'bar-row';
-    row.innerHTML = '<div class="bar-label">' + (labels[key]||key) + '</div>'
-      + '<div class="bar-wrap"><div class="bar-fill" style="width:' + ((count/max)*100) + '%"></div></div>'
-      + '<div class="bar-count">' + count + '</div>';
-    el.appendChild(row);
-  });
+function escapeHtml(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-function renderTopObjects(data){
-  const el = document.getElementById('topObjects');
-  el.innerHTML = '';
-  const entries = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  if(entries.length===0){
-    el.innerHTML = '<div class="empty">아직 생성 기록이 없습니다.</div>';
-    return;
-  }
-  entries.forEach(([name, count], idx)=>{
-    const row = document.createElement('div');
-    row.className = 'table-row';
-    row.innerHTML = '<div class="rank">#' + (idx+1) + '</div>'
-      + '<div class="name">' + name + '</div>'
-      + '<div class="count">' + count + '회</div>';
-    el.appendChild(row);
-  });
-}
-
 function formatDate(d){
-  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
 }
 function pad(n){return n<10?'0'+n:n;}
 
-// ═══ 액션 ═══
+// ════════ 액션 ════════
 function exportStats(){
-  const stats = getStats();
-  const blob = new Blob([JSON.stringify(stats, null, 2)], {type:'application/json'});
+  if(!currentStats){ alert('통계를 먼저 로드하세요.'); return; }
+  const blob = new Blob([JSON.stringify(currentStats, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -455,18 +486,33 @@ function exportStats(){
   URL.revokeObjectURL(url);
 }
 
-function resetStats(){
-  if(!confirm('정말로 모든 통계를 초기화할까요? 복구할 수 없습니다.')) return;
-  try { localStorage.removeItem('usage_stats'); } catch(e){}
-  loadStats();
-  alert('통계가 초기화되었습니다.');
+async function resetStats(){
+  if(!confirm('서버의 모든 통계를 초기화할까요? 모든 유저 데이터가 사라지고 복구할 수 없습니다!')) return;
+  if(!confirm('정말로요? 한 번 더 확인합니다.')) return;
+  try {
+    const r = await fetch(`${PROXY_URL}/admin/reset`, { method:'POST', headers:{'X-Admin-Token':currentToken} });
+    if(r.ok){
+      alert('초기화 완료');
+      loadStats();
+    } else {
+      alert('실패: ' + r.status);
+    }
+  } catch(e) { alert('에러: '+e.message); }
 }
 
-// ═══ 초기화 ═══
+// ════════ 초기화 ════════
 window.addEventListener('load', ()=>{
   try {
-    if(sessionStorage.getItem(SESSION_KEY) === '1'){
-      showDashboard();
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if(saved){
+      // 토큰 검증 후 자동 로그인
+      currentToken = saved;
+      fetch(`${PROXY_URL}/admin/stats`, { headers: { 'X-Admin-Token': saved } })
+        .then(r => {
+          if(r.ok) showDashboard();
+          else { sessionStorage.removeItem(SESSION_KEY); }
+        })
+        .catch(()=>{});
     }
   } catch(e){}
 });
