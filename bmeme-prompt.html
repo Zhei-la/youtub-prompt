@@ -1956,11 +1956,37 @@ async function getScene(object, country){
     return {
       loc: d.loc || '',
       props: d.props || '',
-      ambient: d.ambient || ''
+      ambient: d.ambient || '',
+      motion: d.motion || ''
     };
   } catch(e){
     console.error('[getScene] error:', e);
     return null;
+  }
+}
+
+// 사물별 작동/주변 모션 전용 AI 호출 (FUNCTION_MOTION 매칭 없을 때 fallback)
+async function getMotionAI(object){
+  const apiKey = getApiKey();
+  if(!apiKey) return '';
+  try {
+    const res = await fetch(PROXY_URL + '/openai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        system: 'You are a visual motion designer for short-form video. Given any object, describe in ONE English sentence the most visually-satisfying motion that would happen around or from this specific object. Output ONLY the motion sentence, no preamble, no quotes.',
+        user: 'Object: ' + object + '\n\nWhat is its visually-interesting motion?',
+        max_tokens: 150,
+        temperature: 0.7
+      })
+    });
+    if(!res.ok) return '';
+    const d = await res.json();
+    return (d.text || '').trim().replace(/^["']|["']$/g, '');
+  } catch(e){
+    console.error('[getMotionAI] error:', e);
+    return '';
   }
 }
 
