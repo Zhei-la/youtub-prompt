@@ -910,6 +910,164 @@ function getSizeHint(objKey){
 }
 
 // ═══ 사물의 자연 작동 모션 (세탁기는 돌아가고, 전자레인지는 턴테이블 돌고 등) ═══
+// ═══ 감정별 시연 수식어 (문 여는 방식, 보여주는 태도가 감정에 따라 달라짐) ═══
+const EMOTION_REVEAL_STYLE = {
+  annoyed: 'with an irritated flick — swiftly and impatiently',
+  angry: 'forcefully slamming it open — aggressively showing off',
+  furious: 'violently ripping it open — raging hard',
+  scolding: 'deliberately opening it while pointing inside — lecture mode',
+  disappointed: 'slowly and wearily opening it — resigned sigh',
+  shocked: 'suddenly opening it in disbelief — as if even the character is surprised',
+  smug: 'slowly and smugly opening it with a self-satisfied smirk — "voila" gesture',
+  tired: 'barely managing to open it — exhausted, half-hearted motion',
+  worried: 'gingerly opening it with worry — concerned reveal',
+  sassy: 'opening it with a sassy flip — attitude-filled reveal',
+  crying_angry: 'opening it while tearing up from rage — emotional reveal',
+  chibi_rage: 'violently yanking it open with chibi rage effects — cartoon explosion vibe'
+};
+
+// ═══ 사물별 "기능 시연" 매핑 — 캐릭터가 자기 기능을 직접 보여줌 ═══
+const FUNCTION_REVEAL = {
+  '🧊 냉장고': {
+    action: 'opens its own refrigerator door with one cartoon arm',
+    reveal: 'revealing the interior — shelves stacked with kimchi containers, plastic water bottles, leftover takeout boxes, a half-empty milk carton, cold white interior light spilling out, cold condensation drifting from the open door'
+  },
+  '🌀 세탁기': {
+    action: 'spins up its drum dramatically',
+    reveal: 'the drum behind the glass door visibly rotating with tumbling laundry (t-shirts, socks, towels) inside, water suds sloshing, soap bubbles pressing against the glass, the whole machine body vibrating with the spin cycle'
+  },
+  '🍚 전기밥솥': {
+    action: 'pops its own lid open',
+    reveal: 'a massive burst of steam erupting upward, fluffy white rice visible inside, the pressure valve still hissing, warm yellow interior light glowing on the rice'
+  },
+  '❄️ 에어컨': {
+    action: 'snaps its louvers wide open',
+    reveal: 'the internal fan blades spinning rapidly, cool white mist and condensation puffing out in visible waves, the front panel display lighting up with temperature numbers'
+  },
+  '🚿 샤워기': {
+    action: 'turns its own water on with a flick',
+    reveal: 'water streaming out in a powerful spray, steam rising dramatically, water droplets bouncing off the tiled wall, soap suds forming on the shower floor'
+  },
+  '🧹 청소기': {
+    action: 'activates its own suction',
+    reveal: 'the intake visibly pulling in dust particles, crumbs, hair, and small debris from the floor, motor housing vibrating, the bristle roller spinning fast at the base, LED power indicator glowing bright'
+  },
+  '🗑️ 쓰레기통': {
+    action: 'flips its lid open',
+    reveal: 'the contents inside — crumpled plastic bags, coffee cups, food wrappers, orange peels — visible inside, a faint odor shimmer rising, a tiny fly buzzing out'
+  },
+  '☕ 커피잔': {
+    action: 'tilts itself slightly to show the surface',
+    reveal: 'thick aromatic steam rising in curls, rich dark coffee visible with tiny ripples on the surface, crema foam shifting'
+  },
+  '🍜 컵라면': {
+    action: 'opens its own lid halfway',
+    reveal: 'thick noodle steam billowing out, yellow noodles tangled in broth visible inside, red pepper oil floating on the surface, tiny vegetable bits bobbing'
+  },
+  '📺 TV': {
+    action: 'turns its own screen on',
+    reveal: 'the screen lighting up with actual playing content — scrolling Netflix thumbnails, a news anchor, or a K-drama scene, screen glow casting flickering colored light onto the walls'
+  },
+  '💼 노트북': {
+    action: 'flips its own screen to show the viewer',
+    reveal: 'the display showing a cluttered desktop with open tabs, notification popups, a YouTube video playing, keyboard backlight pulsing'
+  },
+  '⌨️ 키보드': {
+    action: 'types on itself rapidly',
+    reveal: 'keys pressing down in sequence as if typing by themselves, keyboard backlight rippling in wave patterns, a holographic text preview appearing above'
+  },
+  '🖥️ 모니터': {
+    action: 'flashes its screen at the viewer',
+    reveal: 'the monitor display showing scrolling content, chat notifications popping, a video call window with multiple faces, cursor rapidly clicking through menus'
+  },
+  '🚰 싱크대': {
+    action: 'turns on its faucet',
+    reveal: 'water actively streaming from the tap, dirty dishes piling up with soap suds, sponge floating in the basin, steam hint rising from warm water'
+  },
+  '🪞 거울': {
+    action: 'reflects clearly at the viewer',
+    reveal: 'its reflective surface showing the bathroom behind with toothbrush cup, skincare bottles, condensation slowly forming on the edges revealing fingerprint smudges'
+  },
+  '⏰ 알람시계': {
+    action: 'flashes its face numbers urgently',
+    reveal: 'digital LED numbers blinking red rapidly showing the current time (07:00 AM), the alarm ring icon pulsing, the minute digits ticking visibly'
+  },
+  '🔌 충전기': {
+    action: 'shows its charging cable',
+    reveal: 'the charging cable unfurling to reveal a phone at 1% battery icon, the charging LED breathing pulse, tiny electrical sparks near the connector'
+  },
+  '🧻 화장지 롤': {
+    action: 'unspools a sheet of paper',
+    reveal: 'the toilet paper tearing along perforations as it unrolls, showing the empty cardboard tube near the end, a few sheets floating softly'
+  },
+  '🦷 칫솔': {
+    action: 'lifts its bristles to show',
+    reveal: 'toothpaste foaming at the bristle tips, tiny water droplets sliding down the handle, a squeezed toothpaste tube beside it'
+  },
+  '🥤 자판기': {
+    action: 'drops a can from its slot',
+    reveal: 'a canned drink tumbling down into the dispenser tray with a clatter, the interior LED lights cycling through colors, rows of drinks visible through the front glass'
+  },
+  '📠 팩스기': {
+    action: 'spits out a paper',
+    reveal: 'a printed page slowly emerging from the output slot, the status LED blinking green, paper feed mechanism grinding visibly'
+  },
+  '🍗 치킨': {
+    action: 'tilts its crispy exterior forward',
+    reveal: 'heat shimmer rising, oil glistening on the golden crispy skin, steam wafting upward, crispy crumbs scattering'
+  },
+  '🍺 맥주캔': {
+    action: 'pops its own tab open',
+    reveal: 'a satisfying psssht sound as foam bubbles rush up and overflow the top, cold condensation droplets cascading down the side'
+  },
+  '🍕 피자': {
+    action: 'lifts one of its slices',
+    reveal: 'cheese stretching in long gooey strings, steam rising from melted toppings, pepperoni curling slightly from the heat'
+  },
+  '🚽 변기': {
+    action: 'flushes itself',
+    reveal: 'water swirling in the bowl rapidly, the handle dipping down by itself, fresh water refilling the tank with a gurgle'
+  },
+  '🧼 비누': {
+    action: 'foams itself up',
+    reveal: 'thick bubbles forming on its surface, rising foam slowly engulfing the soap, tiny rainbow reflections on each bubble'
+  },
+  '🌷 꽃': {
+    action: 'sways its petals',
+    reveal: 'butterflies suddenly fluttering in to visit, bees hovering near the pistil, pollen puffing into the air, petals bouncing gently'
+  },
+  '🪴 화분': {
+    action: 'shakes its leaves',
+    reveal: 'leaves rustling noticeably, tiny insects fluttering around, dust particles drifting in sunbeams, water droplets shaking off the leaves'
+  },
+  '🐕 강아지': {
+    action: 'wags its tail vigorously',
+    reveal: 'tail blurring with speed, ears perking up, tongue lolling happily, paws stomping the ground excitedly'
+  },
+  '🐈 고양이': {
+    action: 'flicks its tail and blinks slowly',
+    reveal: 'tail whipping side to side, eyes squinting, whiskers twitching, paws kneading the ground'
+  },
+  '🚗 자동차': {
+    action: 'revs its engine',
+    reveal: 'exhaust billowing, headlights flashing, wheels spinning in place, hood vibrating with engine power'
+  },
+  '🚲 자전거': {
+    action: 'spins its wheels',
+    reveal: 'spokes catching light as wheels rotate, bell ringing with each revolution, chain glistening, pedals moving'
+  },
+  'default': null
+};
+
+function getFunctionReveal(objKey, mood){
+  const reveal = FUNCTION_REVEAL[objKey];
+  if(!reveal) return '';
+  const emotionStyle = EMOTION_REVEAL_STYLE[mood] || EMOTION_REVEAL_STYLE.angry;
+  return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
+}
+
+// ═══ 사물 주변 ambient 모션 ═══
+// ═══ 감정별 시연 스타일 (문 여는 방식, 보여주는 태도) ═══
 const FUNCTION_MOTION = {
   // ─── 가전 (작동 모션) ───
   '🌀 세탁기': 'the drum visibly spinning behind the glass door with tumbling laundry inside — actual washing cycle in progress with water suds visible, the machine body gently vibrating from the spin',
@@ -1746,6 +1904,7 @@ async function generate(){
 
   // 영상 프롬프트도 위에서 구한 fnMotion 재사용 (중복 호출 방지)
   const functionMotion = fnMotion;
+  const functionReveal = getFunctionReveal(S.obj, S.mood);
 
   const videoPrompt =
     'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
@@ -1754,6 +1913,7 @@ async function generate(){
     'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
     'Performance tone: '+moodData.perform+'.\n' +
     'Facial expression throughout the clip: '+moodData.face+'.\n' +
+    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' : '') +
     'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
     'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
     'Mouth opens and closes naturally in sync with the spoken words, matching the emotion.\n' +
