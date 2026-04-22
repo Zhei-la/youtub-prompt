@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🤪 병맛 사물 대화 — 프롬프트 생성기</title>
+<meta property="og:title" content="🤪 병맛 사물 대화 — 프롬프트 생성기">
+<meta property="og:description" content="사물끼리 병맛으로 티격태격 대화하는 쇼츠 프롬프트">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zhei-la.github.io/youtub-prompt/bmeme-prompt.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="🤪 병맛 사물 대화 — 프롬프트 생성기">
+<meta name="twitter:description" content="사물끼리 병맛으로 티격태격 대화하는 쇼츠 프롬프트">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -895,61 +902,73 @@ const STYLE_TEMPLATES = {
 const MOODS = {
   annoyed:{
     label:'😒 짜증남',
+    imgFace:'a neutral meme face with subtle irritation — slight eye roll, calm mouth, minimal expression',
     face:'eyebrows furrowed slightly in annoyance, lips pressed tight, eyes rolling with mild irritation',
     perform:'병맛 톤으로 짜증내기 — "아 좀ㅋㅋ", "하…", "또야?" 같은 인터넷 밈 말투. 과장된 한숨.'
   },
   angry:{
     label:'😤 화남',
+    imgFace:'a composed meme face with small tension — slight frown, serious eyes, closed mouth',
     face:'sharply furrowed brows, clenched teeth, exaggerated bulging eyes',
     perform:'병맛 톤으로 화내기 — "헐 뭐임?", "미쳤나ㅋㅋ", "아오 진심" 같은 밈 말투. 과장된 빡침.'
   },
   furious:{
     label:'🤬 격분',
+    imgFace:'a stern grounded meme expression — firm mouth, intense but controlled eyes',
     face:'extremely furrowed brows, bared teeth snarl, bulging eyes with rage lines, meme-style anger veins',
     perform:'병맛 톤 폭발 — "아ㅋㅋㅋ진짜?", "선넘었다ㄹㅇ", "띠용?!" 같은 과장 밈 말투. 폭발 직전 에너지.'
   },
   scolding:{
     label:'☝️ 훈계하는',
+    imgFace:'a composed thoughtful meme face — mild focused eyes, calm mouth',
     face:'stern meme-style frown, exaggerated pointing finger, lecture-mode eyes',
     perform:'병맛 꼰대 톤 — "자자 들어봐라", "내 말 들어라 좀", "이게 바로~" 같은 훈계조. 병맛 점잖은 척.'
   },
   disappointed:{
     label:'😞 실망한',
+    imgFace:'a subdued soft meme expression — slightly lowered eyes, gently closed mouth',
     face:'deep exhausted meme eyes, mouth downturned in disappointment, heavy sigh vibe',
     perform:'병맛 실망 톤 — "에휴…", "그럴 줄 알았다", "진짜 실망이다" 같은 체념 섞인 밈 말투.'
   },
   shocked:{
     label:'😨 당황/충격',
+    imgFace:'a neutral alert meme face — mildly raised eyebrows, calm open eyes',
     face:'eyes wide open in meme-style shock, mouth agape, eyebrows comically raised',
     perform:'병맛 충격 톤 — "헐???", "띠용!", "뭐임??", "ㅁㅊ" 같은 충격 반응. 과장된 놀람.'
   },
   smug:{
     label:'😏 잘난척',
+    imgFace:'a subtle confident meme look — slight upturned mouth corner, relaxed eyes',
     face:'one eyebrow arched high with meme smirk, half-lidded smug eyes, knowing grin',
     perform:'병맛 잘난척 톤 — "흠... 너 이거 몰랐지?", "내가 할게 말 좀", "하이루~ 이렇게 하는거야" 같은 능글 말투.'
   },
   tired:{
     label:'😩 지친/한숨',
+    imgFace:'a relaxed neutral meme face — gently closed mouth, softly settled eyes',
     face:'eyebrows sagging in exhaustion, heavy eyelids, meme-tired expression with dark circles',
     perform:'병맛 번아웃 톤 — "아 진짜ㅋㅋ", "하…", "몰라 이제", "그러든가 말든가" 같은 무기력 밈.'
   },
   worried:{
     label:'😟 걱정하는',
+    imgFace:'a gentle thoughtful meme face — eyebrows softly together, calm attentive eyes',
     face:'eyebrows pulled together in worry, mouth frowning slightly, wide concerned eyes',
     perform:'병맛 오버 걱정 톤 — "야 괜찮아???", "진심 걱정됨", "나까지 불안한데?" 같은 과한 걱정.'
   },
   sassy:{
     label:'💅 새침한',
+    imgFace:'a composed neutral meme look — slight pursed lips, confident still eyes',
     face:'pursed lips, eyes rolling with attitude, chin tilted up in meme-style sass',
     perform:'병맛 새침 톤 — "흥 나도 안 할래", "그래그래~", "아님 말고ㅋ" 같은 삐진 듯 밈.'
   },
   crying_angry:{
     label:'😭 울분',
+    imgFace:'a quiet somber meme expression — slight under-eye shading, closed calm mouth',
     face:'eyes welling up with rage tears, cheeks red, trembling mouth',
     perform:'병맛 울분 톤 — "ㅠㅠㅠ 진짜!", "아 화나서 눈물남", "내가 왜 이래야 해?" 같은 과장된 감정 폭발.'
   },
   chibi_rage:{
     label:'👹 폭발 직전',
+    imgFace:'a subtly tense meme face — firmly set mouth, focused eyes, controlled composure',
     face:'meme-style super rage with huge sweat drop, cross vein pop, gigantic angry eyes',
     perform:'병맛 폭발 직전 — "후...", "한 번만... 더...", "참는다 참아" 같은 꾹 참다 폭발 직전 밈.'
   }
@@ -1029,6 +1048,98 @@ const FUNCTION_MOTION = {
 };
 function getFunctionMotion(objKey){
   return FUNCTION_MOTION[objKey] || FUNCTION_MOTION['default'] || '';
+}
+
+// ═══ 감정별 시연 스타일 ═══
+const EMOTION_REVEAL_STYLE = {
+  annoyed: 'with an irritated flick — swiftly and impatiently',
+  angry: 'forcefully slamming it open — aggressively showing off',
+  furious: 'violently ripping it open — raging hard',
+  scolding: 'deliberately opening it while pointing inside — lecture mode',
+  disappointed: 'slowly and wearily opening it — resigned sigh',
+  shocked: 'suddenly popping it open in disbelief — as if the character itself is surprised',
+  smug: 'slowly and smugly opening it — "voila" gesture with a self-satisfied smirk',
+  tired: 'barely managing to open it — exhausted half-hearted motion',
+  worried: 'gingerly opening it with concern — worried reveal',
+  sassy: 'opening it with a sassy flip — attitude-filled motion',
+  crying_angry: 'opening it while tearing up from rage — emotional reveal',
+  chibi_rage: 'violently yanking it open — chibi cartoon rage explosion'
+};
+
+// ═══ 사물별 기능 시연 ═══
+const FUNCTION_REVEAL = {
+  '🧊 냉장고': {
+    action: 'opens ONLY the lower refrigerator door (the one WITHOUT the face) with one cartoon arm, keeping the upper freezer door with the face completely still and closed',
+    reveal: 'revealing the interior of the lower fridge compartment — shelves stacked with kimchi containers, plastic water bottles, leftover takeout, cold white interior light spilling out. The face on the upper part stays locked in place'
+  },
+  '🌀 세탁기': {
+    action: 'starts the drum spinning behind its transparent glass door (the door itself stays closed; the face on the body stays fixed)',
+    reveal: 'through the clear glass door we see the drum rotating with tumbling laundry inside, water suds sloshing. The face remains in its original position'
+  },
+  '🍚 전기밥솥': {
+    action: 'releases a massive burst of steam from the top vent (lid stays closed; the face stays fixed)',
+    reveal: 'powerful steam billowing upward from the top vent, pressure valve hissing, condensation forming around the lid edge'
+  },
+  '🧹 청소기': {
+    action: 'activates its own suction',
+    reveal: 'the intake pulling in visible dust particles, crumbs, hair from the floor, bristle roller spinning fast, LED indicator glowing'
+  },
+  '🗑️ 쓰레기통': {
+    action: 'flips its lid open (if face is on lid, rotates with it naturally; if face is on body, face stays still)',
+    reveal: 'the contents inside become visible — crumpled plastic bags, coffee cups, food wrappers piled up, a tiny fly buzzing out'
+  },
+  '☕ 커피잔': {
+    action: 'tilts itself slightly',
+    reveal: 'thick aromatic steam rising in curls, rich coffee with tiny ripples on the surface'
+  },
+  '🍜 컵라면': {
+    action: 'opens its own lid halfway',
+    reveal: 'thick noodle steam billowing out, yellow noodles tangled in broth visible inside'
+  },
+  '📺 TV': {
+    action: 'turns its own screen on',
+    reveal: 'the screen lighting up with actual playing content, screen glow casting flickering colored light on walls'
+  },
+  '💼 노트북': {
+    action: 'flips its screen open to the viewer',
+    reveal: 'the display showing a cluttered desktop with open tabs, notification popups'
+  },
+  '🚰 싱크대': {
+    action: 'turns on its faucet',
+    reveal: 'water actively streaming from the tap, dirty dishes piling up with soap suds'
+  },
+  '❄️ 에어컨': {
+    action: 'snaps its louvers wide open',
+    reveal: 'fan blades spinning rapidly, cool mist puffing out, temperature display lighting up'
+  },
+  '🚿 샤워기': {
+    action: 'turns its water on',
+    reveal: 'water streaming out in a powerful spray, steam rising, droplets bouncing off tile'
+  },
+  'default': null
+};
+
+function getFunctionReveal(objKey, mood){
+  let reveal = FUNCTION_REVEAL[objKey];
+  if(!reveal){
+    // 키워드 매칭
+    const k = objKey || '';
+    if(k.includes('냉장고')) reveal = FUNCTION_REVEAL['🧊 냉장고'];
+    else if(k.includes('세탁기')) reveal = FUNCTION_REVEAL['🌀 세탁기'];
+    else if(k.includes('밥솥')) reveal = FUNCTION_REVEAL['🍚 전기밥솥'];
+    else if(k.includes('청소기')) reveal = FUNCTION_REVEAL['🧹 청소기'];
+    else if(k.includes('쓰레기통')) reveal = FUNCTION_REVEAL['🗑️ 쓰레기통'];
+    else if(k.includes('커피')) reveal = FUNCTION_REVEAL['☕ 커피잔'];
+    else if(k.includes('라면')) reveal = FUNCTION_REVEAL['🍜 컵라면'];
+    else if(k.includes('TV')||k.includes('티비')) reveal = FUNCTION_REVEAL['📺 TV'];
+    else if(k.includes('노트북')) reveal = FUNCTION_REVEAL['💼 노트북'];
+    else if(k.includes('싱크대')) reveal = FUNCTION_REVEAL['🚰 싱크대'];
+    else if(k.includes('에어컨')) reveal = FUNCTION_REVEAL['❄️ 에어컨'];
+    else if(k.includes('샤워')) reveal = FUNCTION_REVEAL['🚿 샤워기'];
+  }
+  if(!reveal) return '';
+  const emotionStyle = EMOTION_REVEAL_STYLE[mood] || EMOTION_REVEAL_STYLE.angry;
+  return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
 }
 
 const SCENE_PROPS = {
@@ -1787,9 +1898,10 @@ async function generate(){
     ? scene.props + '. IMPORTANT: match the existing scene elements from the previous frame reference — same room, same furniture layout, same color palette, same lighting, but focus on a different corner/angle where the current object ('+objEn+') naturally lives. Think of it like another character in the same house, a different room of the same apartment.'
     : scene.props;
 
+  const moodImgFace = (S.mood && MOODS[S.mood]) ? (MOODS[S.mood].imgFace || MOODS[S.mood].face) : '';
   const moodFace = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].face : '';
-  const moodExprPart = moodFace
-    ? 'a human-like expression — ' + moodFace
+  const moodExprPart = moodImgFace
+    ? 'a human-like expression — ' + moodImgFace
     : (S.concept==='tip'
         ? 'a knowing, slightly exasperated human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer'
         : 'a visibly annoyed human-like expression — sharply furrowed eyebrows, slightly clenched teeth, exaggerated bulging cartoon eyes');
@@ -1817,6 +1929,7 @@ async function generate(){
   const functionMotion = getFunctionMotion(S.obj);
   const moodPerformEN = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].perform : '';
   const moodLabel = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].label : (isTip?'설명':'짜증');
+  const functionReveal = getFunctionReveal(S.obj, S.mood);
 
   const videoPrompt =
     'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
@@ -1828,12 +1941,20 @@ async function generate(){
     'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
     'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
     'Mouth opens and closes naturally in sync with the spoken words.\n' +
-    'Face stays as part of the object surface — NOT a separate human face. Do NOT morph the object into a human.\n' +
-    'Character remains in the same position as the uploaded image. No pose changes.\n' +
-    'Camera: static shot, maybe a 3% slow push-in. No pans, tilts, cuts, or zooms.\n' +
-    (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with '+scene.ambient+'. Keep these visible but not distracting from the talking character.\n' : 'Subtle environmental life: '+scene.ambient+'.\n') +
+    'The character stays grounded — no floating or jumping.\n' +
+    'Camera mostly static with a slight zoom-in.\n' +
     'Style: '+styleTpl.note+' — preserve the style of the uploaded image.\n' +
-    'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker. Clean dry sound — no echo, no reverb, no hollow sound, no music. No roaring, no creature sounds, no monster sounds.\n' +
+    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' +
+      '🚫 CRITICAL FACE PRESERVATION RULES (반드시 지켜야 함):\n' +
+      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. NEVER duplicate, clone, or re-generate the face anywhere else during the animation. NO second face appearing next to or above the opening part.\n' +
+      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): determine which section the face is attached to in the reference image, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
+      '3. If the face-bearing part MUST move or open, then the face moves naturally WITH that part — NEVER jumps to a new location, NEVER splits, NEVER duplicates. If the rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
+      '4. No character should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face.\n' : '') +
+    (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with '+scene.ambient+'. Keep these visible but not distracting from the talking character.\n' : 'Subtle environmental life: '+scene.ambient+'.\n') +
+    'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker.\n' +
+    'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
+    'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
+    'No roaring, no monster sounds, no creature sounds.\n' +
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
     'do NOT replace or morph into a real human face.\n' +
