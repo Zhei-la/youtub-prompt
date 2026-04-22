@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>쇼츠 3D 프롬프트 생성기 - 앵그리 에디션</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<title>🤪 병맛 사물 대화 — 프롬프트 생성기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#ffffff;--surface:#f8f8f8;--card:#f2f2f2;
@@ -25,7 +25,7 @@ body.dark{
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   background:var(--bg);color:var(--text);
-  font-family:'Noto Sans KR',sans-serif;
+  font-family:'Noto Sans KR','Noto Sans JP',sans-serif;
   min-height:100vh;transition:background 0.25s,color 0.25s;
 }
 .dark-toggle{
@@ -44,6 +44,7 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 
 .wrap{max-width:860px;margin:0 auto;padding:0 20px 100px;}
 
+/* API Key bar */
 #apiKeyBanner{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;}
 .api-row{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .api-label{font-size:11px;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
@@ -57,6 +58,7 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 .api-btn.ghost{border:1px solid var(--border);background:transparent;color:var(--muted);}
 #apiKeyStatus{font-size:11px;margin-top:5px;color:var(--muted);max-width:860px;margin-left:auto;margin-right:auto;}
 
+/* Step */
 .step{margin-bottom:26px;opacity:0.35;pointer-events:none;transition:opacity 0.3s;}
 .step.active{opacity:1;pointer-events:all;}
 .step.done{opacity:0.7;pointer-events:all;}
@@ -80,6 +82,7 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 .btn-sm:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
 .btn-sm:disabled{opacity:0.35;cursor:not-allowed;}
 
+/* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:6px;}
 .chip{
   padding:7px 12px;border-radius:6px;
@@ -93,8 +96,32 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 .chip .del{color:var(--border2);font-size:10px;}
 .chip.active .del{color:rgba(255,255,255,0.5);}
 body.dark .chip.active .del{color:rgba(0,0,0,0.5);}
-.topic-chips .chip{font-size:11px;padding:5px 10px;line-height:1.4;}
 
+.situation-chips .chip{font-size:11px;padding:5px 10px;line-height:1.4;}
+
+.country-toggle .chip{font-size:13px;padding:8px 16px;}
+
+/* Concept toggle - special big toggle */
+.concept-row{display:flex;gap:10px;flex-wrap:wrap;}
+.concept-chip{
+  flex:1;min-width:180px;padding:14px 18px;border-radius:10px;
+  border:2px solid var(--border);background:var(--chip-bg);cursor:pointer;
+  transition:all 0.2s;font-family:inherit;
+}
+.concept-chip:hover{border-color:var(--border2);}
+.concept-chip.active{border-color:var(--accent);background:var(--surface);}
+.concept-chip .c-emoji{font-size:22px;margin-bottom:4px;}
+.concept-chip .c-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.concept-chip .c-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+
+.category-group{margin-bottom:18px;}
+.cat-group-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);
+}
+.cat-group-title{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:1px;}
+
+/* Inputs */
 .input-row{display:flex;gap:8px;margin-top:10px;}
 input[type=text]{
   flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:7px;
@@ -108,6 +135,7 @@ input[type=text]:focus{border-color:var(--accent);}
 }
 .add-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
 
+/* Dialogue box */
 .dialogue-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
 .sec-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
 .dialogue-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
@@ -119,6 +147,7 @@ textarea{
 textarea:focus{border-color:var(--accent);}
 .dialogue-note{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5;}
 
+/* Summary & Gen */
 .divider{height:1px;background:var(--border);margin:24px 0;}
 .summary-bar{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
@@ -138,6 +167,7 @@ textarea:focus{border-color:var(--accent);}
 .gen-btn:hover{opacity:0.85;}
 .gen-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
+/* Results */
 .result-wrap{display:none;}
 .result-wrap.show{display:block;animation:fadeUp 0.35s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -161,16 +191,18 @@ textarea:focus{border-color:var(--accent);}
 .copy-btn.ok{border-color:var(--green)!important;color:var(--green)!important;}
 .result-text{font-size:13px;line-height:1.9;color:var(--sub);white-space:pre-wrap;word-break:break-word;}
 
+/* Style note */
 .style-note{
   font-size:11px;padding:7px 11px;border-radius:6px;
   background:var(--surface);border:1px solid var(--border);color:var(--sub);
   margin-top:8px;display:none;
 }
-.badge-real{
-  display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;
-  letter-spacing:1px;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);
-  color:var(--red);margin-left:4px;
-}
+
+/* Lang sub-tabs inside dialogue result */
+.lang-tabs{display:flex;gap:4px;margin-bottom:10px;}
+.lang-tab{padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;}
+.lang-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700;}
+
 .scene-tip{
   background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.2);
   border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.5;margin-bottom:12px;
@@ -183,8 +215,8 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="다크/라이트">🌙</button>
 
 <header>
-  <div class="logo">쇼츠 3D 프롬프트 생성기</div>
-  <div class="tagline">앵그리 에디션 · 사물 의인화 AI 영상 <span class="byline">by 제일라</span></div>
+  <div class="logo">🤪 병맛 사물 대화</div>
+  <div class="tagline">자취생 · 직장인 · 사물 의인화 AI 영상 <span class="byline">by 제일라</span></div>
 </header>
 
 <div id="apiKeyBanner">
@@ -194,96 +226,175 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
     <button class="api-btn primary" onclick="saveApiKey()">저장</button>
     <button class="api-btn ghost" onclick="clearApiKey()">삭제</button>
   </div>
-  <div id="apiKeyStatus">API 키를 입력하면 AI 대사 생성 기능이 활성화됩니다.</div>
+  <div id="apiKeyStatus">API 키를 입력하면 AI 대본 자동생성이 활성화됩니다.</div>
 </div>
 
 <div class="wrap">
 
-<div class="step active" id="s1">
+<!-- S0: 국가 -->
+<div class="step active" id="s0">
   <div class="step-hd">
-    <div class="step-num">1</div><div class="step-title">카테고리</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandom(1)">🎲 랜덤</button></div>
+    <div class="step-num">0</div>
+    <div class="step-title">🌏 타겟 국가</div>
   </div>
-  <div class="chips" id="catChips">
-    <div class="chip" data-val="food" onclick="selCat(this)">🍔 음식·음료</div>
-    <div class="chip" data-val="object" onclick="selCat(this)">📦 생활용품</div>
-    <div class="chip" data-val="electronics" onclick="selCat(this)">💻 전자제품</div>
-    <div class="chip" data-val="furniture" onclick="selCat(this)">🪑 가구·인테리어</div>
-    <div class="chip" data-val="vehicle" onclick="selCat(this)">🚗 탈것</div>
-    <div class="chip" data-val="animal" onclick="selCat(this)">🐾 동물</div>
-    <div class="chip" data-val="nature" onclick="selCat(this)">🌿 자연물</div>
-    <div class="chip" data-val="toy" onclick="selCat(this)">🧸 장난감·피규어</div>
-    <div class="chip" data-val="stationery" onclick="selCat(this)">✏️ 문구류</div>
-    <div class="chip" data-val="sports" onclick="selCat(this)">⚽ 스포츠용품</div>
-    <div class="chip" data-val="fashion" onclick="selCat(this)">👟 패션·잡화</div>
-    <div class="chip" data-val="building" onclick="selCat(this)">🏢 건물·구조물</div>
-    <div class="chip" data-val="kitchen" onclick="selCat(this)">🍳 주방용품</div>
-    <div class="chip" data-val="tool" onclick="selCat(this)">🔧 공구·장비</div>
+  <div class="chips country-toggle" id="countryChips">
+    <div class="chip active" data-val="kr" onclick="selCountry(this)">🇰🇷 한국</div>
+    <div class="chip" data-val="jp" onclick="selCountry(this)">🇯🇵 일본</div>
   </div>
 </div>
 
-<div class="step" id="s2">
+<!-- S1: 컨셉 (NEW) -->
+<div class="step active" id="s1c">
   <div class="step-hd">
-    <div class="step-num">2</div><div class="step-title">오브젝트</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandom(2)">🎲 AI 생성</button></div>
+    <div class="step-num">1</div>
+    <div class="step-title">컨셉</div>
   </div>
-  <div class="chips" id="objChips"></div>
+  <div class="concept-row">
+    <div class="concept-chip active" data-val="tip" onclick="selConcept(this)">
+      <div class="c-emoji">💡</div>
+      <div class="c-title">꿀팁 알려주는 사물</div>
+      <div class="c-desc">사물이 직접 정보/경고/해결책을 알려줌 — 저장각 유발형</div>
+    </div>
+    <div class="concept-chip" data-val="complaint" onclick="selConcept(this)">
+      <div class="c-emoji">😤</div>
+      <div class="c-title">민폐 지적하는 사물</div>
+      <div class="c-desc">잘못된 행동 하는 사람에게 사물이 훈계·잔소리 — 공감 유발형</div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: 카테고리 -->
+<div class="step active" id="s1">
+  <div class="step-hd">
+    <div class="step-num">2</div>
+    <div class="step-title">카테고리</div>
+    <div class="step-actions"><button class="btn-sm" onclick="aiRandomCat()">🎲 랜덤</button></div>
+  </div>
+  <div class="chips" id="catChips">
+    <div class="chip" data-val="home" onclick="selBmemeCat(this)">🏠 자취 생활</div>
+    <div class="chip" data-val="kitchen" onclick="selBmemeCat(this)">🍳 주방용품</div>
+    <div class="chip" data-val="food" onclick="selBmemeCat(this)">🍔 음식·음료</div>
+    <div class="chip" data-val="electronics" onclick="selBmemeCat(this)">💻 전자제품</div>
+    <div class="chip" data-val="furniture" onclick="selBmemeCat(this)">🪑 가구·인테리어</div>
+    <div class="chip" data-val="bathroom" onclick="selBmemeCat(this)">🚿 욕실용품</div>
+    <div class="chip" data-val="work" onclick="selBmemeCat(this)">💼 직장 생활</div>
+    <div class="chip" data-val="stationery" onclick="selBmemeCat(this)">✏️ 문구류</div>
+    <div class="chip" data-val="vehicle" onclick="selBmemeCat(this)">🚗 탈것</div>
+    <div class="chip" data-val="fashion" onclick="selBmemeCat(this)">👟 패션·잡화</div>
+    <div class="chip" data-val="toy" onclick="selBmemeCat(this)">🧸 장난감·피규어</div>
+    <div class="chip" data-val="sports" onclick="selBmemeCat(this)">⚽ 스포츠용품</div>
+    <div class="chip" data-val="public" onclick="selBmemeCat(this)">🚉 공공장소</div>
+    <div class="chip" data-val="animal" onclick="selBmemeCat(this)">🐾 동물</div>
+    <div class="chip" data-val="nature" onclick="selBmemeCat(this)">🌿 자연물</div>
+  </div>
+</div>
+
+<!-- S2-1: 사물 -->
+<div class="step" id="s1b">
+  <div class="step-hd">
+    <div class="step-num">2.5</div>
+    <div class="step-title">사물 선택</div>
+    <div class="step-actions"><button class="btn-sm" onclick="aiGenObjForCat()">🎲 AI 생성</button></div>
+  </div>
+  <div class="chips" id="objectGroups"></div>
   <div class="input-row">
-    <input type="text" id="objInput" placeholder="직접 입력">
+    <input type="text" id="objInput" placeholder="직접 입력: 예) 전자레인지">
     <button class="add-btn" onclick="addCustom('obj')">+</button>
   </div>
 </div>
 
+<!-- S3: 상황 -->
+<div class="step" id="s2">
+  <div class="step-hd">
+    <div class="step-num">3</div>
+    <div class="step-title">상황 선택</div>
+    <div class="step-actions"><button class="btn-sm" onclick="aiRandomSit()">🎲 AI 생성</button></div>
+  </div>
+  <div class="chips situation-chips" id="sitChips"></div>
+  <div class="input-row">
+    <input type="text" id="sitInput" placeholder="직접 입력: 예) 세탁기 꽉 채워서 돌림">
+    <button class="add-btn" onclick="addCustom('sit')">+</button>
+  </div>
+</div>
+
+<!-- S4: 스타일 -->
 <div class="step" id="s3">
   <div class="step-hd">
-    <div class="step-num">3</div><div class="step-title">배경 장소</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandom(3)">🎲 AI 생성</button></div>
+    <div class="step-num">4</div>
+    <div class="step-title">비주얼 스타일</div>
   </div>
-  <div class="chips" id="locChips"></div>
-  <div class="input-row">
-    <input type="text" id="locInput" placeholder="직접 입력">
-    <button class="add-btn" onclick="addCustom('loc')">+</button>
+  <div class="chips" id="styleChips">
+    <div class="chip" data-val="webtoon" onclick="selStyle(this)">📱 웹툰</div>
+    <div class="chip" data-val="sketch" onclick="selStyle(this)">✏️ 스케치</div>
+    <div class="chip" data-val="bmeme" onclick="selStyle(this)">🤪 병맛 만화</div>
+  </div>
+  <div class="style-note" id="styleNote"></div>
+  <!-- 감정 표현 -->
+  <div style="margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border);">
+    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:0.5px;">🎭 감정 표현 (병맛 톤으로 표현됨)</div>
+    <div class="chips" id="moodChips">
+      <div class="chip" data-val="annoyed" onclick="selMood(this)">😒 짜증남</div>
+      <div class="chip" data-val="angry" onclick="selMood(this)">😤 화남</div>
+      <div class="chip" data-val="furious" onclick="selMood(this)">🤬 격분</div>
+      <div class="chip" data-val="scolding" onclick="selMood(this)">☝️ 훈계하는</div>
+      <div class="chip" data-val="disappointed" onclick="selMood(this)">😞 실망한</div>
+      <div class="chip" data-val="shocked" onclick="selMood(this)">😨 당황/충격</div>
+      <div class="chip" data-val="smug" onclick="selMood(this)">😏 잘난척</div>
+      <div class="chip" data-val="tired" onclick="selMood(this)">😩 지친/한숨</div>
+      <div class="chip" data-val="worried" onclick="selMood(this)">😟 걱정하는</div>
+      <div class="chip" data-val="sassy" onclick="selMood(this)">💅 새침한</div>
+      <div class="chip" data-val="crying_angry" onclick="selMood(this)">😭 울분</div>
+      <div class="chip" data-val="chibi_rage" onclick="selMood(this)">👹 폭발 직전</div>
+    </div>
+  </div>
+  <!-- 병맛 대화 전용: 배경 참조 + 스토리 이어쓰기 (항상 표시) -->
+  <div style="margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border);">
+    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:0.5px;">💬 사물 대화 옵션</div>
+    <div style="font-size:12px;margin-bottom:12px;">
+      <div style="margin-bottom:6px;color:var(--sub);">🏠 같은 집/공간 배경 유지</div>
+      <textarea id="webtoonBgRef" rows="2" placeholder="이전 영상의 배경 설명을 붙여넣어주세요. 예) 자취방 거실, 왼쪽에 소파, 중앙에 작은 TV 테이블, 오른쪽 창문에 연베이지 커튼..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="font-size:12px;">
+      <div style="margin-bottom:6px;color:var(--sub);">💬 이전 사물 대사 이어받기</div>
+      <textarea id="webtoonPrevScript" rows="2" placeholder="이전 사물이 한 대사를 붙여넣어주세요. 예) 에어컨: '야 선풍기 왜 내 앞에서 돌고 있냐?' — 이 대사를 받아서 자연스럽게 반응하는 대본이 생성됩니다" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;">💡 이 옵션을 채우면 <b>같은 배경 + 이어지는 스토리</b>로 생성됩니다. 여러 사물이 대화하는 편집에 최적!</div>
   </div>
 </div>
 
-<div class="step" id="s5">
+<!-- S5: 대본 -->
+<div class="step" id="s4">
   <div class="step-hd">
-    <div class="step-num">4</div><div class="step-title">감정 표현</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandom(5)">🎲 랜덤</button></div>
-  </div>
-  <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;" id="moodGuide"></div>
-  <div class="chips" id="moodChips"></div>
-</div>
-
-<div class="step" id="s6">
-  <div class="step-hd">
-    <div class="step-num">6</div>
-    <div class="step-title">공감 주제 · 대사</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandomTopic()">🎲 AI 생성</button></div>
+    <div class="step-num">5</div>
+    <div class="step-title">대본</div>
   </div>
   <div class="dialogue-box">
-    <div class="sec-label">📌 공감 주제</div>
-    <div class="chips topic-chips" id="topicChips" style="margin-bottom:10px;"></div>
-    <div class="input-row" style="margin-bottom:16px;">
-      <input type="text" id="topicInput" placeholder="직접 입력: 예) 세탁기에 양말 짝 잃어버림">
-      <button class="add-btn" onclick="addCustomTopic()">+</button>
-    </div>
-    <div class="sec-label">⏱️ 대사 길이</div>
+    <div class="sec-label">⏱️ 대본 길이</div>
     <div class="chips" id="durChips" style="margin-bottom:14px;">
       <div class="chip active" data-val="10" onclick="selDur(this)">⚡ 10초</div>
       <div class="chip" data-val="30" onclick="selDur(this)">🎬 30초</div>
     </div>
     <div class="dialogue-btns">
-      <button class="btn-sm" onclick="autoDialogue()">✨ AI 공감 대사 생성</button>
+      <button class="btn-sm" onclick="autoDialogue()">✨ AI 대본 생성</button>
       <button class="btn-sm" onclick="regenDialogue()">🔄 다시 생성</button>
     </div>
-    <textarea id="dialogue" placeholder="주제 선택 후 'AI 공감 대사 생성' 클릭"></textarea>
-    <div class="dialogue-note">💡 구체적 숫자·현장 묘사·직설 훈계 구조로 생성됩니다. 감성팔이 대사 금지.</div>
+    <textarea id="dialogue" placeholder="여기에 대본이 생성됩니다. 직접 수정도 가능해요."></textarea>
+    <div class="dialogue-note">💡 꿀팁 컨셉은 [문제 지적 → 경고 → 해결책] 구조로, 민폐 컨셉은 [공감 상황 → 훈계] 구조로 생성됩니다.</div>
+
+    <div class="sec-label" style="margin-top:14px;">🎙️ 목소리 톤</div>
+    <div class="chips" id="voiceChips">
+      <div class="chip active" data-val="adult_m" onclick="selVoice(this)">👨 남자</div>
+      <div class="chip" data-val="deep_m" onclick="selVoice(this)">🎤 굵은 남자</div>
+      <div class="chip" data-val="adult_f" onclick="selVoice(this)">👩 여자</div>
+      <div class="chip" data-val="old_m" onclick="selVoice(this)">👴 할아버지</div>
+      <div class="chip" data-val="old_f" onclick="selVoice(this)">👵 할머니</div>
+      <div class="chip" data-val="kid" onclick="selVoice(this)">🧒 어린이</div>
+    </div>
   </div>
 </div>
 
 <div class="divider"></div>
-<div class="summary-bar" id="summaryBar">항목을 선택하면 여기에 표시됩니다.</div>
+<div class="summary-bar" id="summaryBar">선택한 항목이 여기에 표시됩니다.</div>
 <div class="err" id="errMsg"></div>
 <button class="gen-btn" id="genBtn" onclick="generate()">🔥 프롬프트 생성하기</button>
 
@@ -291,12 +402,13 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="tabs">
     <button class="tab active" onclick="switchTab('img')">🖼️ 이미지 프롬프트</button>
     <button class="tab" onclick="switchTab('vid')">🎬 영상 프롬프트</button>
+    <button class="tab" onclick="switchTab('scr')">📝 대본</button>
   </div>
   <div class="tab-panel active" id="panelImg">
-    <div class="scene-tip">💡 말하는 사물 전경 강조 + 주변 배경 디테일 + 실제 크기 유지 설계</div>
+    <div class="scene-tip">💡 이 이미지 프롬프트는 배경에 관련 소품을 자연스럽게 배치하도록 설계됐어요. 말하는 사물이 주인공이되, 주변이 "실제 쓰이는 공간"처럼 보이게 됩니다.</div>
     <div class="result-card">
       <div class="result-top">
-        <span class="result-label">IMAGE PROMPT</span>
+        <span class="result-label">Image Prompt · EN</span>
         <button class="copy-btn" id="copyImgBtn" onclick="doCopy('imgOut','copyImgBtn')">📋 복사</button>
       </div>
       <div class="result-text" id="imgOut"></div>
@@ -305,10 +417,33 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="tab-panel" id="panelVid">
     <div class="result-card">
       <div class="result-top">
-        <span class="result-label">VIDEO PROMPT</span>
+        <span class="result-label">Video Prompt · EN</span>
         <button class="copy-btn" id="copyVidBtn" onclick="doCopy('vidOut','copyVidBtn')">📋 복사</button>
       </div>
       <div class="result-text" id="vidOut"></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panelScr">
+    <div class="result-card">
+      <div class="result-top">
+        <span class="result-label" id="scriptLabel1">대본</span>
+        <button class="copy-btn" id="copyScrBtn1" onclick="doCopy('scrOut1','copyScrBtn1')">📋 복사</button>
+      </div>
+      <div class="result-text" id="scrOut1"></div>
+    </div>
+    <div class="result-card" id="translationCard" style="display:none;">
+      <div class="result-top">
+        <span class="result-label" id="scriptLabel2">번역 (참고용)</span>
+        <button class="copy-btn" id="copyScrBtn2" onclick="doCopy('scrOut2','copyScrBtn2')">📋 복사</button>
+      </div>
+      <div class="result-text" id="scrOut2" style="opacity:0.85;"></div>
+    </div>
+    <div class="result-card" id="englishCard">
+      <div class="result-top">
+        <span class="result-label">📢 Script · EN (AI 영상 생성용)</span>
+        <button class="copy-btn" id="copyScrBtn3" onclick="doCopy('scrOut3','copyScrBtn3')">📋 복사</button>
+      </div>
+      <div class="result-text" id="scrOut3" style="opacity:0.85;"></div>
     </div>
   </div>
 </div>
@@ -316,137 +451,639 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </div>
 
 <footer style="text-align:center;padding:20px 0 30px;border-top:1px solid var(--border);margin-top:20px;">
-  <div style="font-size:10px;color:var(--muted);">쇼츠 3D 프롬프트 생성기 · 앵그리 에디션 · by 제일라</div>
+  <div style="font-size:10px;color:var(--muted);">🤪 병맛 사물 대화 · by 제일라</div>
 </footer>
 
 <script>
-const DB = {
-  food:{objs:[{kr:'☕ 커피잔',en:'coffee mug'},{kr:'🍜 라면 그릇',en:'ramen bowl'},{kr:'🍔 햄버거',en:'burger'},{kr:'🥤 음료캔',en:'soda can'},{kr:'🍕 피자 조각',en:'pizza slice'},{kr:'🥛 우유팩',en:'milk carton'},{kr:'🍩 도넛',en:'donut'},{kr:'🍜 컵라면',en:'instant noodle cup'},{kr:'🌶️ 떡볶이',en:'tteokbokki'},{kr:'🍶 소주병',en:'soju bottle'},{kr:'🍱 도시락',en:'lunchbox'},{kr:'🧃 주스팩',en:'juice box'},{kr:'🍦 아이스크림',en:'ice cream cone'},{kr:'🥚 계란',en:'egg'},{kr:'🍞 식빵',en:'bread loaf'},{kr:'🧋 버블티',en:'bubble tea cup'}],
-    locs:[{kr:'밤의 번화한 식당 테이블',en:'on a busy restaurant table with warm evening lighting'},{kr:'새벽 편의점 카운터',en:'on a convenience store counter at 3am under harsh fluorescent light'},{kr:'아침 햇살 주방 조리대',en:'on a kitchen countertop bathed in soft morning sunlight'},{kr:'창가 카페 나무 테이블',en:'on a worn wooden café table beside a fogged window'},{kr:'서울 포장마차 안',en:'inside a steaming Seoul pojangmacha street stall'},{kr:'냉장고 안 차가운 빛',en:'inside a refrigerator under cold clinical white light'},{kr:'혼밥 1인용 테이블',en:'on a solo dining table in a late-night restaurant corner'}]},
-  object:{objs:[{kr:'🗑️ 쓰레기통',en:'trash can'},{kr:'🧴 손세정제',en:'soap dispenser'},{kr:'☂️ 우산',en:'umbrella'},{kr:'🐷 돼지저금통',en:'piggy bank'},{kr:'📬 우체통',en:'mailbox'},{kr:'🧯 소화기',en:'fire extinguisher'},{kr:'🧹 청소기',en:'vacuum cleaner'},{kr:'🪠 뚫어뻥',en:'toilet plunger'},{kr:'💦 스프레이 통',en:'spray bottle'},{kr:'🪣 양동이',en:'bucket'},{kr:'🧻 화장지 롤',en:'toilet paper roll'},{kr:'🪥 칫솔',en:'toothbrush'},{kr:'🦷 치아',en:'tooth'},{kr:'💡 전구',en:'light bulb'},{kr:'🔒 자물쇠',en:'padlock'},{kr:'🧽 수세미',en:'kitchen sponge'}],
-    locs:[{kr:'새벽 침대 옆 협탁',en:'on a wooden bedside table in early morning darkness'},{kr:'지저분한 아파트 현관',en:'in a cluttered apartment hallway'},{kr:'욕실 선반',en:'on a bathroom shelf with soft backlit glow'},{kr:'주방 조리대',en:'on a kitchen countertop with cluttered surroundings'},{kr:'세탁실 선반',en:'on a laundry room shelf'},{kr:'비 오는 날 베란다',en:'on a rain-soaked apartment balcony'}]},
-  electronics:{objs:[{kr:'📱 스마트폰',en:'smartphone'},{kr:'💻 노트북',en:'laptop'},{kr:'📺 TV',en:'television'},{kr:'🎧 에어팟 케이스',en:'wireless earbuds case'},{kr:'🎮 게임 컨트롤러',en:'gaming controller'},{kr:'📡 공유기',en:'WiFi router'},{kr:'⌚ 스마트워치',en:'smartwatch'},{kr:'🔋 보조배터리',en:'power bank'},{kr:'⌨️ 키보드',en:'mechanical keyboard'},{kr:'🖱️ 마우스',en:'computer mouse'}],
-    locs:[{kr:'자정 어수선한 사무실 책상',en:'on a cluttered office desk at midnight'},{kr:'거실 유리 커피 테이블',en:'on a glass coffee table in a dim living room'},{kr:'침대 옆 협탁',en:'charging on a bedside nightstand in low light'},{kr:'대학 도서관 자습실',en:'on a university library study desk at 2am'},{kr:'RGB 게이밍 셋업',en:'on a gaming setup glowing with RGB ambient lighting'}]},
-  furniture:{objs:[{kr:'🪑 사무용 의자',en:'office chair'},{kr:'💡 스탠드 조명',en:'floor lamp'},{kr:'📚 책장',en:'bookshelf'},{kr:'🕰️ 벽시계',en:'wall clock'},{kr:'🪴 화분',en:'potted plant'},{kr:'🚪 문',en:'door'},{kr:'🪞 거울',en:'mirror'},{kr:'🛋️ 소파 쿠션',en:'couch cushion'}],
-    locs:[{kr:'미니멀 한국 아파트 거실',en:'in a minimalist Korean apartment living room'},{kr:'아늑한 서재',en:'in a cozy study room lit by warm amber light'},{kr:'어수선한 자취방',en:'in a cluttered one-room apartment'},{kr:'통창 모던 오피스',en:'in a modern office with floor-to-ceiling windows'}]},
-  vehicle:{objs:[{kr:'🚕 택시',en:'taxi cab'},{kr:'🚌 버스',en:'city bus'},{kr:'🚲 자전거',en:'bicycle'},{kr:'🛵 전동킥보드',en:'electric scooter'},{kr:'🛒 쇼핑카트',en:'shopping cart'},{kr:'🏍️ 배달 오토바이',en:'delivery motorcycle'}],
-    locs:[{kr:'빗속 서울 야경 거리',en:'on a rain-soaked Seoul street at night'},{kr:'혼잡한 주차장',en:'in a crowded parking lot under harsh lights'},{kr:'버스 정류장',en:'at a packed bus stop in the rain'}]},
-  animal:{objs:[{kr:'🐱 고양이',en:'cat'},{kr:'🐶 강아지',en:'dog'},{kr:'🐹 햄스터',en:'hamster'},{kr:'🐰 토끼',en:'rabbit'},{kr:'🐧 펭귄',en:'penguin'},{kr:'🦊 여우',en:'fox'}],
-    locs:[{kr:'포근한 거실 소파',en:'on a cozy living room sofa'},{kr:'애완동물 카페',en:'in a warmly lit pet café'},{kr:'숲 속 빈터',en:'in a misty forest clearing'}]},
-  nature:{objs:[{kr:'🪨 바위',en:'boulder'},{kr:'🌵 선인장',en:'cactus'},{kr:'⛈️ 먹구름',en:'thundercloud'},{kr:'🪵 나무 그루터기',en:'tree stump'},{kr:'🌋 화산',en:'volcano'},{kr:'🍄 버섯',en:'mushroom'}],
-    locs:[{kr:'황량한 사막',en:'in a vast desert landscape'},{kr:'일출 산 절벽',en:'on a mountain cliff edge at sunrise'},{kr:'안개 낀 숲',en:'deep inside a foggy dense forest'}]},
-  toy:{objs:[{kr:'🤖 액션 피규어',en:'action figure'},{kr:'🧱 레고 블록',en:'LEGO brick'},{kr:'🦆 고무 오리',en:'rubber duck'},{kr:'🧸 곰인형',en:'stuffed bear plushie'},{kr:'🪀 팽이',en:'spinning top'},{kr:'♟️ 체스말',en:'chess piece'}],
-    locs:[{kr:'아이 방 어수선한 바닥',en:"a child's chaotic bedroom floor"},{kr:'컬렉터 진열 선반',en:"a collector's glass display shelf"},{kr:'오래된 다락방',en:'a dusty forgotten attic'}]},
-  stationery:{objs:[{kr:'✏️ 연필',en:'pencil'},{kr:'📎 스테이플러',en:'stapler'},{kr:'🗒️ 포스트잇',en:'sticky note pad'},{kr:'🧹 지우개',en:'eraser'},{kr:'✂️ 가위',en:'scissors'},{kr:'🖊️ 볼펜',en:'ballpoint pen'}],
-    locs:[{kr:'밤샘 자습 책상',en:"a student's desk lit by a single lamp late at night"},{kr:'학교 교실',en:'an empty school classroom after hours'},{kr:'서류 어수선한 사무실',en:'a cluttered office desk buried in papers'}]},
-  sports:{objs:[{kr:'⚽ 축구공',en:'soccer ball'},{kr:'🏀 농구공',en:'basketball'},{kr:'🎾 테니스 라켓',en:'tennis racket'},{kr:'🏋️ 덤벨',en:'dumbbell'},{kr:'🥊 복싱 글러브',en:'boxing glove'},{kr:'🛹 스케이트보드',en:'skateboard'}],
-    locs:[{kr:'형광등 헬스장',en:'on a gym floor under harsh fluorescent lights'},{kr:'황금빛 운동장',en:'on a sports field bathed in golden hour light'},{kr:'야간 농구 코트',en:'on a floodlit basketball court at night'}]},
-  fashion:{objs:[{kr:'👟 운동화',en:'sneaker'},{kr:'👜 핸드백',en:'designer handbag'},{kr:'🧢 야구모자',en:'baseball cap'},{kr:'🕶️ 선글라스',en:'sunglasses'},{kr:'👔 넥타이',en:'necktie'},{kr:'👠 하이힐',en:'high heel shoe'}],
-    locs:[{kr:'패션 부티크 전시대',en:'on a lit display pedestal in a fashion boutique'},{kr:'스트리트 스냅',en:'on an urban street style photoshoot backdrop'}]},
-  building:{objs:[{kr:'🔶 라바콘',en:'traffic cone'},{kr:'🚒 소화전',en:'fire hydrant'},{kr:'📞 전화부스',en:'telephone booth'},{kr:'🏧 ATM',en:'ATM machine'},{kr:'🎰 자판기',en:'vending machine'},{kr:'🚦 신호등',en:'traffic light'}],
-    locs:[{kr:'서울 도심 인도',en:'on a busy downtown Seoul sidewalk'},{kr:'지하철역 복도',en:'in a crowded subway station corridor'},{kr:'빗속 야간 거리',en:'on a rain-soaked street corner at night'}]},
-  kitchen:{objs:[{kr:'🍳 프라이팬',en:'frying pan'},{kr:'🔪 식칼',en:'kitchen knife'},{kr:'🥄 국자',en:'ladle'},{kr:'🫕 냄비',en:'cooking pot'},{kr:'☕ 커피 머신',en:'coffee machine'},{kr:'🍽️ 접시',en:'dinner plate'}],
-    locs:[{kr:'이른 아침 주방',en:'on a kitchen countertop in the early morning'},{kr:'식당 주방 러시아워',en:'inside a restaurant kitchen during rush hour'}]},
-  tool:{objs:[{kr:'🔧 렌치',en:'wrench'},{kr:'🔨 망치',en:'hammer'},{kr:'🪛 드라이버',en:'screwdriver'},{kr:'🧰 공구함',en:'toolbox'}],
-    locs:[{kr:'공사 현장',en:'at a dusty construction site'},{kr:'차고 작업대',en:'on a garage workbench under a work lamp'}]}
-};
-
-// 크기 힌트
-const OBJ_SIZE = {
-  '🧹 청소기':'medium','🧯 소화기':'medium','📺 TV':'large','☕ 커피 머신':'medium','🎰 자판기':'large','🏧 ATM':'large','🚦 신호등':'large',
-  '🪑 사무용 의자':'furniture','💡 스탠드 조명':'furniture','📚 책장':'furniture','🚕 택시':'vehicle','🚌 버스':'vehicle','🚲 자전거':'furniture','🛵 전동킥보드':'furniture','🛒 쇼핑카트':'furniture','🏍️ 배달 오토바이':'vehicle','📞 전화부스':'large','📬 우체통':'medium','🔶 라바콘':'medium','🚒 소화전':'medium','🚪 문':'furniture',
-  '🗑️ 쓰레기통':'medium','🪞 거울':'medium','🕰️ 벽시계':'medium',
-  '🍜 라면 그릇':'small','🍔 햄버거':'small','🍕 피자 조각':'small','🍱 도시락':'small','💻 노트북':'small','⌨️ 키보드':'small','🎮 게임 컨트롤러':'small','📡 공유기':'small','🍳 프라이팬':'small','🫕 냄비':'small','🍽️ 접시':'small','👜 핸드백':'small','👟 운동화':'small','🧸 곰인형':'small','🪣 양동이':'small','🧻 화장지 롤':'small','🪴 화분':'small','⚽ 축구공':'small','🏀 농구공':'small','🎾 테니스 라켓':'small','🏋️ 덤벨':'small','🥊 복싱 글러브':'small','🛹 스케이트보드':'small','🪠 뚫어뻥':'small','☂️ 우산':'small','🛋️ 소파 쿠션':'small','🍞 식빵':'small','🍜 컵라면':'small','🔨 망치':'small','🧰 공구함':'small','🔪 식칼':'small','🥄 국자':'small','🧢 야구모자':'small','👔 넥타이':'small','👠 하이힐':'small',
-  '☕ 커피잔':'tiny','🥤 음료캔':'tiny','🥛 우유팩':'tiny','🍩 도넛':'tiny','🍶 소주병':'tiny','🧃 주스팩':'tiny','🍦 아이스크림':'tiny','🥚 계란':'tiny','🧋 버블티':'tiny','📱 스마트폰':'tiny','🎧 에어팟 케이스':'tiny','⌚ 스마트워치':'tiny','🔋 보조배터리':'tiny','🖱️ 마우스':'tiny','🧴 손세정제':'tiny','🐷 돼지저금통':'tiny','💦 스프레이 통':'tiny','🪥 칫솔':'tiny','🦷 치아':'tiny','💡 전구':'tiny','🔒 자물쇠':'tiny','🧽 수세미':'tiny','🕶️ 선글라스':'tiny','✏️ 연필':'tiny','📎 스테이플러':'tiny','🗒️ 포스트잇':'tiny','🧹 지우개':'tiny','✂️ 가위':'tiny','🖊️ 볼펜':'tiny','🔧 렌치':'tiny','🪛 드라이버':'tiny','🤖 액션 피규어':'tiny','🧱 레고 블록':'tiny','🦆 고무 오리':'tiny','🪀 팽이':'tiny','♟️ 체스말':'tiny','🌶️ 떡볶이':'tiny'
-};
-
-const SIZE_HINTS = {
-  large:'real-world life-size (150-180cm or wall-mounted). Fills about 60-70% of the vertical frame. NOT cartoonishly oversized.',
-  medium:'real-world counter/floor size (30-60cm). Sits naturally on its actual surface, takes 50-60% of the frame.',
-  small:'real-world hand-held size (10-25cm). Realistic close-up, NOT macro. Takes 40-50% of the frame with surroundings visible.',
-  furniture:'real-world furniture size. Framed wide enough to show its actual scale in the room.',
-  tiny:'real-world tiny size (5-15cm). Framed so it does NOT look absurdly enlarged. Surrounding context clearly shown.',
-  vehicle:'real-world vehicle scale. Medium/wide shot showing its actual size on street.',
-  default:'real-world life-size matching how this object actually appears. Never oversized, never shrunken.'
-};
-function getSizeHint(k){return SIZE_HINTS[OBJ_SIZE[k]||'default'];}
-
-// ═══ 사물의 자연 작동 모션 ═══
-const ANGRY_FUNCTION_MOTION = {
-  '세탁기': 'the drum visibly spinning behind the glass door with tumbling laundry, water suds visible',
-  '냉장고': 'interior fridge light pulsing when face moves, condensation forming on handle, ice clinking faintly',
-  '에어컨': 'front louvers oscillating, visible cool air puffing from vent, fan blades faintly spinning',
-  '전자레인지': 'internal turntable rotating, interior light glowing, food inside visibly heating',
-  '청소기': 'bristle roller spinning, dust being sucked into intake, LED indicator pulsing',
-  '밥솥': 'steam billowing from top vent, pressure valve rocking, condensation on lid',
-  '커피머신': 'hot coffee dripping into cup, steam rising, LED power indicator glowing',
-  '노트북': 'screen content refreshing, notification blinks, charging LED breathing',
-  '모니터': 'screen animating (cursor blink, notifications), power LED pulsing',
-  'TV': 'screen showing content that subtly changes, LED indicator glowing',
-  '샤워기': 'water actively spraying, steam rising, droplets bouncing off tiles',
-  '수도꼭지': 'water streaming continuously, splash and ripples in sink',
-  '선풍기': 'blades visibly spinning fast, head oscillating side to side',
-  '자동차': 'exhaust steam in cold air, slight engine vibration, wheels ready to spin',
-  '자전거': 'wheel occasionally spinning slightly, pedals in motion',
-  '알람시계': 'digital numbers ticking, LED colon blinking',
-  '토스터': 'heating coils glowing orange inside, steam rising, timer dial ticking',
-  '믹서기': 'blades visibly whirring inside the pitcher, liquid swirling',
-  '가습기': 'continuous mist pouring from the top, LED glowing',
-  '공기청정기': 'fan blades visible spinning, LED indicator changing colors'
-};
-function getAngryFunctionMotion(objKr){
-  if(!objKr) return '';
-  // 한글 검색: emoji + 이름에서 매칭되는 키 찾기
-  for(const key of Object.keys(ANGRY_FUNCTION_MOTION)){
-    if(objKr.includes(key)) return ANGRY_FUNCTION_MOTION[key];
+// ═══ 데이터베이스 ═══
+const OBJECTS = {
+  kr:{
+    home:{title:'🏠 자취 생활',items:[
+      {kr:'🧊 냉장고',en:'refrigerator'},{kr:'🌀 세탁기',en:'washing machine'},{kr:'🛏️ 침대',en:'bed'},
+      {kr:'⏰ 알람시계',en:'alarm clock'},{kr:'🔌 충전기',en:'phone charger'},{kr:'🗑️ 쓰레기통',en:'trash can'},
+      {kr:'🛌 이불',en:'blanket'},{kr:'❄️ 에어컨',en:'air conditioner'},{kr:'🧹 청소기',en:'vacuum cleaner'}
+    ]},
+    kitchen:{title:'🍳 주방용품',items:[
+      {kr:'🚰 싱크대',en:'kitchen sink'},{kr:'🍚 전기밥솥',en:'rice cooker'},{kr:'☕ 커피잔',en:'coffee mug'},
+      {kr:'🍜 컵라면',en:'cup ramen'},{kr:'🔪 칼',en:'kitchen knife'},{kr:'🍳 프라이팬',en:'frying pan'}
+    ]},
+    food:{title:'🍔 음식·음료',items:[
+      {kr:'🍗 치킨',en:'fried chicken'},{kr:'🍺 맥주캔',en:'beer can'},{kr:'🍙 삼각김밥',en:'triangle kimbap'},
+      {kr:'🥤 아이스아메리카노',en:'iced americano'},{kr:'🍕 피자 한 조각',en:'pizza slice'},{kr:'🍜 라면',en:'ramen noodles'}
+    ]},
+    electronics:{title:'💻 전자제품',items:[
+      {kr:'💼 노트북',en:'laptop'},{kr:'⌨️ 키보드',en:'keyboard'},{kr:'🖥️ 모니터',en:'monitor'},
+      {kr:'📱 스마트폰',en:'smartphone'},{kr:'📺 TV',en:'television'},{kr:'🖨️ 프린터',en:'printer'}
+    ]},
+    furniture:{title:'🪑 가구·인테리어',items:[
+      {kr:'🛋️ 소파',en:'sofa'},{kr:'🪑 의자',en:'chair'},{kr:'🖼️ 액자',en:'picture frame'},
+      {kr:'🪟 창문',en:'window'},{kr:'🚪 문',en:'door'},{kr:'🪞 거울',en:'mirror'}
+    ]},
+    bathroom:{title:'🚿 욕실용품',items:[
+      {kr:'🚿 샤워기',en:'shower head'},{kr:'🧻 화장지 롤',en:'toilet paper roll'},{kr:'🦷 칫솔',en:'toothbrush'},
+      {kr:'🧼 비누',en:'soap bar'},{kr:'🚽 변기',en:'toilet'},{kr:'🛁 욕조',en:'bathtub'}
+    ]},
+    work:{title:'💼 직장 생활',items:[
+      {kr:'🖥️ 사무용 책상',en:'office desk'},{kr:'📧 이메일 받은편지함',en:'email inbox'},{kr:'🛗 엘리베이터',en:'office elevator'},
+      {kr:'👔 넥타이',en:'necktie'},{kr:'🪪 사원증',en:'employee ID badge'},{kr:'☎️ 사무실 전화기',en:'office phone'}
+    ]},
+    stationery:{title:'✏️ 문구류',items:[
+      {kr:'✏️ 연필',en:'pencil'},{kr:'📏 자',en:'ruler'},{kr:'📎 클립',en:'paper clip'},
+      {kr:'📝 메모지',en:'sticky note'},{kr:'🖊️ 볼펜',en:'ballpoint pen'},{kr:'📌 압정',en:'thumbtack'}
+    ]},
+    vehicle:{title:'🚗 탈것',items:[
+      {kr:'🚗 자동차',en:'car'},{kr:'🚲 자전거',en:'bicycle'},{kr:'🛴 킥보드',en:'scooter'},
+      {kr:'🚌 버스',en:'bus'},{kr:'🏍️ 오토바이',en:'motorcycle'},{kr:'🚇 지하철',en:'subway train'}
+    ]},
+    fashion:{title:'👟 패션·잡화',items:[
+      {kr:'👟 운동화',en:'sneakers'},{kr:'👜 가방',en:'handbag'},{kr:'🧢 모자',en:'cap'},
+      {kr:'🧦 양말',en:'socks'},{kr:'👓 안경',en:'eyeglasses'},{kr:'⌚ 손목시계',en:'wristwatch'}
+    ]},
+    toy:{title:'🧸 장난감·피규어',items:[
+      {kr:'🧸 곰인형',en:'teddy bear'},{kr:'🪀 요요',en:'yo-yo'},{kr:'🎲 주사위',en:'dice'},
+      {kr:'🧩 퍼즐',en:'jigsaw puzzle'},{kr:'🎮 게임기',en:'game console'},{kr:'🪁 연',en:'kite'}
+    ]},
+    sports:{title:'⚽ 스포츠용품',items:[
+      {kr:'⚽ 축구공',en:'soccer ball'},{kr:'🏀 농구공',en:'basketball'},{kr:'🏸 배드민턴 라켓',en:'badminton racket'},
+      {kr:'🥊 권투 글러브',en:'boxing glove'},{kr:'🏓 탁구채',en:'ping pong paddle'},{kr:'🏋️ 덤벨',en:'dumbbell'}
+    ]},
+    public:{title:'🚉 공공장소',items:[
+      {kr:'🛗 엘리베이터',en:'elevator'},{kr:'🚦 신호등',en:'traffic light'},{kr:'🪑 버스정류장 벤치',en:'bus stop bench'},
+      {kr:'🚪 회전문',en:'revolving door'},{kr:'📮 우체통',en:'mailbox'},{kr:'🗑️ 공원 쓰레기통',en:'park trash can'}
+    ]},
+    animal:{title:'🐾 동물',items:[
+      {kr:'🐕 강아지',en:'dog'},{kr:'🐈 고양이',en:'cat'},{kr:'🐟 금붕어',en:'goldfish'},
+      {kr:'🐹 햄스터',en:'hamster'},{kr:'🦜 앵무새',en:'parrot'},{kr:'🐢 거북이',en:'turtle'}
+    ]},
+    nature:{title:'🌿 자연물',items:[
+      {kr:'🌵 선인장',en:'cactus'},{kr:'🪴 화분',en:'potted plant'},{kr:'🌸 벚꽃나무',en:'cherry blossom tree'},
+      {kr:'☀️ 태양',en:'sun'},{kr:'🌙 달',en:'moon'},{kr:'☁️ 구름',en:'cloud'}
+    ]}
+  },
+  jp:{
+    home:{title:'🏠 一人暮らし',items:[
+      {kr:'🍱 편의점 도시락',en:'convenience store bento',jp:'コンビニ弁当'},{kr:'🧊 냉장고',en:'refrigerator',jp:'冷蔵庫'},
+      {kr:'🌀 세탁기',en:'washing machine',jp:'洗濯機'},{kr:'🛌 후톤 이불',en:'futon bedding',jp:'布団'},
+      {kr:'📟 에어컨 리모컨',en:'air conditioner remote',jp:'エアコンリモコン'},{kr:'🗑️ 분리수거통',en:'burnable/non-burnable trash bin',jp:'ゴミ箱'}
+    ]},
+    kitchen:{title:'🍳 キッチン用品',items:[
+      {kr:'🍚 전기밥솥',en:'rice cooker',jp:'炊飯器'},{kr:'🍜 컵라면',en:'cup ramen',jp:'カップラーメン'},
+      {kr:'☕ 커피 머그',en:'coffee mug',jp:'マグカップ'}
+    ]},
+    food:{title:'🍔 食べ物・飲み物',items:[
+      {kr:'🍙 오니기리',en:'onigiri',jp:'おにぎり'},{kr:'🍺 생맥주',en:'draft beer',jp:'生ビール'},
+      {kr:'🍜 라멘',en:'ramen',jp:'ラーメン'}
+    ]},
+    electronics:{title:'💻 電子製品',items:[
+      {kr:'💼 노트북',en:'laptop',jp:'ノートパソコン'},{kr:'📱 스마트폰',en:'smartphone',jp:'スマホ'}
+    ]},
+    furniture:{title:'🪑 家具',items:[
+      {kr:'🪟 쇼지',en:'shoji sliding door',jp:'障子'},{kr:'🛋️ 소파',en:'sofa',jp:'ソファ'}
+    ]},
+    bathroom:{title:'🚿 お風呂',items:[
+      {kr:'🛁 욕조',en:'ofuro bathtub',jp:'お風呂'},{kr:'🧊 유니트 버스',en:'unit bath',jp:'ユニットバス'}
+    ]},
+    work:{title:'💼 サラリーマン',items:[
+      {kr:'🚃 통근 전철',en:'packed commuter train',jp:'満員電車'},{kr:'🔴 도장(한코)',en:'personal seal hanko',jp:'ハンコ'},
+      {kr:'📋 회의 자료',en:'meeting document',jp:'会議資料'},{kr:'🍺 회식 잔',en:'nomikai beer glass',jp:'飲み会のジョッキ'},
+      {kr:'👔 넥타이',en:'necktie',jp:'ネクタイ'},{kr:'📠 팩스기',en:'fax machine',jp:'FAX'},
+      {kr:'🏢 타임카드',en:'time card punch',jp:'タイムカード'},{kr:'📝 품의서',en:'ringi approval doc',jp:'稟議書'}
+    ]},
+    stationery:{title:'✏️ 文房具',items:[
+      {kr:'✏️ 연필',en:'pencil',jp:'鉛筆'},{kr:'🖊️ 볼펜',en:'ballpoint pen',jp:'ボールペン'}
+    ]},
+    vehicle:{title:'🚗 乗り物',items:[
+      {kr:'🚲 자전거',en:'mamachari bicycle',jp:'ママチャリ'},{kr:'🚃 전철',en:'train',jp:'電車'}
+    ]},
+    fashion:{title:'👟 ファッション',items:[
+      {kr:'👟 운동화',en:'sneakers',jp:'スニーカー'},{kr:'👜 가방',en:'bag',jp:'バッグ'}
+    ]},
+    toy:{title:'🧸 おもちゃ',items:[
+      {kr:'🧸 곰인형',en:'teddy bear',jp:'テディベア'},{kr:'🎮 게임기',en:'game console',jp:'ゲーム機'}
+    ]},
+    sports:{title:'⚽ スポーツ',items:[
+      {kr:'⚽ 축구공',en:'soccer ball',jp:'サッカーボール'},{kr:'🏀 농구공',en:'basketball',jp:'バスケットボール'}
+    ]},
+    public:{title:'🚉 公共の場',items:[
+      {kr:'🛗 엘리베이터',en:'elevator',jp:'エレベーター'},{kr:'🚦 신호등',en:'traffic light',jp:'信号'}
+    ]},
+    animal:{title:'🐾 動物',items:[
+      {kr:'🐕 강아지',en:'dog',jp:'犬'},{kr:'🐈 고양이',en:'cat',jp:'猫'}
+    ]},
+    nature:{title:'🌿 自然',items:[
+      {kr:'🌵 선인장',en:'cactus',jp:'サボテン'},{kr:'🪴 화분',en:'potted plant',jp:'観葉植物'}
+    ]}
   }
-  return '';
+};
+
+// ═══ 상황 (컨셉별 / 국가별) ═══
+const SITUATIONS = {
+  tip:{
+    kr:{
+      '🧊 냉장고':[
+        '냉장고에 음식 꽉 채워 넣음',
+        '뜨거운 음식 바로 넣음',
+        '문 오래 열어두고 고민함',
+        '냉장실 온도 조절 안 함',
+        '음식 냄새 섞이게 방치',
+        '유통기한 지난 음식 방치',
+        '김치를 냉동실에 넣음'
+      ],
+      '🌀 세탁기':[
+        '세탁물 꽉 채워서 돌림',
+        '지퍼 열어둔 채 세탁',
+        '섬유유연제 운동복에 사용',
+        '세제 과다 투입',
+        '청바지 뒤집지 않고 세탁',
+        '벨크로 찍찍이 열어두고 세탁',
+        '세탁 후 바로 안 꺼냄'
+      ],
+      '⏰ 알람시계':[
+        '매번 스누즈 10분씩 누름',
+        '머리맡에 두고 잠',
+        '알람 3개 15분 간격으로 설정',
+        '진동 모드로만 설정',
+        '주말에도 같은 시간 울리게 둠'
+      ],
+      '🔌 충전기':[
+        '밤새 100% 꽂아두기',
+        '침대 위에서 충전',
+        '정품 아닌 싸구려 충전기 사용',
+        '충전기 선 꺾어서 보관',
+        '충전 중 폰 사용'
+      ],
+      '🛏️ 침대':[
+        '이불 안 털고 그대로 덮음',
+        '시트 한 달 넘게 안 빪',
+        '매트리스 뒤집지 않음',
+        '침대에서 음식 먹음',
+        '베개 1년 넘게 사용'
+      ],
+      '🚰 싱크대':[
+        '음식물 찌꺼기 그대로 흘려보냄',
+        '기름 그대로 하수구로',
+        '수세미 젖은 채로 방치',
+        '배수구 거름망 안 비움',
+        '뜨거운 물만 계속 씀'
+      ],
+      '🪞 거울':[
+        '거울 물때 한 달째 방치',
+        '샤워 후 김서림 그대로',
+        '휴지로 거울 닦기',
+        '화장품 튄 자국 방치'
+      ],
+      '❄️ 에어컨':[
+        '필터 1년째 청소 안 함',
+        '18도로 맞춰놓고 덜덜 떪',
+        '틀고 바로 끄기 반복',
+        '꺼진 후 바로 콘센트 안 뺨',
+        '에어컨 바람 직빵으로 맞음'
+      ],
+      '🚿 샤워기':[
+        '샤워기 헤드 청소 안 함',
+        '물 틀어놓고 딴 짓함',
+        '뜨거운 물로만 샤워',
+        '샤워기 호스 꺾어서 보관'
+      ],
+      '🍚 전기밥솥':[
+        '밥 다 되고도 보온 계속 켬',
+        '내솥 긁으며 퍼 냄',
+        '밥 지을 때 뚜껑 자주 염',
+        '물 계량 눈대중으로'
+      ],
+      '☕ 커피잔':[
+        '커피 마시고 바로 안 씻음',
+        '커피잔 찬물로만 헹굼',
+        '립스틱 자국 방치'
+      ],
+      '⌨️ 키보드':[
+        '키보드 과자 먹으며 침',
+        '키보드 한 번도 청소 안 함',
+        '키보드에 커피 쏟고 휴지로만 닦음'
+      ],
+      '🖥️ 사무용 책상':[
+        '책상 위에 서류 쌓아둠',
+        '모니터 높이 안 맞춤',
+        '의자 높이 방치',
+        '블루라이트 필터 안 씀'
+      ],
+      '💳 통장':[
+        '월급 받고 그대로 묵혀둠',
+        '자동이체 관리 안 함',
+        '통장 비번 너무 단순'
+      ],
+      '📧 이메일 받은편지함':[
+        '읽지 않은 메일 500개 방치',
+        '중요한 메일에 답장 미룸',
+        '스팸 메일 분류 안 함'
+      ],
+      '💼 노트북':[
+        '노트북 쿨러 없이 이불 위에 올려놓고 사용',
+        '전원 꽂은 채로 100% 유지',
+        '백업 한 번도 안 함'
+      ],
+      '🎙️ 기본':[
+        '관리 안 함',
+        '오래 방치',
+        '잘못된 사용법',
+        '청소 안 함',
+        '온도/습도 관리 실패'
+      ]
+    },
+    jp:{
+      '🍱 편의점 도시락':[
+        {kr:'랩/뚜껑 덮은 채 전자레인지 돌림', jp:'ラップやフタをしたままレンジで温める'},
+        {kr:'사고 며칠 냉장고에 방치', jp:'買ってから数日冷蔵庫で放置'},
+        {kr:'오래 데워서 바싹 말라버림', jp:'レンジで長時間加熱して乾燥させる'},
+        {kr:'뚜껑 열고 가니에로 전자레인지', jp:'フタを開けてそのままレンジに入れる'}
+      ],
+      '🧊 냉장고':[
+        {kr:'식자재 꽉꽉 눌러 담음', jp:'食材をパンパンに詰め込む'},
+        {kr:'뜨거운 음식 식히지 않고 바로 넣음', jp:'熱いものをそのまま入れる'},
+        {kr:'문 열어놓고 한참 고민', jp:'ドアを開けたまま何分も迷う'},
+        {kr:'냄새 강한 음식 뚜껑 없이 보관', jp:'匂いの強いものをラップなしで保管'},
+        {kr:'유통기한 지난 낫토 안쪽에 숨김', jp:'賞味期限切れの納豆を奥に隠す'}
+      ],
+      '🌀 세탁기':[
+        {kr:'빨래 꽉꽉 채워서 돌림', jp:'洗濯物を詰め込みすぎる'},
+        {kr:'지퍼 열어둔 채로 세탁', jp:'ファスナーを開けたまま洗う'},
+        {kr:'기능성 운동복에 섬유유연제 사용', jp:'柔軟剤を機能性スポーツウェアに使う'},
+        {kr:'세제 눈대중으로 과다 투입', jp:'洗剤を目分量で入れすぎる'},
+        {kr:'세탁 끝나고 바로 안 꺼냄', jp:'洗い終わってすぐ取り出さない'},
+        {kr:'베란다에 말리지 않고 방에 걸어둠', jp:'ベランダに干さず部屋干し放置'}
+      ],
+      '⏰ 알람시계':[
+        {kr:'스누즈 10분씩 계속 누름', jp:'スヌーズを10分ごとに押し続ける'},
+        {kr:'머리맡에 놓고 잠', jp:'枕元に置いて寝る'},
+        {kr:'주말에도 끄지 않고 그대로', jp:'休日も同じ時間にセットしたまま'}
+      ],
+      '🛌 후톤 이불':[
+        {kr:'매일 깔아둔 채 그대로', jp:'布団を毎日敷きっぱなし'},
+        {kr:'반년 이상 햇빛에 안 말림', jp:'半年以上干さない'},
+        {kr:'곰팡이 생길 때까지 방치', jp:'カビだらけになるまで放置'},
+        {kr:'아침에 바로 개지 않고 외출', jp:'朝たたまずに出かける'}
+      ],
+      '🗑️ 분리수거통 (연소/불연)':[
+        {kr:'타는쓰레기에 건전지 섞어 버림', jp:'燃えるゴミに電池を混ぜる'},
+        {kr:'플라스틱 씻지 않고 그냥 버림', jp:'プラスチックを洗わず捨てる'},
+        {kr:'수거일 헷갈려서 엉뚱한 날 배출', jp:'収集日を間違える'},
+        {kr:'분리배출 너무 귀찮아서 다 섞어버림', jp:'分別が面倒で全部混ぜる'}
+      ],
+      '📟 에어컨 리모컨':[
+        {kr:'필터 1년째 청소 안 함', jp:'フィルター掃除を1年していない'},
+        {kr:'18도로 맞춰놓고 덜덜 떪', jp:'18度に設定して震える'},
+        {kr:'켰다 껐다 반복해서 전기세 폭증', jp:'つけたり消したりを繰り返す'},
+        {kr:'여름내 켜고 외출', jp:'つけっぱなしで外出'}
+      ],
+      '🛁 욕조':[
+        {kr:'목욕물 며칠씩 그대로', jp:'お湯を張ったまま何日も放置'},
+        {kr:'입욕 후 마개 안 뺌', jp:'入浴後すぐに栓を抜かない'},
+        {kr:'곰팡이 보고도 못 본 척', jp:'カビを見て見ぬふり'}
+      ],
+      '🍜 컵라면':[
+        {kr:'뜨거운 물 넘치게 부음', jp:'お湯を入れすぎて溢れる'},
+        {kr:'3분 기다리지 않고 먹음', jp:'3分待たずに食べる'},
+        {kr:'남은 국물 그대로 싱크대에 버림', jp:'残った汁をそのまま流しに捨てる'}
+      ],
+      '🚃 통근 전철':[
+        {kr:'백팩 앞으로 안 메고 뒤로 그대로', jp:'リュックを前に持たない'},
+        {kr:'문 앞에서 비키지 않음', jp:'ドア付近で動かない'},
+        {kr:'이어폰 소리 새어나옴', jp:'イヤホンから音漏れ'},
+        {kr:'우선석 앉아서 스마트폰 게임', jp:'優先席でスマホゲーム'},
+        {kr:'우산 젖은 채로 남한테 묻힘', jp:'濡れた傘で人に触れる'}
+      ],
+      '🔴 도장(한코)':[
+        {kr:'아무데나 놔두기', jp:'ハンコをその辺に置きっぱなし'},
+        {kr:'붓인쿠 안 채우고 희미하게 찍음', jp:'朱肉を補充せず薄い判子を押す'},
+        {kr:'은행인감·막도장 섞어서 씀', jp:'銀行印と認印を混在させる'},
+        {kr:'인감 비뚤게 찍어서 서류 다시 뽑음', jp:'ハンコを曲げて押して書類を再印刷'}
+      ],
+      '🍺 회식 잔':[
+        {kr:'일기(一気) 강요당함', jp:'一気飲みを強要される'},
+        {kr:'술 따를 때 라벨 아래로', jp:'注ぐときラベルを下にする'},
+        {kr:'건배 전에 마심', jp:'乾杯前に飲む'},
+        {kr:'상사 잔 안 채움', jp:'上司のグラスを満たさない'}
+      ],
+      '👔 넥타이':[
+        {kr:'매듭 풀지 않고 걸어둠', jp:'結び目を締めたまま外して掛ける'},
+        {kr:'세탁 없이 한 달 넘게 사용', jp:'クリーニングせず1ヶ月以上使う'},
+        {kr:'식사 중에 넥타이 더럽힘', jp:'食事中にネクタイを汚す'}
+      ],
+      '📠 팩스기':[
+        {kr:'종이 걸림 방치', jp:'紙詰まりを放置'},
+        {kr:'토너 떨어져도 안 바꿈', jp:'トナー切れで送信できず慌てる'},
+        {kr:'잘못된 번호로 전송', jp:'間違った番号にFAX送信'}
+      ],
+      '🎙️ 기본':[
+        {kr:'잘못된 사용법', jp:'間違った使い方'},
+        {kr:'손질 안 함', jp:'手入れをしない'},
+        {kr:'장기간 방치', jp:'長期間放置'}
+      ]
+    }
+  },
+  complaint:{
+    kr:{
+      '🧊 냉장고':[
+        '냉장고 문 10초 이상 열고 고민',
+        '유통기한 지난 음식 쳐박아둠',
+        '냉장고 안에서 몰래 간식 꺼내먹음'
+      ],
+      '🌀 세탁기':[
+        '빨래 다 끝났는데 안 꺼냄',
+        '혼합세탁으로 흰옷 색 뺐음',
+        '필터 청소 한 번도 안 함'
+      ],
+      '⏰ 알람시계':[
+        '스누즈 30분 넘게 누르다가 지각',
+        '주말에 알람 안 끄고 방치',
+        '알람 소리 무시하고 다시 잠'
+      ],
+      '🗑️ 쓰레기통':[
+        '쓰레기통 바로 옆에 두고 버림',
+        '꽉 찼는데도 계속 쑤셔넣음',
+        '음식물 일반쓰레기에 넣음'
+      ],
+      '🔌 충전기':[
+        '남의 충전기 말없이 씀',
+        '충전 100% 되어도 빼지 않음',
+        '충전선 돌돌 말아서 망가뜨림'
+      ],
+      '🚰 싱크대':[
+        '설거지 3일째 쌓아둠',
+        '음식물 찌꺼기 그대로 흘려보냄',
+        '라면 국물 그대로 부음'
+      ],
+      '☕ 커피잔':[
+        '커피 마시고 잔 안 씻음',
+        '탕비실 공용 잔 자기만 씀',
+        '책상 위에 3일 된 커피 방치'
+      ],
+      '⌨️ 키보드':[
+        '과자 먹으면서 키보드 뚝딱',
+        '한 번도 청소 안 함',
+        '다른 사람 키보드 말없이 씀'
+      ],
+      '🛗 엘리베이터':[
+        '혼자 타고 문 닫기 버튼',
+        '1층 가면서 중간층마다 누름',
+        '휴대폰 스피커폰 통화'
+      ],
+      '🖨️ 프린터':[
+        '종이 다 쓰고 안 채움',
+        '본인 문서만 100장 출력',
+        '종이 걸리면 그냥 두고 감'
+      ],
+      '🎙️ 기본':[
+        '민폐 행동',
+        '이기적인 태도',
+        '배려 없음',
+        '규칙 안 지킴'
+      ]
+    },
+    jp:{
+      '🧊 냉장고':[
+        {kr:'냉장고 열어놓고 5분간 고민', jp:'冷蔵庫を開けたまま5分悩む'},
+        {kr:'유통기한 지난 거 안쪽에 숨김', jp:'賞味期限切れを奥に隠す'},
+        {kr:'공용 냉장고에서 남의 거 몰래 먹음', jp:'共用冷蔵庫で人のものを食べる'}
+      ],
+      '🌀 세탁기':[
+        {kr:'세탁 끝난지 몇 시간째 방치', jp:'洗濯終了後、何時間も放置'},
+        {kr:'남의 빨래 맘대로 꺼냄', jp:'他人の洗濯物を勝手に出す'},
+        {kr:'건조기 혼자 독점', jp:'乾燥機を独占する'}
+      ],
+      '🚃 통근 전철':[
+        {kr:'우선석에서 스마트폰 게임', jp:'優先席でスマホゲーム'},
+        {kr:'백팩 뒤로 메고 그대로', jp:'リュックを背負ったまま'},
+        {kr:'큰소리로 통화', jp:'大声で通話'},
+        {kr:'화장을 전철 안에서 함', jp:'電車内で化粧をする'},
+        {kr:'음료 흘려놓고 그냥 내림', jp:'飲み物をこぼして降りる'}
+      ],
+      '🗑️ 분리수거통 (연소/불연)':[
+        {kr:'분리배출 규칙 완전 무시', jp:'分別を全く守らない'},
+        {kr:'쓰레기 봉투 없이 그냥 버림', jp:'ゴミを袋に入れずそのまま'},
+        {kr:'수거일 아닌 날 배출', jp:'収集日以外に出す'}
+      ],
+      '🍺 회식 잔':[
+        {kr:'일기(一気) 강요', jp:'一気飲みを強要'},
+        {kr:'못 마시는 사람에게 무리하게 권함', jp:'飲めない人に無理強い'},
+        {kr:'계산 때 도망', jp:'会計で逃げる'}
+      ],
+      '🏢 타임카드':[
+        {kr:'동료 타임카드 대신 찍어줌', jp:'同僚のタイムカードを代わりに押す'},
+        {kr:'퇴근시간 되자마자 도망', jp:'定時ちょうどに逃げる'}
+      ],
+      '🎙️ 기본':[
+        {kr:'민폐 행동', jp:'迷惑行為'},
+        {kr:'매너 위반', jp:'マナー違反'},
+        {kr:'자기중심적 행동', jp:'自己中心的な行動'}
+      ]
+    }
+  }
+};
+
+// ═══ 스타일 템플릿 (배경 디테일 강화) ═══
+const STYLE_TEMPLATES = {
+  webtoon:{note:'📱 웹툰 — 손그림 라인, 얼굴이 사물에 스케치된 듯한 스타일',
+    base:'Korean webtoon hand-drawn illustration style, expressive sketched human face rendered directly onto the object surface with visible pencil and ink linework, cross-hatching and rough shading details, the face features (eyes, nose, mouth) look hand-drawn on the object rather than separate cartoon features, warm paper-like texture on the background, slightly imperfect wobbly lines adding a hand-drawn charm, muted natural color palette with soft accent colors'},
+  sketch:{note:'✏️ 스케치 — 연필/잉크 손그림 느낌',
+    base:'hand-drawn pencil and ink sketch animation style, rough expressive linework, visible cross-hatching, warm paper texture, slightly wobbly boiling lines, simple monochrome-leaning palette with occasional light color wash'},
+  bmeme:{note:'🤪 병맛 만화 — 과장되고 병맛, 한국 밈 스타일',
+    base:'Korean meme-style absurd comic illustration, deliberately off-putting and exaggerated cartoon faces with bulging eyes and weird expressions, chaotic hand-drawn feel, thick uneven outlines, garish unnatural color palette, slightly janky proportions, Deep-Fried meme aesthetic mixed with Korean Ddabong meme energy, comedy-first intentionally weird style'}
+};
+
+// ═══ 감정 표현 맵 — 병맛 톤 버전 ═══
+const MOODS = {
+  annoyed:{
+    label:'😒 짜증남',
+    imgFace:'a neutral meme face with subtle irritation — slight eye roll, calm mouth, minimal expression',
+    face:'eyebrows furrowed slightly in annoyance, lips pressed tight, eyes rolling with mild irritation',
+    perform:'병맛 톤으로 짜증내기 — "아 좀ㅋㅋ", "하…", "또야?" 같은 인터넷 밈 말투. 과장된 한숨.'
+  },
+  angry:{
+    label:'😤 화남',
+    imgFace:'a composed meme face with small tension — slight frown, serious eyes, closed mouth',
+    face:'sharply furrowed brows, clenched teeth, exaggerated bulging eyes',
+    perform:'병맛 톤으로 화내기 — "헐 뭐임?", "미쳤나ㅋㅋ", "아오 진심" 같은 밈 말투. 과장된 빡침.'
+  },
+  furious:{
+    label:'🤬 격분',
+    imgFace:'a stern grounded meme expression — firm mouth, intense but controlled eyes',
+    face:'extremely furrowed brows, bared teeth snarl, bulging eyes with rage lines, meme-style anger veins',
+    perform:'병맛 톤 폭발 — "아ㅋㅋㅋ진짜?", "선넘었다ㄹㅇ", "띠용?!" 같은 과장 밈 말투. 폭발 직전 에너지.'
+  },
+  scolding:{
+    label:'☝️ 훈계하는',
+    imgFace:'a composed thoughtful meme face — mild focused eyes, calm mouth',
+    face:'stern meme-style frown, exaggerated pointing finger, lecture-mode eyes',
+    perform:'병맛 꼰대 톤 — "자자 들어봐라", "내 말 들어라 좀", "이게 바로~" 같은 훈계조. 병맛 점잖은 척.'
+  },
+  disappointed:{
+    label:'😞 실망한',
+    imgFace:'a subdued soft meme expression — slightly lowered eyes, gently closed mouth',
+    face:'deep exhausted meme eyes, mouth downturned in disappointment, heavy sigh vibe',
+    perform:'병맛 실망 톤 — "에휴…", "그럴 줄 알았다", "진짜 실망이다" 같은 체념 섞인 밈 말투.'
+  },
+  shocked:{
+    label:'😨 당황/충격',
+    imgFace:'a neutral alert meme face — mildly raised eyebrows, calm open eyes',
+    face:'eyes wide open in meme-style shock, mouth agape, eyebrows comically raised',
+    perform:'병맛 충격 톤 — "헐???", "띠용!", "뭐임??", "ㅁㅊ" 같은 충격 반응. 과장된 놀람.'
+  },
+  smug:{
+    label:'😏 잘난척',
+    imgFace:'a subtle confident meme look — slight upturned mouth corner, relaxed eyes',
+    face:'one eyebrow arched high with meme smirk, half-lidded smug eyes, knowing grin',
+    perform:'병맛 잘난척 톤 — "흠... 너 이거 몰랐지?", "내가 할게 말 좀", "하이루~ 이렇게 하는거야" 같은 능글 말투.'
+  },
+  tired:{
+    label:'😩 지친/한숨',
+    imgFace:'a relaxed neutral meme face — gently closed mouth, softly settled eyes',
+    face:'eyebrows sagging in exhaustion, heavy eyelids, meme-tired expression with dark circles',
+    perform:'병맛 번아웃 톤 — "아 진짜ㅋㅋ", "하…", "몰라 이제", "그러든가 말든가" 같은 무기력 밈.'
+  },
+  worried:{
+    label:'😟 걱정하는',
+    imgFace:'a gentle thoughtful meme face — eyebrows softly together, calm attentive eyes',
+    face:'eyebrows pulled together in worry, mouth frowning slightly, wide concerned eyes',
+    perform:'병맛 오버 걱정 톤 — "야 괜찮아???", "진심 걱정됨", "나까지 불안한데?" 같은 과한 걱정.'
+  },
+  sassy:{
+    label:'💅 새침한',
+    imgFace:'a composed neutral meme look — slight pursed lips, confident still eyes',
+    face:'pursed lips, eyes rolling with attitude, chin tilted up in meme-style sass',
+    perform:'병맛 새침 톤 — "흥 나도 안 할래", "그래그래~", "아님 말고ㅋ" 같은 삐진 듯 밈.'
+  },
+  crying_angry:{
+    label:'😭 울분',
+    imgFace:'a quiet somber meme expression — slight under-eye shading, closed calm mouth',
+    face:'eyes welling up with rage tears, cheeks red, trembling mouth',
+    perform:'병맛 울분 톤 — "ㅠㅠㅠ 진짜!", "아 화나서 눈물남", "내가 왜 이래야 해?" 같은 과장된 감정 폭발.'
+  },
+  chibi_rage:{
+    label:'👹 폭발 직전',
+    imgFace:'a subtly tense meme face — firmly set mouth, focused eyes, controlled composure',
+    face:'meme-style super rage with huge sweat drop, cross vein pop, gigantic angry eyes',
+    perform:'병맛 폭발 직전 — "후...", "한 번만... 더...", "참는다 참아" 같은 꾹 참다 폭발 직전 밈.'
+  }
+};
+
+// ═══ 배경 상황별 소품 매핑 (이미지 프롬프트 디테일 강화용) ═══
+// ═══ 사물별 실제 크기 힌트 (비율/스케일을 프롬프트에 강제하기 위함) ═══
+// 카테고리별로 real-world size reference + 화면 내 프레이밍 가이드
+const SIZE_HINTS = {
+  // 대형 가전 (사람 키와 비슷하거나 큼)
+  'large_appliance': 'real-world life-size — roughly 150-180cm tall or wall-mounted, matches how it actually appears in a real home. Framed from mid-shot to wide, so the object fills about 60-70% of the vertical frame without distortion',
+  // 중형 가전 (허리~가슴 높이)
+  'medium_appliance': 'real-world counter-top or floor-standing size — around 30-60cm, sitting naturally on its actual surface. Framed so the object takes about 50-60% of the frame with realistic surroundings visible',
+  // 소형 주방/욕실용품 (한 손 크기)
+  'small_handheld': 'real-world hand-held size — around 10-25cm. Framed in a realistic close-up but NOT extreme macro — the surrounding scene is still clearly visible around it, the object takes about 40-50% of the frame',
+  // 가구
+  'furniture': 'real-world furniture size — matches a real bed/desk/chair in a normal room. Framed wide enough to show its actual scale relative to the room, object takes about 50-60% of the frame',
+  // 작은 사무/생활 소품
+  'tiny_object': 'real-world tiny object size — around 5-15cm. Framed with care so it does NOT look absurdly enlarged — the natural surrounding (desk surface, palm-sized perspective) is clearly shown, object takes about 30-45% of the frame',
+  // 큰 공간/장소
+  'space': 'real-world architectural scale — a full room or vehicle interior. Framed as establishing shot showing the whole environment realistically',
+  // 기본값
+  'default': 'real-world life-size matching how this object actually appears in daily life — never cartoonishly oversized, never shrunken. The object sits naturally in its real environment with correct scale relative to surrounding props'
+};
+
+// 사물 → 크기 카테고리 매핑
+const OBJECT_SIZE = {
+  // 대형 가전
+  '🧊 냉장고':'large_appliance', '🌀 세탁기':'large_appliance', '❄️ 에어컨':'large_appliance', '🧹 청소기':'medium_appliance',
+  // 중형
+  '🍚 전기밥솥':'medium_appliance', '🖨️ 프린터':'medium_appliance', '🖥️ 사무용 책상':'furniture',
+  '📠 팩스기':'medium_appliance', '🥤 자판기':'large_appliance',
+  // 가구
+  '🛏️ 침대':'furniture', '🛌 이불':'furniture', '🛌 후톤 이불':'furniture',
+  // 소형
+  '⏰ 알람시계':'small_handheld', '🪞 거울':'medium_appliance', '🚿 샤워기':'small_handheld',
+  '☕ 커피잔':'small_handheld', '🍜 컵라면':'small_handheld', '🍱 편의점 도시락':'small_handheld',
+  '🍙 오니기리 도시락':'small_handheld', '📟 에어컨 리모컨':'tiny_object',
+  // 초소형
+  '🔌 충전기':'tiny_object', '🧻 화장지 롤':'small_handheld', '🦷 칫솔':'tiny_object',
+  '⌨️ 키보드':'small_handheld', '📇 명함':'tiny_object', '💳 통장':'tiny_object',
+  '🔴 도장(한코)':'tiny_object', '👔 넥타이':'small_handheld', '📎 서류 클립':'tiny_object',
+  // 공간
+  '🛁 욕조':'furniture', '🚰 싱크대':'furniture', '🗑️ 쓰레기통':'medium_appliance',
+  '🗑️ 분리수거통 (연소/불연)':'medium_appliance', '🛗 엘리베이터':'space',
+  '🚃 통근 전철':'space', '🚲 자전거':'furniture',
+  // 기타
+  '🍺 회식 잔':'small_handheld', '💼 노트북':'small_handheld', '📧 이메일 받은편지함':'small_handheld',
+  '🏢 타임카드':'small_handheld', '🪟 쇼지 (장지문)':'furniture', '🧊 유니트 버스':'space'
+};
+
+function getSizeHint(objKey){
+  const cat = OBJECT_SIZE[objKey] || 'default';
+  return SIZE_HINTS[cat];
 }
 
-// ═══ 감정별 시연 스타일 (앵그리 무드 전용) ═══
-const ANGRY_EMOTION_REVEAL_STYLE = {
+// ═══ 사물의 자연 작동 모션 (세탁기는 돌아가고, 전자레인지는 턴테이블 돌고 등) ═══
+const FUNCTION_MOTION = {
+  '🌀 세탁기': 'the drum visibly spinning behind the glass door with tumbling laundry inside — actual washing cycle in progress with water suds visible, the machine body gently vibrating from the spin',
+  '🧊 냉장고': 'interior fridge light pulsing faintly when face moves, condensation droplets slowly forming on the door handle, ice cubes occasionally clinking faintly inside',
+  '❄️ 에어컨': 'the front louvers/fins gently oscillating up and down, visible cool mist or air puffing out from the vent, fan blades faintly spinning behind the grill',
+  '🚿 샤워기': 'water actively streaming out in a continuous spray, steam rising visibly, water droplets bouncing off the tiled wall',
+  '🍚 전기밥솥': 'active steam billowing continuously from the top vent, pressure valve gently rocking, condensation forming on the lid edge',
+  '⏰ 알람시계': 'digital numbers faintly flickering/ticking second by second, LED colon blinking, hour hand visibly crawling if analog',
+  '🚰 싱크대': 'water slowly dripping from the faucet into a dish below, soap bubbles drifting on the water surface, drain gurgling quietly',
+  '💼 노트북': 'screen content subtly changing/refreshing, notification dot blinking, keyboard backlight pulsing, charging indicator LED breathing',
+  '⌨️ 키보드': 'keyboard backlight pulsing in wave pattern, one key occasionally pressing down as if typing by itself',
+  '🖥️ 모니터': 'screen content animating naturally (cursor blinking, notifications popping), power LED pulsing, subtle screen flicker',
+  '🧹 청소기': 'bristle roller spinning visibly at the base, dust particles being pulled into the intake, LED power indicator glowing',
+  '📠 팩스기': 'paper slowly feeding through with indicator LED blinking, fax receiving light pulsing',
+  '🥤 자판기': 'interior LED lights cycling through colors, displayed items occasionally glowing as if highlighted, coin slot LED blinking',
+  '☕ 커피잔': 'steam actively rising and curling upward, tiny ripples in the coffee surface',
+  '🍜 컵라면': 'thick steam rising continuously from the top, noodles occasionally bobbing in the broth',
+  '🍱 편의점 도시락': 'visible condensation inside the plastic lid, food steam escaping through the opening',
+  '📧 이메일 받은편지함': 'new email notifications popping up on the screen one by one, unread count number incrementing, icons flashing',
+  'default': ''
+};
+function getFunctionMotion(objKey){
+  return FUNCTION_MOTION[objKey] || FUNCTION_MOTION['default'] || '';
+}
+
+// ═══ 감정별 시연 스타일 ═══
+const EMOTION_REVEAL_STYLE = {
+  annoyed: 'with an irritated flick — swiftly and impatiently',
   angry: 'forcefully slamming it open — aggressively showing off',
   furious: 'violently ripping it open — raging hard',
-  annoyed: 'with an irritated flick — swiftly and impatiently',
   scolding: 'deliberately opening it while pointing inside — lecture mode',
-  threatening: 'ominously opening it with slow menace — controlled danger',
-  crying_angry: 'opening it while tearing up from rage — emotional reveal',
-  suppressed: 'slowly opening it with tightly controlled rage — barely holding it together',
   disappointed: 'slowly and wearily opening it — resigned sigh',
-  cold_rage: 'coldly opening it with chilling calm — flat unblinking focus',
-  breaking_point: 'yanking it open as patience snaps — on the edge',
-  righteous: 'confidently opening it with moral authority — "look at this!"',
-  chibi_rage: 'violently yanking it open — chibi cartoon rage explosion',
-  spark_eye: 'snapping it open with electric intensity — sparks crackling',
-  dramatic_wind: 'dramatically opening it with wind blowing backward — cinematic unveiling',
-  cute_angry: 'cutely but firmly opening it with puffed cheeks — adorable fury'
+  shocked: 'suddenly popping it open in disbelief — as if the character itself is surprised',
+  smug: 'slowly and smugly opening it — "voila" gesture with a self-satisfied smirk',
+  tired: 'barely managing to open it — exhausted half-hearted motion',
+  worried: 'gingerly opening it with concern — worried reveal',
+  sassy: 'opening it with a sassy flip — attitude-filled motion',
+  crying_angry: 'opening it while tearing up from rage — emotional reveal',
+  chibi_rage: 'violently yanking it open — chibi cartoon rage explosion'
 };
 
-// ═══ 사물별 "기능 시연" — 캐릭터가 자기 기능을 직접 보여줌 ═══
+// ═══ 사물별 기능 시연 ═══
 const FUNCTION_REVEAL = {
   '🧊 냉장고': {
     action: 'opens ONLY the lower refrigerator door (the one WITHOUT the face) with one cartoon arm, keeping the upper freezer door with the face completely still and closed',
-    reveal: 'revealing the interior of the lower fridge compartment — shelves stacked with kimchi containers, plastic water bottles, leftover takeout boxes, a half-empty milk carton, cold white interior light spilling out from below. The face on the upper part stays locked in place'
+    reveal: 'revealing the interior of the lower fridge compartment — shelves stacked with kimchi containers, plastic water bottles, leftover takeout, cold white interior light spilling out. The face on the upper part stays locked in place'
   },
   '🌀 세탁기': {
-    action: 'starts the drum spinning behind its transparent glass door (the door itself stays closed — the spinning happens visibly THROUGH the glass; the face on the main body stays fixed in place)',
-    reveal: 'through the clear glass door we see the drum rotating with tumbling laundry inside, water suds sloshing, soap bubbles pressing against the glass from inside. The face remains locked on its original position'
+    action: 'starts the drum spinning behind its transparent glass door (the door itself stays closed; the face on the body stays fixed)',
+    reveal: 'through the clear glass door we see the drum rotating with tumbling laundry inside, water suds sloshing. The face remains in its original position'
   },
   '🍚 전기밥솥': {
-    action: 'releases a massive burst of steam from the steam vent on top (the lid itself stays closed — NO lid opening; the face on the front body stays completely fixed)',
-    reveal: 'powerful steam billowing upward from the top vent, pressure valve hissing loudly, condensation droplets forming around the lid edge'
+    action: 'releases a massive burst of steam from the top vent (lid stays closed; the face stays fixed)',
+    reveal: 'powerful steam billowing upward from the top vent, pressure valve hissing, condensation forming around the lid edge'
   },
   '🧹 청소기': {
     action: 'activates its own suction',
-    reveal: 'the intake pulling in visible dust particles, crumbs, hair, small debris from the floor, bristle roller spinning fast at the base, LED power indicator glowing'
+    reveal: 'the intake pulling in visible dust particles, crumbs, hair from the floor, bristle roller spinning fast, LED indicator glowing'
   },
   '🗑️ 쓰레기통': {
-    action: 'flips its own lid open wide (if the face is on the lid, it rotates upward naturally along with the lid as it tilts back; if the face is on the body, the face stays still and only the lid flips)',
+    action: 'flips its lid open (if face is on lid, rotates with it naturally; if face is on body, face stays still)',
     reveal: 'the contents inside become visible — crumpled plastic bags, coffee cups, food wrappers piled up, a tiny fly buzzing out'
   },
   '☕ 커피잔': {
-    action: 'tilts itself slightly to show its content',
-    reveal: 'thick aromatic steam rising in curls, rich dark coffee with tiny ripples on the surface'
+    action: 'tilts itself slightly',
+    reveal: 'thick aromatic steam rising in curls, rich coffee with tiny ripples on the surface'
   },
   '🍜 컵라면': {
     action: 'opens its own lid halfway',
@@ -454,7 +1091,7 @@ const FUNCTION_REVEAL = {
   },
   '📺 TV': {
     action: 'turns its own screen on',
-    reveal: 'the screen lighting up with actual playing content, screen glow casting flickering light on the walls'
+    reveal: 'the screen lighting up with actual playing content, screen glow casting flickering colored light on walls'
   },
   '💼 노트북': {
     action: 'flips its screen open to the viewer',
@@ -464,22 +1101,22 @@ const FUNCTION_REVEAL = {
     action: 'turns on its faucet',
     reveal: 'water actively streaming from the tap, dirty dishes piling up with soap suds'
   },
+  '❄️ 에어컨': {
+    action: 'snaps its louvers wide open',
+    reveal: 'fan blades spinning rapidly, cool mist puffing out, temperature display lighting up'
+  },
+  '🚿 샤워기': {
+    action: 'turns its water on',
+    reveal: 'water streaming out in a powerful spray, steam rising, droplets bouncing off tile'
+  },
   'default': null
 };
 
-function getFunctionReveal(objKr, mood){
-  if(!objKr) return '';
-  let reveal = null;
-  for(const key of Object.keys(FUNCTION_REVEAL)){
-    if(key === 'default') continue;
-    if(objKr.includes(key.replace(/^[^\s]+\s*/, '')) || objKr === key){
-      reveal = FUNCTION_REVEAL[key];
-      break;
-    }
-  }
+function getFunctionReveal(objKey, mood){
+  let reveal = FUNCTION_REVEAL[objKey];
   if(!reveal){
     // 키워드 매칭
-    const k = objKr;
+    const k = objKey || '';
     if(k.includes('냉장고')) reveal = FUNCTION_REVEAL['🧊 냉장고'];
     else if(k.includes('세탁기')) reveal = FUNCTION_REVEAL['🌀 세탁기'];
     else if(k.includes('밥솥')) reveal = FUNCTION_REVEAL['🍚 전기밥솥'];
@@ -490,183 +1127,398 @@ function getFunctionReveal(objKr, mood){
     else if(k.includes('TV')||k.includes('티비')) reveal = FUNCTION_REVEAL['📺 TV'];
     else if(k.includes('노트북')) reveal = FUNCTION_REVEAL['💼 노트북'];
     else if(k.includes('싱크대')) reveal = FUNCTION_REVEAL['🚰 싱크대'];
+    else if(k.includes('에어컨')) reveal = FUNCTION_REVEAL['❄️ 에어컨'];
+    else if(k.includes('샤워')) reveal = FUNCTION_REVEAL['🚿 샤워기'];
   }
   if(!reveal) return '';
-  const emotionStyle = ANGRY_EMOTION_REVEAL_STYLE[mood] || ANGRY_EMOTION_REVEAL_STYLE.angry;
+  const emotionStyle = EMOTION_REVEAL_STYLE[mood] || EMOTION_REVEAL_STYLE.angry;
   return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
 }
 
-// 카테고리별 주변 ambient motion (너무 잡스럽지 않게 1-2 포인트)
-const AMBIENT_BY_CAT = {
-  food:'steam rising from nearby food, condensation droplets slowly forming on cold drinks, a napkin corner barely fluttering',
-  object:'fabric or paper edges slightly moving, dust particles drifting through light, a stray item on the floor nearby',
-  electronics:'screen glow pulsing subtly, charging indicator light blinking, cable slightly trembling',
-  furniture:'curtain edges gently swaying, dust particles in sunbeams, a small houseplant leaf barely moving',
-  vehicle:'exhaust steam in cold air or wheel reflections, a stray leaf or litter tumbling in the breeze nearby',
-  animal:'small fur/feather movement from breathing, whiskers or ears twitching, background foliage gently swaying',
-  nature:'wind through grass/branches, small insects or dust in the air, subtle light rays shifting',
-  toy:'other small toys scattered around, dust particles in the light, a thread hanging from a nearby plushie',
-  stationery:'paper edges fluttering from AC, a pencil slightly rolling, eraser dust floating',
-  sports:'dust or chalk in the air, a cone or marker slightly rocking, distant players blurred in background',
-  fashion:'fabric folds barely shifting, tag fluttering, display light reflecting',
-  building:'passersby blurred in deep background, traffic light changing color, a leaflet or bag tumbling',
-  kitchen:'steam rising from pots or kettle, condensation on windows, oil sizzling visually',
-  tool:'dust particles from recent work, a loose screw on the surface, light flicker from work lamp'
+const SCENE_PROPS = {
+  kr:{
+    '🧊 냉장고':{loc:'inside a small Korean one-room apartment kitchen — refrigerator sitting in its natural kitchen corner',props:'the fridge is the main subject. Around it: kitchen counter with rice cooker and instant coffee sticks, magnetic takeout menu flyers stuck on the fridge door (one slightly curled at the corner), a small dish rack with a couple of drying plates, a hanging apron on a nearby hook, warm apartment lighting from a ceiling fixture',ambient:'faint steam rising from the nearby rice cooker vent, a takeout flyer trembling slightly when the fridge moves'},
+    '🌀 세탁기':{loc:'in a Korean apartment laundry corner on the veranda',props:'the washing machine is the main subject. Around it: laundry basket overflowing with clothes, detergent and fabric softener bottles on a plastic shelf, a drying rack with hanging t-shirts and socks behind, morning daylight through frosted sliding windows, a few stray socks on the floor',ambient:'hanging clothes swaying very slightly in the air, soft shadows moving from the breeze, window reflections shifting'},
+    '🛏️ 침대':{loc:'in a Korean one-room studio bedroom at morning',props:'the bed with crumpled blanket is the main subject. Around it: nightstand with half-empty water cup and face-down smartphone, a messy laundry pile in the corner, a wall calendar with circled dates, curtains partially drawn letting morning light in, a pair of slippers on the floor',ambient:'dust particles drifting through sunbeams, curtains barely fluttering'},
+    '⏰ 알람시계':{loc:'on a wooden bedside table in a dim Korean bedroom at early morning',props:'the digital alarm clock glowing red numbers is the main subject. Around it: smartphone beside it face-down charging, a half-empty water bottle with condensation, rumpled sheets and a pillow at frame edge, a small lamp turned off, a novel or magazine face-down',ambient:'digital clock numbers faintly flickering, thin dawn light slowly brightening through curtains'},
+    '🔌 충전기':{loc:'plugged into a wall outlet beside a bed in a Korean one-room',props:'the phone charger cable is the main subject, snaking from the wall. Around it: smartphone with cracked low battery icon next to it, a messy power strip with tangled cables (earbuds, laptop charger), dim warm lamp light, a water bottle',ambient:'faint charging indicator pulse, subtle warm light flicker'},
+    '🗑️ 쓰레기통':{loc:'in a Korean apartment kitchen corner next to the entrance',props:'the overflowing trash can is the main subject. Around it: food waste and crumpled plastic bags visible on top, the floor around it slightly messy with a stray wrapper, recycling bags stacked against the wall, a broom leaning in the corner, scuffed baseboards',ambient:'a tiny fly hovering nearby, plastic bag rustling faintly'},
+    '🚰 싱크대':{loc:'in a small Korean apartment kitchen',props:'the sink piled with unwashed dishes is the main subject. Around it: sponge and dish soap bottle on the edge, water droplets and residue on stainless steel, a Korean side dish container (banchan) on the counter beside, dish rack with upside-down bowls, window above with partially drawn curtain',ambient:'a slow water drip from the faucet, steam hint from the drain'},
+    '🪞 거울':{loc:'in a Korean unit bathroom',props:'the bathroom mirror with water spots and toothpaste splatter is the main subject. Around it: sink below with toothbrush cup and hand soap, fluorescent bathroom lighting, a hanging towel, hair dryer cord visible, small shelf with skincare bottles',ambient:'condensation slowly forming on edges, toothbrush cup water surface slightly rippling'},
+    '❄️ 에어컨':{loc:'mounted on the wall of a Korean apartment living room',props:'the wall-mounted air conditioner is the main subject. Around it: remote control on a nearby table, sofa partially visible with a cushion, summer daylight through a window with sheer curtain, a small indoor plant, ceiling molding',ambient:'sheer curtain gently drifting, indoor plant leaves barely swaying from airflow'},
+    '🚿 샤워기':{loc:'in a Korean apartment bathroom shower area',props:'the showerhead with water droplets is the main subject. Around it: tiled wall with small grout lines, shampoo and body wash bottles on a shelf, a loofah hanging on a hook, bath mat edge visible, faint steam hovering',ambient:'water drops occasionally falling from the showerhead, gentle steam drifting upward'},
+    '🍚 전기밥솥':{loc:'on a Korean kitchen countertop',props:'the electric rice cooker with steam rising from its vent is the main subject. Around it: wooden rice scoop beside it, kimchi container on the counter, a Korean soy sauce bottle, a small dish with seasoned soybeans, stainless steel backsplash, wall-mounted spice rack',ambient:'active steam billowing from the cooker vent, gentle rising heat distortion above'},
+    '☕ 커피잔':{loc:'on an office desk in a Korean corporate setting',props:'the coffee mug is the main subject. Around it: laptop and keyboard, scattered documents with highlighter marks, pen holder with multiple pens, a desk calendar, sticky notes on monitor frame, a small potted succulent, soft office lighting',ambient:'steam rising from the coffee mug, office light reflecting off monitor, a sticky note corner fluttering from AC airflow'},
+    '⌨️ 키보드':{loc:'on an office desk',props:'the mechanical keyboard is the main subject. Around it: monitor partially visible with code or document, mouse beside it, a coffee mug with steam, scattered documents, a pen holder, sticky notes',ambient:'monitor screen faint glow, steam from coffee, dust particles in light'},
+    '🖥️ 사무용 책상':{loc:'in a Korean office cubicle',props:'the cluttered office desk is the main subject. Around it: monitor with spreadsheet visible, keyboard and mouse, stacks of documents, coffee mug, sticky notes on monitor frame, a small plastic plant, calendar, office chair partially visible',ambient:'monitor glow shifting, fluorescent ceiling light humming visually, papers edge fluttering from AC'},
+    '💳 통장':{loc:'on a small table in a Korean apartment',props:'the bank account book is the main subject. Around it: smartphone showing banking app nearby, a pen, scattered receipts, a calculator, a cup of water, documents in a folder',ambient:'phone screen faintly glowing, paper edges slightly lifting'},
+    '📧 이메일 받은편지함':{loc:'on a laptop screen in a home office',props:'the laptop screen showing email inbox is the main subject. Around it: coffee mug beside laptop, scattered notes and a pen, warm desk lamp glow, a small plant, keyboard partially visible',ambient:'screen notifications occasionally blinking in, desk lamp warmth, steam from coffee'},
+    '💼 노트북':{loc:'on a bed in a Korean one-room',props:'the laptop is the main subject on rumpled blanket. Around it: charger cable trailing off the bed, half-eaten snack bag, a water bottle, smartphone, pillow partially visible',ambient:'laptop screen soft glow, blanket creases catching shifting light'},
+    '🧻 화장지 롤':{loc:'on a toilet paper holder in a Korean bathroom',props:'the toilet paper roll is the main subject. Around it: bathroom tile wall behind, a small shelf with backup rolls, bathroom fluorescent lighting, a wet wipe container, small trash bin below',ambient:'tile condensation, slight draft making the loose end of paper flutter'},
+    '🦷 칫솔':{loc:'in a bathroom toothbrush holder beside the sink',props:'the toothbrush standing in a cup is the main subject. Around it: toothpaste tube squeezed from the middle beside it, bathroom sink with water droplets, mirror reflection, soap dispenser, hand towel',ambient:'water drop slowly falling from the faucet, cup water faintly rippling'},
+    '🧹 청소기':{loc:'on the floor of a Korean one-room apartment living area',props:'the stick vacuum cleaner is the main subject. Around it: dust bunnies and hair visible on the floor, a laundry pile, scattered items (a sock, a receipt), the corner of a sofa, carpet edge, a window letting in diagonal light',ambient:'dust particles swirling in the light beams, a stray piece of lint drifting'},
+    'default':{loc:'in a typical Korean one-room apartment where this object naturally lives',props:'the object in the foreground with authentic Korean apartment context — other lived-in items placed naturally around it, warm daily lighting from a ceiling fixture, contextually relevant smaller objects visible but not distracting',ambient:'subtle ambient motion — dust in light, fabric or paper edges faintly moving, natural light shifts'}
+  },
+  jp:{
+    '🍱 편의점 도시락':{loc:'on a small table in a Japanese 1K apartment at dinner time',props:'the konbini bento box with plastic lid is the main subject. Around it: wooden disposable chopsticks, an open can of green tea with condensation, soy sauce packet, used konbini plastic bag crumpled beside, tatami visible at frame edge, a small TV remote',ambient:'steam rising from the opened bento, can condensation droplets forming'},
+    '🧊 냉장고':{loc:'in a small Japanese 1K apartment kitchen',props:'the compact fridge is the main subject. Around it: Japanese magnetic memo board on the door, kitchen corner with rice cooker, soy sauce bottle, a hanging apron, mini trash bin, tight urban apartment setting',ambient:'memo paper edges fluttering, a small magnet slightly trembling'},
+    '🌀 세탁기':{loc:'on the balcony of a Japanese apartment (typical setup)',props:'the Japanese top-load washer is the main subject. Around it: laundry pole with hanging clothes and socks, detergent bottles on plastic shelf, concrete balcony floor, futon clip, a bird on the railing in the background',ambient:'hanging laundry swaying gently in the breeze, distant city sounds implied'},
+    '🛌 후톤 이불':{loc:'on a tatami floor in a Japanese apartment',props:'the futon bedding is the main subject laid on tatami. Around it: shoji screen in the background, small pillow, folded yukata, morning light through paper screens, a small low lamp, slippers at the edge',ambient:'soft light filtering through shoji, dust particles in the beams'},
+    '🛁 욕조':{loc:'in a Japanese unit bath',props:'the deep ofuro bathtub is the main subject. Around it: tiled bathroom wall, wall showerhead, bath stool and small bucket, shampoo bottles on a shelf, a rolled towel, gentle steam',ambient:'steam actively rising from the water, water surface faintly rippling'},
+    '🍜 컵라면':{loc:'on a desk in a Japanese 1K apartment at night',props:'the instant cup ramen with steam is the main subject. Around it: disposable chopsticks, a laptop open in the background (screen glowing), scattered manga or documents, small desk lamp, can of beer or tea, eraser dust',ambient:'active steam rising from the ramen, laptop screen glow shifting, desk lamp warm flicker'},
+    '🗑️ 분리수거통 (연소/불연)':{loc:'in the kitchen corner of a Japanese apartment',props:'two labeled trash bins (燃えるゴミ and 燃えないゴミ) are main subjects. Around them: Japanese recycling posters on the wall with schedule, plastic bags tied and ready, small kitchen space, crumpled flyer on floor',ambient:'a poster corner fluttering, bag plastic faintly crinkling'},
+    '🚃 통근 전철':{loc:'inside a crowded Japanese commuter train during morning rush',props:'packed train interior is the main subject view. Around it: hanging straps (tsurikawa), salarymen in suits partially visible, yellow floor line, Japanese overhead advertisements, window showing blurred passing scenery',ambient:'hanging straps swaying rhythmically, scenery blur outside window, advertisement reflections'},
+    '🔴 도장(한코)':{loc:'on a Japanese office desk',props:'the personal hanko seal is the main subject standing upright. Around it: red ink pad (shuniku), stacked documents with rows of seal marks, ballpoint pen, a calendar page, typical Japanese corporate desk setting, coffee cup',ambient:'fluorescent light faintly humming, paper edges slightly lifting from AC'},
+    '🍺 회식 잔':{loc:'at an izakaya table during a nomikai',props:'the beer mug (jokki) with foam is the main subject. Around it: wooden izakaya table, edamame bowl with discarded shells, small sake cup, warm lantern lighting, blurred izakaya atmosphere with other patrons in background, yakitori sticks',ambient:'beer foam slowly settling, lantern light flickering warmly, background figures gently moving'},
+    '👔 넥타이':{loc:'hanging on a doorknob in a Japanese apartment entrance (genkan)',props:'the necktie is the main subject hanging loose. Around it: suit jacket on a hanger behind it, leather shoes aligned in the genkan, shoe horn on the step, umbrella in a stand, keys on a small shelf',ambient:'tie swaying very slightly, warm entrance light'},
+    '📠 팩스기':{loc:'on a Japanese office desk',props:'the fax machine is the main subject. Around it: stacks of A4 paper, landline phone, sticky notes (fusen) in Japanese, pen holder, fluorescent office lighting, name plate, coffee cup',ambient:'fax indicator light blinking, paper edges fluttering'},
+    '🥤 자판기':{loc:'in a Japanese office break area',props:'the vending machine is the main subject with cans visible (coffee, cola, tea). Around it: small change tray, tile floor, warm indoor lighting, a trash bin beside, bulletin board with notices',ambient:'machine indicator lights gently pulsing, fluorescent overhead light'},
+    '⏰ 알람시계':{loc:'on a tatami floor beside a futon',props:'the alarm clock is the main subject. Around it: smartphone face-down, futon corner visible, early morning blue light through shoji, a water glass, a novel face-down, slippers',ambient:'clock display faint flicker, shoji light gradually brightening'},
+    '🚲 자전거':{loc:'parked outside a Japanese apartment building',props:'the mamachari bicycle with front basket is the main subject. Around it: old apartment facade, other bikes parked in a row, narrow street, vending machine visible down the road, a stray cat',ambient:'basket contents trembling from breeze, distant cat movement'},
+    '🏢 타임카드':{loc:'beside a time card punch machine at a Japanese office entrance',props:'the time card rack with rows of cards is the main subject. Around it: punch clock machine, company bulletin board with notices in Japanese, a wall clock, entrance floor mat',ambient:'fluorescent light gentle flicker, a notice paper corner fluttering'},
+    '🍙 오니기리 도시락':{loc:'on a desk at a Japanese office during lunch',props:'the onigiri lunchbox with rice balls is the main subject. Around it: wrapped seaweed packet, small tea bottle, chopsticks, office desk with papers, monitor partially visible, pen',ambient:'subtle office ambient light, monitor screen glow shifting'},
+    'default':{loc:'in a typical Japanese 1K urban apartment where this object naturally lives',props:'the object in the foreground with authentic Japanese apartment context — tatami or wood floor, tight compact space, warm diffused Japanese daily lighting, contextually relevant smaller objects visible but not distracting',ambient:'subtle ambient motion — light filtering through paper screens, dust in beams, fabric edges faintly moving'}
+  }
 };
 
-function getAmbient(cat){return AMBIENT_BY_CAT[cat]||'subtle ambient motion — dust in light, fabric edges faintly moving, gentle environmental life';}
-
-const STYLE_PROMPTS = {
-  pixar:{note:'🎬 픽사 3D',base:'Pixar-style 3D animation, highly expressive cartoon face on the object, two slim stylized arms emerging naturally from either side, warm volumetric studio lighting, vibrant colors, cinematic illumination, Pixar-quality render'},
-  anime:{note:'🌸 애니',base:'Studio Ghibli inspired anime illustration, clean hand-drawn ink linework, cel shading, expressive anime eyes and small stylized arms, atmospheric anime background'}
+// ═══ 목소리 톤 ═══
+const VOICE_EN = {
+  adult_m:'adult male voice, clear and natural mid-range, relatable tone',
+  deep_m:'deep adult male voice, authoritative and resonant',
+  adult_f:'adult female voice, warm and articulate mid-range',
+  old_m:'elderly male voice, slightly raspy, grandfatherly authority',
+  old_f:'elderly female voice, warm grandmotherly with slight tremor',
+  kid:'young child voice, high pitch, innocent but firm'
 };
 
-const MOOD_MAP = {
-  angry:'deeply creased brows, teeth clenched, wide eyes full of rage',
-  furious:'bared teeth in a full snarl, veins bulging, bloodshot eyes',
-  annoyed:'one eyebrow arched, lip curled dismissively, narrowed eyes',
-  scolding:'stern authoritative frown, finger pointed forward, lecture mode',
-  threatening:'dangerous low glare, jaw set tight, leaning forward',
-  crying_angry:'eyes welling with tears of rage, cheeks flushed red',
-  suppressed:'jaw clenched, cold controlled stare, barely-contained fury',
-  disappointed:'deep exhausted eyes, the look of someone who has given up',
-  cold_rage:'eerily calm expression masking absolute fury, eyes flat and unblinking',
-  breaking_point:'eyes trembling, voice about to crack, patience collapsing',
-  righteous:'standing tall with moral conviction, eyes burning',
-  chibi_rage:'super-deformed chibi rage, huge sweat drops, cross vein pop, huge angry eyes',
-  spark_eye:'eyes sparking with electricity, steam rising from head',
-  dramatic_wind:'dramatic hair flowing backward, eyes glowing white with power',
-  cute_angry:'puffed cheeks, tiny fists raised, adorable fury'
-};
-const STYLE_MOODS = {
-  pixar:['angry','furious','scolding','crying_angry','chibi_rage','dramatic_wind'],
-  anime:['chibi_rage','spark_eye','dramatic_wind','cute_angry','furious','crying_angry']
-};
-const MOOD_LABELS = {
-  angry:'😤 분노',furious:'🤬 격분',annoyed:'😒 짜증',scolding:'☝️ 훈계',threatening:'😈 위협',crying_angry:'😭 울분',
-  suppressed:'🥶 억누른 분노',disappointed:'😞 깊은 실망',cold_rage:'🧊 냉정한 분노',breaking_point:'💥 한계폭발',righteous:'⚖️ 정의로운 분노',
-  chibi_rage:'👹 SD분노',spark_eye:'⚡ 눈에서 번개',dramatic_wind:'🌪️ 드라마틱',cute_angry:'🥺 귀엽지만 화남'
-};
-
-const TOPICS = [
-  {val:'trash_basic',label:'🗑️ 쓰레기통 옆 바닥에 버리기',desc:'쓰레기통이 바로 옆에 있는데도 밖에다 쓰레기 버리는 사람'},
-  {val:'trash_recycle',label:'♻️ 분리수거 안 하고 버리기',desc:'분리수거 안 하고 다 섞어서 버리는 사람'},
-  {val:'trash_cig',label:'🚬 담배꽁초 길에 버리기',desc:'길거리나 계단에 담배꽁초 그냥 버리는 사람'},
-  {val:'noise_late',label:'🔊 새벽 층간소음',desc:'새벽에 층간소음 유발하며 쿵쿵거리는 윗집'},
-  {val:'noise_call',label:'📞 공공장소 스피커폰',desc:'공공장소에서 스피커폰 켜고 큰소리로 통화하는 사람'},
-  {val:'noise_music',label:'🎵 지하철 이어폰 없이',desc:'지하철에서 이어폰 없이 영상·음악 크게 트는 사람'},
-  {val:'parking_double',label:'🚗 이중주차·막아세우기',desc:'이중주차 해놓고 연락도 안 되는 사람'},
-  {val:'parking_disabled',label:'♿ 장애인 구역 무단주차',desc:'장애인 전용 구역에 멀쩡히 주차하는 사람'},
-  {val:'traffic_cut',label:'🛣️ 끼어들기',desc:'방향지시등도 없이 갑자기 끼어드는 운전자'},
-  {val:'public_escalator',label:'🚶 에스컬레이터 막고 서기',desc:'에스컬레이터 왼쪽 서서 뒷사람 막는 사람'},
-  {val:'public_line',label:'⏳ 당당하게 새치기',desc:'아무렇지 않게 새치기하는 사람'},
-  {val:'public_seat',label:'🪑 지하철 다리 벌리고 앉기',desc:'지하철에서 다리 쫙 벌리고 앉는 사람'},
-  {val:'public_smell',label:'😤 대중교통 냄새나는 음식',desc:'버스나 지하철에서 냄새나는 음식 먹는 사람'},
-  {val:'work_late',label:'💼 내 일 떠넘기고 칼퇴',desc:'자기 일 다 떠넘기고 칼퇴근하는 직장 동료'},
-  {val:'work_meeting',label:'📊 회의 지각',desc:'회의에 매번 지각하거나 아무 준비 없이 오는 사람'},
-  {val:'work_credit',label:'🏆 남 공 가로채기',desc:'남이 한 일 가로채서 자기 공으로 돌리는 사람'},
-  {val:'home_dishes',label:'🍽️ 설거지 안 하기',desc:'밥 먹고 나서 절대 설거지 안 하는 사람'},
-  {val:'home_promise',label:'🤝 약속 안 지키기',desc:'약속 시간에 항상 늦거나 당일에 취소하는 사람'},
-  {val:'home_ac',label:'🌡️ 에어컨 온도 마음대로',desc:'에어컨 리모컨 독점하고 온도 마음대로 바꾸는 사람'},
-  {val:'neighbor_smoke',label:'🚬 복도·계단 흡연',desc:'복도나 계단에서 담배 피우는 이웃'},
-  {val:'food_mess',label:'🍜 식당 테이블 엉망',desc:'식당 테이블 엉망으로 해놓고 그냥 가는 손님'},
-  {val:'food_waste',label:'🚯 음식 반 남기기',desc:'음식 잔뜩 시켜놓고 반도 안 먹고 버리는 사람'},
-  {val:'phone_table',label:'📱 식사 중 폰만 보기',desc:'밥 먹는 내내 상대방 무시하고 폰만 보는 사람'},
-  {val:'phone_night',label:'🌙 새벽 카톡 폭탄',desc:'새벽에 중요하지도 않은 카톡 폭탄 보내는 사람'},
-  {val:'money_borrow',label:'💸 빌린 돈 안 갚기',desc:'빌린 돈 안 갚고 아무렇지 않게 대하는 사람'},
-  {val:'money_split',label:'🧾 더 먹고 1/n',desc:'자기가 훨씬 많이 먹고도 1/n 하자는 사람'},
-  {val:'school_phone',label:'📵 수업 중 유튜브',desc:'수업 중에 몰래 유튜브 보거나 게임하는 학생'}
-];
-
-const STYLE_DIALOGUE_TONE = {
-  pixar:'과장되고 감정적이지만 귀엽고 따뜻한 픽사 캐릭터 톤',
-  anime:'애니 캐릭터처럼 아주 감정적이고 드라마틱, 감탄사 강조'
+// ═══ 스타일별 대본 톤 (국가별로 분리) ═══
+const DIALOGUE_TONE = {
+  kr:{
+    webtoon:'한국 웹툰 밈 스타일. "에휴", "진짜 어이없네", "아 좀!" 같은 짜증섞인 구어체. 티키타카 대화 리듬.',
+    sketch:'일기 쓰듯 솔직하고 담백하게. 꾸밈없는 말투로 한숨 섞인 푸념.',
+    bmeme:'한국 밈/병맛 스타일. "헐?", "ㅋㅋㅋ", "뭐임?", "아오 좀!", "어쩌라고" 같은 과장된 인터넷 밈 말투. 초월번역처럼 말도 안 되게 재밌게.'
+  },
+  jp:{
+    webtoon:'日本のSNS動画風のテンポ。「えっ？」「マジで？」「ねぇちょっと〜」など日常的な口語。',
+    sketch:'日記のように素直で飾らない口調。',
+    bmeme:'日本のネットミーム風。「草」「は？」「なんで！？」「やめてよ〜」など大げさなネット文化的口語。'
+  }
 };
 
 // ═══ STATE ═══
-const S={cat:null,obj:null,objEn:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'10'};
-let usedDialogues=[];
+const S={country:'kr',concept:'tip',cat:null,obj:null,objEn:null,objJp:null,sit:null,sitAI:null,style:null,mood:null,dur:'10',voice:'adult_m'};
+let lastScriptKR='',lastScriptJP='',lastScriptEN='';
+let currentScriptLang='native';
+let usedScripts=[];
 
-function buildTopics(){
-  const wrap=document.getElementById('topicChips');
-  TOPICS.forEach((t,i)=>{
-    const d=document.createElement('div');
-    d.className='chip'+(i===0?' active':'');
-    d.textContent=t.label;
-    d.onclick=()=>{
-      document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.remove('active'));
-      d.classList.add('active');
-      S.topic=t.val;S.topicDesc=t.desc;
-    };
-    wrap.appendChild(d);
+// ═══ 국가 선택 ═══
+function selCountry(el){
+  document.querySelectorAll('#countryChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.country=el.dataset.val;
+  S.cat=null;S.obj=null;S.objEn=null;S.objJp=null;S.sit=null;
+  document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('objectGroups').innerHTML='';
+  document.getElementById('sitChips').innerHTML='';
+  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
+  S.style=null;
+  document.getElementById('styleNote').style.display='none';
+  deact('s1b');deact('s2');deact('s3');deact('s4');
+  updateSummary();
+}
+
+// ═══ 컨셉 선택 ═══
+function selConcept(el){
+  document.querySelectorAll('.concept-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.concept=el.dataset.val;
+  // 기존 사물 유지하되, 상황 목록은 재빌드
+  if(S.obj){buildSituations();}
+  updateSummary();
+}
+
+// ═══ 카테고리 선택 ═══
+function selBmemeCat(el){
+  document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.cat=el.dataset.val;
+  S.obj=null;S.objEn=null;S.objJp=null;S.sit=null;
+  buildObjectsForCat();
+  document.getElementById('sitChips').innerHTML='';
+  done('s1');act('s1b');deact('s2');deact('s3');deact('s4');
+  updateSummary();
+}
+
+// 카테고리별 사물 표시
+function buildObjectsForCat(){
+  const wrap=document.getElementById('objectGroups');
+  wrap.innerHTML='';
+  if(!S.cat) return;
+  const groups=OBJECTS[S.country]||{};
+  const g=groups[S.cat];
+  if(!g || !g.items || g.items.length===0){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">직접 입력하거나 🎲 AI 생성을 눌러주세요.</div>';
+    return;
+  }
+  g.items.forEach(it=>{
+    const c=document.createElement('div');
+    c.className='chip';
+    c.dataset.kr=it.kr;c.dataset.en=it.en;c.dataset.jp=it.jp||'';
+    c.textContent=it.kr;
+    c.onclick=()=>selObj(it.kr,it.en,it.jp||'');
+    wrap.appendChild(c);
   });
 }
 
-// ═══ 주제 직접 입력 ═══
-function addCustomTopic(){
-  const input = document.getElementById('topicInput');
-  const val = (input.value || '').trim();
-  if(!val) return;
-  const wrap = document.getElementById('topicChips');
-  const d = document.createElement('div');
-  d.className = 'chip active';
-  d.textContent = '✏️ ' + val;
-  document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.remove('active'));
-  d.onclick = ()=>{
-    document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.remove('active'));
-    d.classList.add('active');
-    S.topic = 'custom';
-    S.topicDesc = val;
-  };
-  wrap.appendChild(d);
-  S.topic = 'custom';
-  S.topicDesc = val;
-  input.value = '';
-  d.scrollIntoView({behavior:'smooth',block:'nearest'});
+// 🎲 카테고리 랜덤
+function aiRandomCat(){
+  const chips=document.querySelectorAll('#catChips .chip');
+  if(chips.length===0) return;
+  const pick=chips[Math.floor(Math.random()*chips.length)];
+  selBmemeCat(pick);
 }
 
-// ═══ AI 주제 랜덤 생성 (선택된 사물 기반) ═══
-async function aiRandomTopic(){
-  if(!S.obj){
-    showErr('오브젝트를 먼저 선택해주세요 (Step 2).');
+function selObj(kr,en,jp){
+  document.querySelectorAll('#objectGroups .chip').forEach(c=>{
+    c.classList.toggle('active', c.dataset.kr===kr);
+  });
+  S.obj=kr;S.objEn=en;S.objJp=jp;
+  S.sit=null;
+  buildSituations();
+  done('s1b');act('s2');deact('s3');deact('s4');
+  updateSummary();
+}
+
+function buildSituations(){
+  const wrap=document.getElementById('sitChips');
+  wrap.innerHTML='';
+  const sitDB=SITUATIONS[S.concept][S.country];
+  const list=sitDB[S.obj]||sitDB['🎙️ 기본']||[];
+  if(list.length===0){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">직접 입력하거나 🎲 AI 생성을 눌러주세요.</div>';
     return;
   }
-  if(!getApiKey()){
-    showErr('API 키를 먼저 입력하고 저장해주세요.');
-    return;
+  list.forEach(sit=>{
+    // sit은 문자열이거나 {kr, jp} 객체
+    const displayText = (typeof sit === 'object') ? sit.kr : sit;
+    const aiValue = (typeof sit === 'object') ? (sit.jp||sit.kr) : sit;
+    const c=document.createElement('div');
+    c.className='chip';
+    c.textContent=displayText;
+    c.onclick=()=>selSit(displayText, aiValue, c);
+    wrap.appendChild(c);
+  });
+}
+
+function selSit(displayText, aiValue, el){
+  document.querySelectorAll('#sitChips .chip').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  S.sit = displayText;           // 화면에 보이는 한글
+  S.sitAI = aiValue || displayText;  // AI에 전달할 현지어(일본이면 일본어)
+  done('s2');act('s3');deact('s4');
+  S.style=null;
+  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('styleNote').style.display='none';
+  updateSummary();
+}
+
+function addCustom(type){
+  if(type==='obj'){
+    const v=document.getElementById('objInput').value.trim();
+    if(!v)return;
+    if(!S.cat){showErr('먼저 카테고리를 선택해주세요.');return;}
+    selObj('✏️ '+v, v, v);
+    const wrap=document.getElementById('objectGroups');
+    if(wrap){
+      const c=document.createElement('div');
+      c.className='chip active';
+      c.dataset.kr='✏️ '+v;c.dataset.en=v;c.dataset.jp=v;
+      c.textContent='✏️ '+v;
+      c.onclick=()=>selObj('✏️ '+v, v, v);
+      wrap.appendChild(c);
+    }
+    document.getElementById('objInput').value='';
+  } else {
+    const v=document.getElementById('sitInput').value.trim();
+    if(!v)return;
+    const c=document.createElement('div');
+    c.className='chip active';
+    c.textContent=v;
+    c.onclick=()=>selSit(v, v, c);
+    document.getElementById('sitChips').appendChild(c);
+    selSit(v, v, c);
+    document.getElementById('sitInput').value='';
   }
-  const btn = document.querySelector('[onclick="aiRandomTopic()"]');
+}
+
+// ═══ 스타일 ═══
+function selStyle(el){
+  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.style=el.dataset.val;
+  const note=document.getElementById('styleNote');
+  note.textContent=STYLE_TEMPLATES[S.style].note;
+  note.style.display='block';
+  done('s3');act('s4');
+  updateSummary();
+}
+
+// 감정 선택 (독립적, 스타일과 함께 작동)
+function selMood(el){
+  document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.mood=el.dataset.val;
+  updateSummary();
+}
+
+// ═══ 기타 ═══
+function selDur(el){
+  document.querySelectorAll('#durChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');S.dur=el.dataset.val;
+}
+function selVoice(el){
+  document.querySelectorAll('#voiceChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');S.voice=el.dataset.val;
+}
+
+// ═══ AI 랜덤 — 카테고리별 ═══
+// 카테고리별 AI 사물 생성
+const BMEME_CAT_DESC = {
+  home:'자취방/집 생활용품 (냉장고, 세탁기, 침대, 에어컨, 청소기, 쓰레기통 등)',
+  kitchen:'주방용품 (식칼, 프라이팬, 도마, 전자레인지, 밥솥, 믹서기 등)',
+  food:'음식·음료 (치킨, 라면, 김밥, 맥주, 피자, 아이스크림 등)',
+  electronics:'전자제품 (노트북, 모니터, 키보드, 스마트폰, 프린터, TV 등)',
+  furniture:'가구·인테리어 (소파, 의자, 책상, 선반, 커튼, 액자 등)',
+  bathroom:'욕실용품 (샤워기, 변기, 칫솔, 비누, 수건, 샴푸통 등)',
+  work:'직장 생활 (사무실 책상, 프린터, 엘리베이터, 커피머신, 회의실 등)',
+  stationery:'문구류 (연필, 볼펜, 스테이플러, 클립, 포스트잇, 자 등)',
+  vehicle:'탈것 (자동차, 자전거, 버스, 지하철, 오토바이, 킥보드 등)',
+  fashion:'패션·잡화 (운동화, 가방, 모자, 양말, 안경, 지갑 등)',
+  toy:'장난감·피규어 (곰인형, 레고, 게임기, 보드게임, 피규어 등)',
+  sports:'스포츠용품 (축구공, 농구공, 덤벨, 요가매트, 라켓 등)',
+  public:'공공장소 사물 (신호등, 우체통, 버스정류장, 자판기, 벤치 등)',
+  animal:'동물 (강아지, 고양이, 햄스터, 금붕어, 앵무새 등)',
+  nature:'자연물 (선인장, 나무, 구름, 달, 태양, 꽃 등)'
+};
+
+async function aiGenObjForCat(){
+  if(!S.cat){showErr('먼저 카테고리를 선택해주세요.');return;}
+  if(!getApiKey()){showErr('API 키를 먼저 입력하고 저장해주세요. (상단 🔑 입력란)');return;}
+  const catKey = S.cat;
+  const groupInfo = OBJECTS[S.country][catKey] || {title:catKey, items:[]};
+  const groupTitle = groupInfo.title;
+  const isKR = S.country === 'kr';
+  const categoryDesc = BMEME_CAT_DESC[catKey] || groupTitle;
+
+  const btn = document.querySelector('button[onclick="aiGenObjForCat()"]');
   const originalText = btn.textContent;
   btn.textContent = '⏳ 생성 중...';
   btn.disabled = true;
 
-  const existing = Array.from(document.querySelectorAll('#topicChips .chip')).map(c=>c.textContent.replace(/^(✨|✏️)\s*/,'')).join(', ');
+  try {
+    const countryDesc = isKR ? '한국' : '일본';
+    const already = Array.from(document.querySelectorAll('#objectGroups .chip')).map(c=>c.dataset.kr).join(', ');
+
+    const r = await callAI(
+      '너는 '+countryDesc+' 일상 사물 큐레이터다. 반드시 JSON만 반환. 설명·주석·코드블록 금지.\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語"}]}\n\n** 필수 규칙 **\n1. 지정된 카테고리에 해당하는 사물만 생성.\n2. 절대 카테고리 외 엉뚱한 사물 넣지 말 것 ("행운양말", "무지개", "마법봉" 같은 것 금지)\n3. 병맛 사물 대화 컨셉(사물끼리 서로 티격태격)이 재미있게 성립하는 사물 우선\n4. 일상에서 흔히 볼 수 있고 영상 소재로 쓰기 좋은 사물',
+      '카테고리: '+groupTitle+' ('+categoryDesc+')\n\n이 카테고리 내에서 6개 사물 생성. 이모지 포함.\n\n이미 선택지에 있는 것들 (중복 금지): '+already+'\n\nJSON만 출력.'
+    );
+    let cleaned = r.replace(/```json|```/g,'').trim();
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if(m) cleaned = m[0];
+    const d = JSON.parse(cleaned);
+    if(!d.items || !Array.isArray(d.items) || d.items.length===0){
+      throw new Error('응답 형식 오류');
+    }
+    const targetWrap = document.getElementById('objectGroups');
+    d.items.forEach(o=>{
+      const kr = o.kr || o.en || '사물';
+      const en = o.en || o.kr;
+      const jp = o.jp || o.en || o.kr;
+      const c = document.createElement('div');
+      c.className = 'chip';
+      c.dataset.kr = '✨ '+kr;
+      c.dataset.en = en;
+      c.dataset.jp = jp;
+      c.textContent = '✨ '+kr;
+      c.onclick = ()=>selObj('✨ '+kr, en, jp);
+      targetWrap.appendChild(c);
+    });
+    targetWrap.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e){
+    console.error('AI 사물 생성 에러:', e);
+    showErr('AI 생성 실패: ' + e.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+// Backward compat (기존 코드 호출 안 깨지도록)
+async function aiRandomObjGroup(groupKey){
+  if(groupKey){ S.cat = groupKey; }
+  await aiGenObjForCat();
+}
+async function aiRandomObj(){
+  await aiGenObjForCat();
+}
+
+async function aiRandomSit(){
+  if(!S.obj){showErr('사물을 먼저 선택해주세요.');return;}
+  if(!getApiKey()){
+    showErr('API 키를 먼저 입력하고 저장해주세요. (상단 🔑 입력란)');
+    return;
+  }
+  const btn = document.querySelector('[onclick="aiRandomSit()"]');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+
+  const isJP = S.country==='jp';
+  const isTip = S.concept==='tip';
+  const countryDesc = isJP ? '일본' : '한국';
+
+  // 이미 있는 상황들 (중복 방지)
+  const existing = Array.from(document.querySelectorAll('#sitChips .chip')).map(c=>c.textContent.replace(/^✨\s*/,'')).join(', ');
+
+  // 사물 특화된 예시로 AI에게 명확히 가이드
+  const tipExamples = isJP
+    ? `[例 - 洗濯機]: "ファスナー開けたまま洗濯", "柔軟剤を多く入れすぎ", "脱水後すぐ放置"
+[例 - 冷蔵庫]: "ドアの開けっぱなし", "熱いもの入れる", "奥の食材忘れる"
+[例 - エアコン]: "フィルター掃除しない", "つけっぱなし外出", "設定温度低すぎ"`
+    : `[예 - 세탁기]: "지퍼 안 잠그고 돌림", "세제 너무 많이 넣음", "빨래 다 돌리고 방치"
+[예 - 냉장고]: "문 오래 열어두기", "뜨거운 거 바로 넣기", "안쪽 음식 썩을 때까지 방치"
+[예 - 에어컨]: "필터 청소 안함", "켜놓고 외출", "설정온도 너무 낮게"`;
+
+  const complaintExamples = isJP
+    ? `[例 - ゴミ箱]: "横に捨てる", "分別しない", "袋を縛らない"
+[例 - トイレットペーパー]: "使い切って補充しない", "芯捨てずそのまま", "端っこ折る"
+[例 - シンク]: "食器溜めっぱなし", "排水口髪の毛放置", "油流す"`
+    : `[예 - 쓰레기통]: "옆에 버리고 감", "분리수거 안함", "꽉 찼는데 그냥 쑤셔넣음"
+[예 - 화장지]: "다 쓰고 안 채움", "심만 남기고 버림", "한꺼번에 많이 씀"
+[예 - 싱크대]: "그릇 쌓아두기", "배수구 머리카락 방치", "기름 그대로 버림"`;
 
   try {
-    const systemPrompt = '너는 한국 사람 누구나 공감할 "오브젝트가 화낼 만한 상황" 생성기다.\n\n' +
+    const systemPrompt = '너는 ' + countryDesc + ' 자취생/직장인이 공감할 만한, **사물 중심** 상황 생성기다.\n\n' +
       '** 철저한 규칙 **\n' +
-      '1. 주제는 반드시 **선택된 오브젝트와 직접 관련된 민폐/잘못된 행동/습관**.\n' +
-      '2. 오브젝트 입장에서 "야 너 이러지 마!" 하고 쏘아붙일 수 있는 상황.\n' +
-      '3. 한국 사람 99%가 "아 맞아 그런 사람 있지!" 공감할 수 있는 현실적 상황만.\n' +
-      '4. 판타지/미신/과장 금지. 일상에서 정말 자주 벌어지는 것만.\n' +
-      '5. 신박하려고 하지 말고 **뻔하지만 딱 공감되는** 포인트 뽑아라.\n' +
-      '6. 반드시 JSON만 반환. 설명/주석/코드블록 금지.\n\n' +
-      '포맷: {"items":[{"label":"짧은 태그(10자 내외, 이모지 포함)","desc":"구체적 상황 설명(15~25자)"}, ...]}';
+      '1. 상황은 반드시 **선택된 사물과 직접 관련**되어야 함. 사물 없이도 성립하는 일반 상황 금지.\n' +
+      '2. ' + countryDesc + ' 사람 누구나 "아 맞아 그거!" 공감할 수 있는 현실적 상황만.\n' +
+      '3. 신박하거나 특이한 것 말고 **흔하지만 콕 집어주면 고개 끄덕이는** 상황.\n' +
+      '4. 뜬금없는 컨셉(판타지, 미신, 과장) 금지.\n' +
+      '5. 반드시 JSON만. 설명/주석/코드블록 금지.\n\n' +
+      (isJP
+        ? '포맷: {"items":[{"kr":"한국어 짧은 설명","jp":"일본어 원문"}, ...]}'
+        : '포맷: {"items":[{"kr":"한국어 상황","jp":""}, ...]}');
 
-    const examples = '[예시 - 쓰레기통 오브젝트]\n' +
-      '- {"label":"🗑️ 옆에 버리기", "desc":"쓰레기통 바로 옆 바닥에 던지는 사람"}\n' +
-      '- {"label":"♻️ 분리수거 안함", "desc":"플라스틱을 일반쓰레기에 그냥 넣는 사람"}\n' +
-      '- {"label":"📦 안 눌러 담음", "desc":"쓰레기 꽉 찼는데 그냥 쑤셔넣기만 하는 사람"}\n\n' +
-      '[예시 - 세탁기 오브젝트]\n' +
-      '- {"label":"🧦 양말 뭉치", "desc":"양말 안 풀고 뭉친 채로 넣는 사람"}\n' +
-      '- {"label":"💧 세제 과다", "desc":"세제를 권장량의 2배씩 넣는 사람"}\n' +
-      '- {"label":"⏰ 빨래 방치", "desc":"다 돌아간 빨래 몇 시간째 안 꺼내는 사람"}';
+    const conceptDirection = isTip
+      ? '사물이 "너 이거 잘못하고 있어" 하고 꿀팁·경고를 줄 수 있는 **잘못된 사용법/관리 실수** 상황.\n\n' + tipExamples
+      : '사물이 "너 진짜 왜 그래?" 하고 한탄할 수 있는 **민폐/게으름/습관** 상황.\n\n' + complaintExamples;
 
-    const userPrompt = '선택된 오브젝트: ' + S.obj + '\n\n' +
-      '이 오브젝트가 화낼 만한 상황 6개 생성.\n\n' +
-      examples + '\n\n' +
-      (existing ? '이미 있는 주제 (중복 금지): ' + existing + '\n\n' : '') +
-      '해당 오브젝트와 직접 관련 있고, 한국 사람이 보면 즉시 공감할 상황만. JSON만 출력.';
+    const userPrompt = '선택된 사물: ' + S.obj + '\n\n' +
+      '위 사물에 대한 상황 6개 생성. 위 사물에 **직접적으로 관련**되고 ' + countryDesc + ' 일상에서 정말 흔히 일어나는 공감형 상황만.\n\n' +
+      conceptDirection + '\n\n' +
+      (existing ? '이미 있는 상황 (중복 금지): ' + existing + '\n\n' : '') +
+      '각 상황은 15자 내외, 동사 포함 구체적으로. JSON만 출력.';
 
     const r = await callAI(systemPrompt, userPrompt);
     let cleaned = r.replace(/```json|```/g,'').trim();
@@ -676,212 +1528,51 @@ async function aiRandomTopic(){
     if(!d.items || !Array.isArray(d.items) || d.items.length===0){
       throw new Error('응답 형식 오류');
     }
-    const wrap = document.getElementById('topicChips');
     d.items.forEach(it=>{
-      const label = it.label || '✨ 주제';
-      const desc = it.desc || it.label;
+      const kr = it.kr || it.jp || '상황';
+      const displayText = '✨ ' + kr;
+      const aiValue = isJP ? (it.jp||kr) : kr;
       const c = document.createElement('div');
       c.className = 'chip';
-      c.textContent = '✨ ' + label.replace(/^✨\s*/, '');
-      c.onclick = ()=>{
-        document.querySelectorAll('#topicChips .chip').forEach(x=>x.classList.remove('active'));
-        c.classList.add('active');
-        S.topic = 'ai-' + Math.random().toString(36).slice(2,8);
-        S.topicDesc = desc;
-      };
-      wrap.appendChild(c);
+      c.textContent = displayText;
+      c.onclick = ()=>selSit(displayText, aiValue, c);
+      document.getElementById('sitChips').appendChild(c);
     });
-    if(wrap.lastElementChild) wrap.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+    const sitChips = document.getElementById('sitChips');
+    if(sitChips.lastElementChild) sitChips.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
   } catch(e){
-    console.error('AI 주제 생성 에러:', e);
-    showErr('AI 주제 생성 실패: ' + e.message);
+    console.error('AI 랜덤 상황 에러:', e);
+    showErr('AI 생성 실패: ' + e.message);
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
   }
+
 }
 
-function selCat(el){
-  document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');S.cat=el.dataset.val;
-  S.obj=null;S.objEn=null;S.loc=null;S.locEn=null;S.style='pixar';
-  buildObjs(S.cat);
-  act('s1');act('s2');deact('s3');deact('s4');deact('s5');deact('s6');
-  updateSummary();
-}
-function buildMoods(style){
-  const wrap=document.getElementById('moodChips');
-  const guide=document.getElementById('moodGuide');
-  wrap.innerHTML='';
-  const moodList=STYLE_MOODS[style]||STYLE_MOODS.pixar||['angry'];
-  if(guide) guide.textContent='감정 표현 선택 (화난 톤)';
-  S.mood=moodList[0];
-  moodList.forEach((m,i)=>{
-    const d=document.createElement('div');
-    d.className='chip'+(i===0?' active':'');
-    d.textContent=MOOD_LABELS[m]||m;
-    d.onclick=()=>selMood(d,m);
-    wrap.appendChild(d);
-  });
-}
-function selMood(el,val){
-  document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');S.mood=val;updateSummary();
-}
-function buildObjs(cat){
-  const w=document.getElementById('objChips');w.innerHTML='';
-  DB[cat].objs.forEach(o=>w.appendChild(makeChip(o.kr,o.en,()=>selObj(o.kr,o.en))));
-}
-function selObj(kr,en){
-  document.querySelectorAll('#objChips .chip').forEach(c=>c.classList.remove('active'));
-  document.querySelectorAll('#objChips .chip').forEach(c=>{if(c.dataset.val===en)c.classList.add('active');});
-  S.obj=kr;S.objEn=en;
-  buildLocs(S.cat);
-  done('s2');act('s3');deact('s5');
-  S.loc=null;S.locEn=null;S.style='pixar';
-  updateSummary();
-}
-function buildLocs(cat){
-  const w=document.getElementById('locChips');w.innerHTML='';
-  DB[cat].locs.forEach(l=>w.appendChild(makeChip('📍 '+l.kr,l.en,()=>selLoc(l.kr,l.en))));
-}
-function selLoc(kr,en){
-  document.querySelectorAll('#locChips .chip').forEach(c=>c.classList.remove('active'));
-  document.querySelectorAll('#locChips .chip').forEach(c=>{if(c.dataset.val===en)c.classList.add('active');});
-  S.loc=kr;S.locEn=en;
-  S.style='pixar';
-  buildMoods('pixar');
-  done('s3');act('s5');act('s6');updateSummary();
-}
-function addCustom(type){
-  const inp=document.getElementById(type==='obj'?'objInput':'locInput');
-  const val=inp.value.trim();if(!val)return;
-  if(type==='obj'){
-    const c=makeChip('✏️ '+val,val,()=>selObj(val,val));
-    document.getElementById('objChips').appendChild(c);selObj(val,val);
-  } else {
-    const c=makeChip('📍✏️ '+val,val,()=>selLoc(val,val));
-    document.getElementById('locChips').appendChild(c);selLoc(val,val);
-  }
-  inp.value='';
-}
-function makeChip(label,val,onClick){
-  const d=document.createElement('div');d.className='chip';d.dataset.val=val;
-  const s=document.createElement('span');s.textContent=label;
-  const x=document.createElement('span');x.className='del';x.textContent=' ✕';
-  x.onclick=e=>{e.stopPropagation();d.remove();};
-  d.appendChild(s);d.appendChild(x);d.onclick=onClick;return d;
-}
-function selDur(el){
-  document.querySelectorAll('#durChips .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');S.dur=el.dataset.val;
-}
-
-// ═══ AI 랜덤 ═══
-async function aiRandom(step){
-  if(step===1){
-    const cats=Object.keys(DB);
-    const el=document.querySelector('#catChips .chip[data-val="'+cats[Math.floor(Math.random()*cats.length)]+'"]');
-    if(el)selCat(el);return;
-  }
-  if(step===2||step===3){
-    if(!S.cat){showErr('카테고리를 먼저 선택해주세요.');return;}
-    if(!getApiKey()){showErr('API 키를 먼저 입력하고 저장해주세요.');return;}
-    const isObj = step===2;
-    const btn=document.querySelector('#s'+step+' .btn-sm');
-    const ot=btn.textContent;btn.textContent='⏳...';btn.disabled=true;
-    try{
-      // 카테고리별 엄격한 가이드라인
-      const CAT_GUIDE = {
-        food: '한국 사람이 자주 먹는 음식/식품/디저트 (예: 김밥, 떡볶이, 라면, 치킨, 삼겹살, 아이스크림). 판타지나 희귀한 것 금지',
-        object: '일상에서 매일 쓰는 생활 사물 (예: 휴대폰, 이어폰, 안경, 지갑, 열쇠, 머리끈, 우산). 판타지 아이템 금지',
-        electronics: '전자제품/가전 (예: TV, 냉장고, 세탁기, 노트북, 선풍기, 가습기, 공유기)',
-        furniture: '가구/인테리어 (예: 침대, 소파, 책상, 옷장, 식탁, 의자, 커튼)',
-        vehicle: '탈것/운송수단 (예: 자동차, 자전거, 킥보드, 지하철, 버스)',
-        animal: '실제 동물 (예: 강아지, 고양이, 햄스터, 앵무새). 판타지 몬스터 금지',
-        nature: '자연물 (예: 나무, 꽃, 구름, 바다, 바위, 잔디)',
-        toy: '장난감/인형 (예: 곰인형, 레고, 피규어, 블록, 딱지)',
-        stationery: '문구류 (예: 연필, 지우개, 노트, 볼펜, 가위, 풀, 자)',
-        sports: '스포츠 용품 (예: 축구공, 농구공, 요가매트, 덤벨, 줄넘기)',
-        fashion: '패션 아이템 (예: 티셔츠, 청바지, 운동화, 가방, 모자, 선글라스)',
-        building: '건물/공간 (예: 카페, 편의점, 학교, 병원, 은행, 지하철역)',
-        kitchen: '주방용품 (예: 프라이팬, 도마, 칼, 컵, 접시, 냄비, 주걱)',
-        tool: '공구/장비 (예: 망치, 드라이버, 렌치, 톱, 전동드릴)'
-      };
-      const guide = CAT_GUIDE[S.cat] || '이 카테고리에 속하는 흔한 일상 아이템만';
-      const already = Array.from(document.querySelectorAll('#'+(isObj?'objChips':'locChips')+' .chip')).map(c=>c.textContent).join(', ');
-
-      const sys = isObj
-        ? '너는 한국 일상 오브젝트 큐레이터다.\n\n** 필수 규칙 **\n1. ' + guide + '\n2. 절대 카테고리 외 엉뚱한 것 넣지 말 것 ("행운양말", "마법봉", "유니콘" 같은 것 금지)\n3. 오브젝트 참견/화내기 컨셉에 어울리는 친숙한 사물만\n4. 한국 사람이 보면 "아 이거!" 즉시 알아보는 것만\n5. 반드시 JSON만. 설명·주석·코드블록 금지.\n\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name"}]}'
-        : '배경 장소 생성기. 선택된 오브젝트가 자연스럽게 있을 만한 실제 한국 일상 공간.\n반드시 JSON만. 포맷: {"items":[{"kr":"한글 장소","en":"English location phrase"}]}';
-
-      const usr = isObj
-        ? '카테고리: '+S.cat+' ('+guide+')\n\n이 카테고리에 속하는 한국 일상 오브젝트 6개 생성. 이모지 포함, 판타지/엉뚱한 것 금지.\n\n'+(already?'이미 있는 것 (중복 금지): '+already+'\n\n':'')+'JSON만.'
-        : '카테고리: '+S.cat+', 오브젝트: '+(S.obj||'미지정')+'\n이 오브젝트가 자연스럽게 있을 만한 한국 실제 공간 5개. JSON만.';
-
-      const r=await callAI(sys,usr);
-      let cleaned=r.replace(/```json|```/g,'').trim();
-      const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
-      const d=JSON.parse(cleaned);
-      if(!d.items||!d.items.length)throw new Error('응답 형식 오류');
-      const target=document.getElementById(isObj?'objChips':'locChips');
-      d.items.forEach(it=>{
-        const kr=it.kr||it.en;const en=it.en||it.kr;
-        target.appendChild(
-          isObj
-            ? makeChip('✨ '+kr, en, ()=>selObj('✨ '+kr, en))
-            : makeChip('✨📍 '+kr, en, ()=>selLoc('✨📍 '+kr, en))
-        );
-      });
-    }catch(e){
-      console.error('AI 생성 에러:',e);
-      showErr('AI 생성 실패: '+e.message);
-    }finally{btn.textContent=ot;btn.disabled=false;}
-    return;
-  }
-  if(step===4){
-    // 스타일은 픽사 고정 — step 4 호출 시 바로 mood 랜덤으로 넘어감
-    const chips=document.querySelectorAll('#moodChips .chip');
-    if(chips.length>0){
-      const idx=Math.floor(Math.random()*chips.length);
-      const key=(STYLE_MOODS.pixar||['angry'])[idx]||'angry';
-      selMood(chips[idx],key);
-    }
-    return;
-  }
-  if(step===5){
-    const chips=document.querySelectorAll('#moodChips .chip');
-    if(chips.length>0){
-      const idx=Math.floor(Math.random()*chips.length);
-      const key=(STYLE_MOODS.pixar||['angry'])[idx]||'angry';
-      selMood(chips[idx],key);
-    }
-    return;
-  }
-}
-
-// ═══ 대사 생성 (품질 강화) ═══
+// ═══ 대본 AI 생성 ═══
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
 async function genDialogue(regen){
-  console.log('[angry genDialogue] 시작, S=', JSON.stringify({obj:S.obj, topic:S.topic, topicDesc:S.topicDesc, style:S.style, dur:S.dur}));
+  console.log('[genDialogue] 시작, S=', JSON.stringify({obj:S.obj, sit:S.sit, concept:S.concept, country:S.country, style:S.style, dur:S.dur}));
 
   const dialogueEl = document.getElementById('dialogue');
   if(!dialogueEl){
-    alert('❌ 페이지 오류: dialogue 요소 없음. 새로고침 해주세요.');
+    alert('❌ 페이지 오류: dialogue 요소를 찾을 수 없음. 새로고침 해주세요.');
     return;
   }
 
-  dialogueEl.placeholder = '⏳ 대사 생성 준비 중...';
+  // 즉시 시각적 피드백 - 버튼이 반응하는지 확인 가능
+  dialogueEl.placeholder = '⏳ 대본 생성 준비 중...';
 
   if(!S.obj){
-    dialogueEl.placeholder = '⚠️ 오브젝트를 먼저 선택해주세요 (Step 2)';
-    showErr('오브젝트를 먼저 선택해주세요.');
+    dialogueEl.placeholder = '⚠️ 사물을 먼저 선택해주세요 (Step 1)';
+    showErr('사물을 선택해주세요.');
     return;
   }
-  if(!S.topic){
-    dialogueEl.placeholder = '⚠️ 공감 주제를 먼저 선택해주세요 (Step 6)';
-    showErr('공감 주제를 먼저 선택해주세요.');
+  if(!S.sit){
+    dialogueEl.placeholder = '⚠️ 상황을 먼저 선택해주세요 (Step 2)';
+    showErr('상황을 선택해주세요.');
     return;
   }
   if(!getApiKey()){
@@ -893,146 +1584,215 @@ async function genDialogue(regen){
   const btns=document.querySelectorAll('.dialogue-btns .btn-sm');
   btns.forEach(b=>b.disabled=true);
 
-  dialogueEl.placeholder = '⏳ 정보 수집 중 (웹 검색)...';
+  dialogueEl.placeholder = '⏳ AI가 대본을 생성하고 있습니다...';
+  const isTip=S.concept==='tip';
+  const isJP=S.country==='jp';
+  const baseStyleTone=(DIALOGUE_TONE[S.country]||DIALOGUE_TONE.kr)[S.style]||'자연스러운 구어체';
+  const moodPerform = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].perform : '';
+  const styleTone = baseStyleTone + (moodPerform ? ' / 감정·말투 추가: ' + moodPerform : '');
 
-  // 웹 검색으로 사물×주제 관련 실제 정보 수집
-  let research = null;
-  try {
-    research = await getResearch(S.obj, S.topicDesc);
-    console.log('[research]', research);
-  } catch(e){
-    console.warn('research 실패, 정보 없이 진행:', e);
-  }
+  // ═════════════════════════════════════════════════
+  // 품질 강제: 실제 레퍼런스 대본을 few-shot으로 주입
+  // ═════════════════════════════════════════════════
 
-  dialogueEl.placeholder = '⏳ AI가 대사를 생성하고 있습니다...';
+  // 꿀팁 컨셉 레퍼런스 (Objects Talk Back 실제 스타일)
+  const TIP_REFS_KR = {
+    30: `[예시1 - 세탁기] "잠깐, 너 지금 지퍼 열고 나 돌리려는 거야? 야 그 금속 이빨이 얼마나 날카로운 줄 알아? 네 실크 블라우스, 니 좋아하는 스웨터, 다 내 안에서 갈기갈기 긁히는 중이거든. 30분이면 천이 보풀 지경 돼. 세탁 전에 지퍼는 무조건 끝까지 올려. 벨크로 찍찍이도 마찬가지고. 3초면 되는 거를 안 해서 옷 한 벌 날리지 마."
 
-  const styleTone=STYLE_DIALOGUE_TONE[S.style]||'자연스러운 한국어 구어체';
+[예시2 - 에어컨] "너 필터 언제 청소했어? 기억 안 나지? 1년 지나면 먼지가 1cm 두께로 쌓여. 그게 네 호흡기로 직통이야. 전기세도 30퍼센트 더 나오고. 필터 빼서 미지근한 물에 세제로 10분만 담가. 월에 한 번. 그거 하나로 전기세도, 니 폐도 지켜져."`,
+    10: `[예시1 - 세탁기] "지퍼 안 채우고 나 돌리지 마! 네 옷이 안에서 갈기갈기 긁혀. 3초면 되는데 왜 안 해?"
 
-  // 연구 결과를 시스템 프롬프트에 주입할 텍스트
-  const researchText = research && (research.reasons.length || research.stats.length || research.common_mistakes.length || research.real_examples.length)
-    ? '\n\n【🔍 웹 검색 기반 실제 정보 — 이걸 대사에 녹여라】\n' +
-      (research.reasons.length ? '\n▶ 왜 안 좋은가:\n' + research.reasons.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
-      (research.stats.length ? '\n\n▶ 구체적 숫자/사실:\n' + research.stats.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
-      (research.common_mistakes.length ? '\n\n▶ 사람들이 흔히 하는 실수:\n' + research.common_mistakes.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
-      (research.real_examples.length ? '\n\n▶ 실제 사례:\n' + research.real_examples.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
-      '\n\n⚠️ 이 정보를 반드시 대사에 녹여라. 구체적 숫자/사실/사례를 활용해서 시청자가 "오 이거 진짜 정보네" 하게 만들어라. 단순 감정 표출이 아닌 정보 전달 + 분노 두 마리 토끼.'
-    : '';
+[예시2 - 냉장고] "뜨거운 거 식히지도 않고 넣지 마. 내 모터 과부하로 전기세만 늘어. 미지근하게 식힌 뒤에 넣어."`
+  };
 
-  const REFS_30 = `[예시1 - 쓰레기통 × 옆 바닥에 버리기]
-"야 진짜 미친 거 아니야? 나 여기 버젓이 있는데 굳이 바닥에 던지냐? 세 걸음이야 세 걸음. 그것도 못 걷냐? 어제는 내 옆에 떨어뜨려 놓고 그냥 가버렸잖아. 내가 네 엄마냐? 내가 줍는 사람이냐? 나도 자존심이라는 게 있어. 버릴 때는 내 안에 정확히 넣어. 이게 어려워? 진짜 짜증나 죽겠네."
+  const COMPLAINT_REFS_KR = {
+    30: `[예시1 - 쓰레기통] "야 진짜, 나 여기 버젓이 있는데 왜 굳이 바닥에 던지냐? 세 걸음이야 세 걸음. 그것도 못 걷냐? 어제는 심지어 내 옆에 떨어뜨려 놓고 그냥 갔잖아. 내가 네 엄마냐? 내가 줍냐? 내가 너 대신 분리수거 해주냐? 제발 좀, 버릴 때는 내 안에 정확히 넣어달라고. 이게 어려운 일이야?"
 
-[예시2 - 캔음료 × 안 닦고 마시기]
-"야 너 지금 제정신이야? 캔 뚜껑에 뭐가 붙어있는지 알고나 마셔? 공장에서 출고될 때 기름, 유통 중에 먼지, 편의점 매대에서 누가 만졌는지도 몰라. 어제는 심지어 바닥에 떨어뜨리고도 그냥 따서 마시던데. 그게 네 입이야? 쓰레기통이야? 나 위해서가 아니라 네 몸 걱정해서 말하는 거야. 티슈 한 장이면 끝나는 걸 왜 안 하냐? 진심 답답하다."
+[예시2 - 싱크대] "아니 3일째야 3일째. 저 그릇들이 언제부터 거기 있었는지 기억도 안 나. 물기는 말랐고 음식물은 굳었고 냄새는 진동해. 넌 옆방에서 배달앱 뒤지고 있고. 나 좀 봐줘. 한 번에 싹 씻는 거 5분이야. 쌓아두면 30분이야. 왜 굳이 네가 힘든 길을 택하는데?"`,
+    10: `[예시1 - 리모컨] "아니 또 나 어디 뒀어? 소파 쿠션 밑 여기 있잖아! 5번째야 오늘."
 
-[예시3 - 엘리베이터 × 스피커폰]
-"진짜 이거 너한테만 몇 번째야? 좁은 공간 다섯 명 갇혀있는데 너 혼자 엄마랑 스피커폰으로 30층까지 가. 방금 저 할아버지 인상 쓰는 거 봤어? 뒤에 학생 이어폰 꽂고도 네 목소리 다 들린대. 창피한 줄 알아. 이어폰 꽂든가 끊든가. 공공장소라는 개념이 없어?"`;
+[예시2 - 쓰레기통] "나 바로 옆에 있는데 바닥에 버리는 거 뭐냐? 내가 서운하다."`
+  };
 
-  const REFS_10 = `[예시1 - 쓰레기통 × 바닥에 버리기]
-"야 나 바로 옆에 있는데 바닥에 던지는 거 뭐냐? 세 걸음도 못 걷냐? 진짜 어이없다."
+  const TIP_REFS_JP = {
+    30: `[例1 - 洗濯機] "ちょっと待って、ファスナー開けたまま洗おうとしてる？あの金属の歯がどれだけ鋭いか知ってる？君のシルクブラウスも、お気に入りのセーターも、中で引き裂かれてるんだよ。30分で毛玉だらけになる。洗う前にファスナーは絶対上まで締めて。マジックテープも同じ。3秒でできることをサボって服を一枚ダメにしないで。"
 
-[예시2 - 캔음료 × 안 닦고 마시기]
-"야 닦고 마셔! 뚜껑에 뭐 묻었는지 알고 그냥 입 대? 티슈 한 장이야 한 장."
+[例2 - エアコン] "フィルター最後に掃除したのいつ？覚えてないでしょ。1年経つとホコリが1センチ積もる。それが君の呼吸器に直行してる。電気代も3割増し。フィルター外してぬるま湯で10分浸けるだけ。月1回で十分。これだけで電気代も肺も守れる。"`,
+    10: `[例1 - 洗濯機] "ファスナー締めずに回さないで！中で服が引き裂かれる。3秒でできるのになんでやらないの？"
 
-[예시3 - 운동화 × 현관 방치]
-"일주일째 이 꼴이야. 흙 다 말라붙어서 부서지는 중이다. 5분이면 되는 걸 왜 안 해?"`;
+[例2 - 冷蔵庫] "熱いもの冷まさずに入れないで。モーター過負荷で電気代だけ上がる。ぬるくしてから入れて。"`
+  };
 
-  const refs = S.dur==='30' ? REFS_30 : REFS_10;
+  const COMPLAINT_REFS_JP = {
+    30: `[例1 - ゴミ箱] "ねぇ、私ここにちゃんといるのに、なんでわざわざ床に投げるの？三歩よ三歩。それも歩けないの？昨日なんて私の横に落として行ったでしょ。私があなたのお母さん？私が拾うの？お願いだから、私の中にちゃんと入れて。これって難しいこと？"
 
-  const structure = S.dur==='30'
-    ? `【필수 구조 - 30초】
-① 분노 폭발 오프닝 (1~2문장): "야 너 미친 거 아니야?" / "제정신이야?" / "진심으로 묻자" 같은 강한 도입
-② 구체적 짜증 포인트 (3~4문장): 숫자·빈도·과거 사례·현장 목격 필수 ("3일째야", "네 번째야", "어제는 심지어")
-③ 직설적 훈계/욕구 폭발 (2~3문장): "이게 어려워?" "진심 답답하다" "양심이 있냐?" 강한 마무리
-총 7~8문장. 분노가 느껴져야 함.`
-    : `【필수 구조 - 10초】
-① 분노 폭발 직격 (1문장): 강하게 시작 ("야 너", "미친", "진짜")
-② 구체적 짜증 포인트 (1~2문장): 숫자/사실 포함 + 분노 마무리
-총 2~3문장. 약한 타박 아니라 분노 전달.`;
+[例2 - ゴミ分別] "月曜日は燃えるゴミ、火曜は資源ゴミ、水曜は燃えないゴミ。そんなに難しい？あなた昨日プラスチック燃えるゴミに入れたよね。収集員さんが取っていかなかったの見た？恥ずかしいよ本当に。"`,
+    10: `[例1 - リモコン] "また私どこ置いたの？クッションの下！今日5回目だよ！"
 
-  const BAN_RULES = `
-⛔ 절대 금지 (이거 나오면 완전 실패):
-- "~하면 안 되냐?" / "한번만" / "제발 좀" → 너무 조심스러움. 분노 아님.
-- "구석에 쳐박혀", "관심 받고 싶다", "숨은 친구" → 감성팔이 비유
-- "~좋을 것 같아" / "~어때?" → 제안하지 말고 쏘아붙여야 함
-- 정중한 부탁 톤 전체 금지. 이건 앵그리야.
-- 구체적 숫자/사실 없는 모호한 호소
+[例2 - ゴミ箱] "私すぐ隣にいるのに床に捨てるって何？傷つくよ。"`
+  };
+
+  const refs = isJP
+    ? (isTip ? TIP_REFS_JP : COMPLAINT_REFS_JP)[S.dur]
+    : (isTip ? TIP_REFS_KR : COMPLAINT_REFS_KR)[S.dur];
+
+  // 구조 강제
+  const structureKR = isTip
+    ? (S.dur==='30'
+      ? `【필수 구조 - 30초 꿀팁】
+① 문제 지적 (2문장): "너 지금 ○○하고 있지? 그거 왜 그러는 줄 알아?" 식으로 독자의 행동을 직접 꼬집기
+② 경고 + 구체적 부작용 (2~3문장): "이러면 내 ○○가 망가져" + 숫자/기간/현상 명시 ("1년이면 ○cm 쌓여", "전기세 30% 증가", "섬유가 ○시간 안에 손상")
+③ 구체적 해결책 (2~3문장): 누구나 바로 따라할 수 있는 단순 행동 2~3개. 모호한 조언 금지.
+총 7~8문장. 매 문장이 정보를 담아야 함.`
+      : `【필수 구조 - 10초 꿀팁】
+① 문제 지적 (1문장): 독자의 잘못된 행동 직접 콕 집음
+② 부작용 (1문장): 구체적 결과 ("뭐가 어떻게 망가진다")
+③ 해결책 (1문장): 바로 할 수 있는 행동 하나
+총 3문장. 영양가 없는 문장 쓰지 말 것.`)
+    : (S.dur==='30'
+      ? `【필수 구조 - 30초 민폐】
+① 상황 실시간 중계 (2문장): "지금 너 뭐하냐?" 식으로 현재 진행 중인 민폐 행동을 묘사
+② 반복되는 짜증 포인트 나열 (3문장): 구체적인 과거 사례, 숫자 ("3일째야", "다섯 번째야")
+③ 직설적 한탄/요청 (2~3문장): 친구가 진심으로 짜증내듯이
+총 7~8문장. 비유·미사여구 금지, 구체적 현실 묘사만.`
+      : `【필수 구조 - 10초 민폐】
+① 현재 상황 (1문장): "야 너 지금 뭐함"
+② 짜증 포인트 (1~2문장): 구체적으로
+총 2~3문장. 직설적으로.`);
+
+  const structureJP = isTip
+    ? (S.dur==='30'
+      ? `【必須構造 - 30秒ライフハック】
+① 問題指摘 (2文): 視聴者の行動を直接ツッコむ
+② 警告+具体的な副作用 (2~3文): 数字・期間・現象を明示 (「1年で○cm積もる」「電気代30%増」)
+③ 具体的な解決策 (2~3文): 誰でもすぐ真似できる行動2~3個。曖昧な助言禁止。
+合計7~8文。各文が情報を持つこと。`
+      : `【必須構造 - 10秒ライフハック】
+① 問題指摘 (1文)
+② 副作用 (1文): 具体的に
+③ 解決策 (1文)
+合計3文。`)
+    : (S.dur==='30'
+      ? `【必須構造 - 30秒マナー指摘】
+① 実況描写 (2文): 今起きてる行動を描写
+② 繰り返される苛立ちポイント (3文): 具体例、数字
+③ 直接的な愚痴/要求 (2~3文)
+合計7~8文。比喩・美辞麗句禁止。`
+      : `【必須構造 - 10秒マナー指摘】
+① 現状 (1文)
+② 苛立ち (1~2文)
+合計2~3文。`);
+
+  // 금지 사항 강제
+  const BAN_RULES_KR = `
+⛔ 절대 금지 사항 (이런 대본은 영양가 제로, 시청자 이탈 원인):
+- "구석에 쳐박혀 있네", "날개 펼치고 싶다", "숨은 친구", "나도 좀 아껴줘" 같은 뜬구름 비유
+- "조금만 관리해주면", "제발 신경 써줘" 같은 모호한 요청
+- 구체적 숫자/현상/해결법 없는 감성 호소
+- 사물의 심정 토로만 있고 정보 없는 대본
+- "아 정말", "어휴" 같은 감탄사로 시작해서 아무 내용 없이 끝나는 대본
 
 ✅ 반드시 포함:
-- 분노 강도: "짜증" 수준 X → "화남" "어이없음" "분통 터짐" 수준 O
-- 직설 표현: "미친 거 아니야?" "제정신이야?" "양심이 있냐?" "답답하다 진심" 같은 강한 어투
-- 숫자 (몇 번째, 몇 분, 며칠)
-- 과거 사례 또는 현장 목격 ("어제는", "방금", "방금도")
-- 시청자가 "오 진짜 빡치겠다" 공감하는 강도`;
+- 사물의 실제 기능/구조에 기반한 구체적 사실 (예: 청소기 → 필터·먼지통·모터·흡입력)
+- 숫자 (기간, 퍼센트, 빈도, 용량)
+- 독자가 "아 이건 몰랐다" 싶은 팁 또는 "맞아 나도 이런 적" 싶은 디테일
+- 지금 당장 실행 가능한 구체적 행동 지시`;
 
-  const avoid = usedDialogues.length>0
-    ? '\n\n⚠️ 아래 최근 대사와 완전히 다른 각도로:\n'+usedDialogues.slice(-3).map((s,i)=>`[${i+1}] ${s}`).join('\n---\n')
+  const BAN_RULES_JP = `
+⛔ 絶対禁止 (영양 없는 대본):
+- 「隅に追いやられて」「羽を広げたい」「隠れた友達」などの抽象的比喩
+- 「ちょっと気にかけて」などの曖昧な要求
+- 具体的な数字・現象・解決法のない感情的訴え
+
+✅ 必ず含むべき:
+- 物の実際の機能/構造に基づく具体的事実
+- 数字 (期間、パーセント、頻度)
+- 「知らなかった」と思わせるライフハック、または「わかる」と思わせる実感
+- 今すぐできる具体的行動指示`;
+
+  const culturalKR = isJP ? '' : '한국 자취생/직장인 일상 공감 포인트 반영. 밈·현실적 표현 활용.';
+  const culturalJP = isJP ? '日本の一人暮らし・サラリーマン文化を完全反映。' : '';
+
+  const avoid = usedScripts.length>0
+    ? '\n\n⚠️ 아래 최근 대본들과 완전히 다른 각도/표현/예시로 써줘:\n'+usedScripts.slice(-3).map((s,i)=>`[${i+1}] ${s}`).join('\n---\n')
     : '';
 
-  const systemPrompt = `너는 한국 유튜브 쇼츠/인스타 릴스에서 조회수 100만 찍는 "화난 사물이 말하는" 영상 전문 대사 작가다.
+  // ═════════════════════════════════════════════════
+  // 최종 시스템 프롬프트
+  // ═════════════════════════════════════════════════
+  const systemPrompt = isJP
+    ? `あなたは日本のTikTok/Instagram Reels/YouTube Shorts で再生数100万超を連発する「物が話す」ショート動画の専門台本作家だ。
 
-이 콘텐츠 컨셉: **사물이 진짜 빡쳐서 사람을 쏘아붙이는 영상**. 타박·짜증 수준 X, 분노·폭발 수준 O.
-**정보성 + 분노** 두 마리 토끼를 잡아야 함. 시청자가 "빡치네 + 근데 진짜 알게 됐네" 하게.
-${researchText}
-
-【참고 예시 - 이 정도 강도로 써야 함】
+【参考: 実際に視聴者が「保存!」「コメント!」する台本の例】
 ${refs}
 
-【이번 대사 구조】
-${structure}
+【今回の台本の構造】
+${isTip ? structureJP : structureJP}
 
-【말투 스타일】${styleTone}
-(스타일 톤은 유지하되, 분노 강도는 무조건 위 예시 수준)
+【口調】${styleTone}
+${culturalJP}
+${BAN_RULES_JP}
 
-${BAN_RULES}
+【出力形式】
+- 日本語の台本本文のみ出力 (説明・前置き・コメント一切なし)
+- 物が一人称で話す
+- 視聴者が「保存したい」「コメントしたい」と感じる情報密度で`
+    : `너는 한국 유튜브 쇼츠/인스타 릴스에서 조회수 100만 넘기는 "사물이 말하는" 영상 전문 대본 작가다.
 
-【재생성 다양성】
-같은 주제 재생성 요청 시 반드시 다른 각도로:
-- 각도1: 건강/위생 피해 강조
-- 각도2: 금전적/경제적 피해 강조  
-- 각도3: 사회적 민폐/타인 피해 강조
-- 각도4: 구체적 숫자/통계로 몰아붙이기
-- 각도5: 과거 사례/현장 목격담 중심
-매번 다른 각도를 골라 같은 주제라도 신선하게.
+【참고: 실제로 시청자가 "저장!" "댓글!" 하게 만드는 대본 예시】
+${refs}
+
+【이번 대본 구조】
+${structureKR}
+
+【말투】${styleTone}
+${culturalKR}
+${BAN_RULES_KR}
 
 【출력 형식】
-- 한국어 대사 본문만 출력 (설명/서두/주석 없이)
-- 사물이 1인칭으로 말함 (진짜 열받아서 말함)
-- 웹 검색 정보를 반드시 녹여서 "오 진짜 몰랐네" 느낌도
+- 한국어 대본 본문만 출력 (설명·서두·주석 일체 없이)
+- 사물이 1인칭으로 말함
+- 시청자가 실제로 "오 저장해놔야지" 혹은 "아 나도 저래" 하게 만들 정보 밀도
 
-⚠️ 출력 전 스스로 체크:
-1. "~하면 안 되냐?" 같은 약한 말투 → 강한 어투로 바꿔라
-2. 구체적 숫자/현장/정보 없으면 → 위 웹 검색 정보 활용해서 추가
-3. 타박 수준 → 분노 톤으로 강화
-4. 이전 대사와 같은 각도 → 다른 각도 골라라
-약하면 다시 써.`;
+중요: 출력하기 전에 스스로 검증해봐.
+"내 대본의 모든 문장이 구체적인 정보를 담고 있나? 영양가 없는 감성 문장 없나? 독자가 실제로 뭔가 배우거나 공감할 요소가 있나?"
+없으면 다시 써.`;
 
-  // 재생성 다양성 강화: 매번 다른 각도 seed
-  const angles = ['건강/위생 피해', '금전적/경제적 피해', '사회적 민폐', '구체적 숫자/통계', '과거 사례/목격담'];
-  const angleHint = regen
-    ? '\n\n⚠️ 이번엔 반드시 "' + angles[Math.floor(Math.random()*angles.length)] + '" 각도로 써라. 이전과 완전히 다른 톤/각도.'
+  // 이전 사물 대사 이어받기 (항상 체크)
+  const bmemePrev = (document.getElementById('webtoonPrevScript')||{}).value||'';
+  const continuationHint = bmemePrev.trim()
+    ? '\n\n📖 이어쓰기 요청: 이전 사물이 이런 말을 했어:\n"'+bmemePrev.trim()+'"\n\n이 대사를 듣고 자연스럽게 반응/대꾸/말대답하는 대본을 써. 병맛 사물 대화 흐름이라는 걸 느낄 수 있게, 하지만 이번 사물의 성격으로. (예: 이전 사물이 "야 선풍기!" 라고 했으면, "헐 뭔데 왜 나한테 ㅋㅋ" 같은 대꾸로 시작)'
     : '';
 
-  const userPrompt = `오브젝트: ${S.obj}
-공감 주제: ${S.topicDesc}
+  const userPrompt = isJP
+    ? `物: ${S.objJp||S.objEn||S.obj}
+状況: ${S.sitAI||S.sit}
+コンセプト: ${isTip?'ライフハック/警告 (具体的な情報)':'愚痴/マナー指摘 (共感)'}
+長さ: ${S.dur==='30'?'30秒':'10秒'}
+
+この物が「${S.sitAI||S.sit}」という状況について一人称で話す台本を、参考例のレベルで生成。${avoid}${continuationHint}`
+    : `사물: ${S.obj}
+상황: ${S.sitAI||S.sit}
+컨셉: ${isTip?'꿀팁/경고 (구체적 정보)':'민폐 지적/한탄 (공감)'}
 길이: ${S.dur==='30'?'30초':'10초'}
 
-이 오브젝트(${S.obj})가 "${S.topicDesc}" 하는 사람에게 1인칭으로 화내는 대사를, 위 예시 수준 분노 + 웹 검색 정보 녹여서 생성.${avoid}${angleHint}`;
+이 사물이 "${S.sitAI||S.sit}" 이라는 상황에 대해 1인칭으로 말하는 대본을, 위 참고 예시 수준의 정보 밀도로 생성해줘.${avoid}${continuationHint}`;
 
   try {
-    console.log('[angry genDialogue] callAI 호출 직전');
-    const txt = await callAI(systemPrompt, userPrompt);
-    console.log('[angry genDialogue] callAI 성공, 길이:', txt.length);
+    console.log('[genDialogue] callAI 호출 직전');
+    const txt=await callAI(systemPrompt, userPrompt);
+    console.log('[genDialogue] callAI 성공, 길이:', txt.length);
     if(!txt || txt.trim().length===0){
       throw new Error('AI가 빈 응답을 반환함. API 키 또는 쿼터 확인.');
     }
-    document.getElementById('dialogue').value = txt.trim();
-    document.getElementById('dialogue').placeholder = "주제 선택 후 'AI 공감 대사 생성' 클릭";
-    usedDialogues.push(txt.trim());
-    if(usedDialogues.length>10) usedDialogues.shift();
+    document.getElementById('dialogue').value=txt.trim();
+    document.getElementById('dialogue').placeholder='주제 선택 후 AI 대본 생성 클릭';
+    usedScripts.push(txt.trim());
+    if(usedScripts.length>10) usedScripts.shift();
   } catch(e){
-    console.error('[angry genDialogue] 에러:',e);
-    document.getElementById('dialogue').placeholder = '❌ 대사 생성 실패: '+e.message+' (F12 콘솔 확인)';
-    showErr('대사 생성 실패: '+e.message);
+    console.error('[genDialogue] 에러:', e);
+    document.getElementById('dialogue').placeholder='❌ 대본 생성 실패: '+e.message+' (F12 콘솔 확인)';
+    showErr('대본 생성 실패: '+e.message);
   } finally {
     btns.forEach(b=>b.disabled=false);
   }
@@ -1040,130 +1800,166 @@ ${BAN_RULES}
 
 // ═══ 프롬프트 생성 ═══
 async function generate(){
-  if(!S.obj){showErr('오브젝트를 선택해주세요.');return;}
-  if(!S.loc){showErr('장소를 선택해주세요.');return;}
-  if(!S.style) S.style='pixar';
+  if(!S.obj){showErr('사물을 선택해주세요.');return;}
+  if(!S.sit){showErr('상황을 선택해주세요.');return;}
+  if(!S.style){showErr('스타일을 선택해주세요.');return;}
   hideErr();
 
   const btn=document.getElementById('genBtn');
   btn.disabled=true;btn.textContent='⏳ 생성 중...';
 
-  let dialogue=document.getElementById('dialogue').value.trim();
-  if(!dialogue){
+  let script=document.getElementById('dialogue').value.trim();
+  if(!script){
+    // 대본 없으면 생성 시도
     if(getApiKey()){
       await genDialogue(false);
-      dialogue=document.getElementById('dialogue').value.trim();
+      script=document.getElementById('dialogue').value.trim();
     }
-    if(!dialogue){dialogue='왜 이러는 거야, 진짜!';}
+    if(!script){
+      script=S.country==='jp'?'ちょっと聞いてよ！':'내 말 좀 들어봐!';
+    }
   }
 
-  let dialogueEN='';
+  // 자동 번역 (일본 → 한국 / 한국 → 영어)
+  let scriptEN = '';
+  let scriptTrans = ''; // 일본어 대본일 때 한국어 번역
   if(getApiKey()){
-    try{
-      dialogueEN=await callAI(
-        'You translate short-form video dialogues from Korean to natural spoken English for AI voice generation. Output only the translation. Preserve emotion, rhythm, contractions.',
-        'Korean:\n'+dialogue+'\n\nTranslate to natural spoken English.'
-      );
-    }catch(e){dialogueEN=dialogue;}
-  } else dialogueEN=dialogue;
-
-  const moodEn=MOOD_MAP[S.mood]||MOOD_MAP.angry;
-  const ratio='9:16 vertical short-form';
-  const platform='Kling / Veo / Runway | Max: 60s';
-  const objEn=S.objEn||S.obj;
-  const locEn=S.locEn||S.loc;
-  const styleTpl=STYLE_PROMPTS[S.style];
-  const sizeHint=getSizeHint(S.obj);
-  // 카테고리 기반 fallback ambient + AI 시도로 덮어쓰기
-  let ambient = getAmbient(S.cat);
-  let enhancedLoc = locEn;
-  let enhancedProps = 'contextually relevant items placed naturally around the subject';
-
-  const aiScene = await getScene(objEn, S.cat);
-  if(aiScene && aiScene.loc){
-    enhancedLoc = aiScene.loc;
-    if(aiScene.props) enhancedProps = aiScene.props;
-    if(aiScene.ambient) ambient = aiScene.ambient;
-  }
-
-  // 3단계 폴백 모션
-  let fnMotion = getAngryFunctionMotion(S.obj);
-  if(!fnMotion && aiScene && aiScene.motion){
-    fnMotion = aiScene.motion;
-  }
-  if(!fnMotion){
     try {
-      const aiMotion = await getMotionAI(objEn);
-      if(aiMotion) fnMotion = aiMotion;
-    } catch(e){ console.warn('motion AI failed:', e); }
+      if(S.country==='jp'){
+        // 일본어 대본 → 한국어 번역 (본인 확인용)
+        scriptTrans = await callAI(
+          '너는 일본어 숏폼 영상 대본을 한국어로 자연스럽게 번역하는 번역가다. 설명 없이 번역 결과만 출력. 말투의 뉘앙스, 일본식 표현, 텐션을 살려서 자연스러운 한국어 구어체로 옮겨라.',
+          '일본어 대본:\n'+script+'\n\n자연스러운 한국어 구어체로 번역.'
+        );
+        // 영어도
+        scriptEN = await callAI(
+          'You translate short-form video scripts to natural spoken English for AI voice generation. Output only the translation, no explanation. Preserve emotion, rhythm, and talking style. Use contractions and natural flow.',
+          'Original (Japanese):\n'+script+'\n\nTranslate to natural spoken English.'
+        );
+      } else {
+        scriptEN = await callAI(
+          'You translate short-form video scripts from Korean to natural spoken English for AI voice generation. Output only the English translation, no explanation. Preserve the emotion, rhythm, and talking style. Use natural spoken English with contractions.',
+          'Korean script:\n'+script+'\n\nTranslate to natural spoken English.'
+        );
+      }
+    } catch(e){
+      if(S.country==='jp') scriptTrans='(한국어 번역 실패)';
+      scriptEN='(English translation failed)';
+    }
   }
-  const ambientLine = fnMotion
-    ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+ambient+'.'
-    : ' Surrounding ambient details add a sense of life: '+ambient+'.';
 
-  const imagePrompt = 'A ' + objEn + ' featuring an angry human-like expression — sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes. ' +
-    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
-    'One arm is pointed forcefully toward the viewer as if accusing, while the other is lifted as if scolding. ' +
-    'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
-    'The ' + objEn + ' retains a realistic texture with fine surface details. ' +
-    'Scene: ' + enhancedLoc + ' — depicted in a realistic setting with natural lighting, ' + enhancedProps + '.' +
-    ambientLine + ' ' +
-    'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text, no subtitles, no captions, no watermarks, no logos anywhere in the frame.';
+  // 저장
+  if(S.country==='jp'){
+    lastScriptJP = script;
+    lastScriptKR = scriptTrans; // 일본어 원본의 한국어 번역
+  } else {
+    lastScriptKR = script;
+    lastScriptJP = '';
+  }
+  lastScriptEN = scriptEN||script;
 
+  // ═ 이미지 프롬프트 ═
+  const styleTpl=STYLE_TEMPLATES[S.style];
+  // 1) 먼저 SCENE_PROPS 하드코딩 시도 (빠름)
+  let scene = SCENE_PROPS[S.country][S.obj];
+  // 2) 없으면 Railway 프록시로 AI에게 실시간 생성 요청
+  if(!scene){
+    const aiScene = await getScene(S.objEn||S.obj, S.country);
+    if(aiScene && aiScene.loc){
+      scene = aiScene;
+    } else {
+      scene = SCENE_PROPS[S.country]['default'];
+    }
+  }
+  // ambient가 없는 기존 데이터는 fallback 추가
+  if(!scene.ambient){
+    scene = {
+      loc: scene.loc,
+      props: scene.props,
+      ambient: 'subtle ambient life — dust particles in light beams, fabric or paper edges faintly moving, natural environmental detail'
+    };
+  }
+  const objEn=S.objEn||S.obj;
+  const sizeHint = getSizeHint(S.obj);
+
+  // 같은 집/공간 배경 연속성 (항상 체크)
+  const webtoonBgRef = (document.getElementById('webtoonBgRef')||{}).value||'';
+  const sceneLoc = webtoonBgRef.trim()
+    ? scene.loc + ' (the SAME location setting as the previous scene described here: "' + webtoonBgRef.trim() + '")'
+    : scene.loc;
+  const sceneProps = webtoonBgRef.trim()
+    ? scene.props + '. IMPORTANT: match the existing scene elements from the previous frame reference — same room, same furniture layout, same color palette, same lighting, but focus on a different corner/angle where the current object ('+objEn+') naturally lives. Think of it like another character in the same house, a different room of the same apartment.'
+    : scene.props;
+
+  const moodImgFace = (S.mood && MOODS[S.mood]) ? (MOODS[S.mood].imgFace || MOODS[S.mood].face) : '';
+  const moodFace = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].face : '';
+  const moodExprPart = moodImgFace
+    ? 'a human-like expression — ' + moodImgFace
+    : (S.concept==='tip'
+        ? 'a knowing, slightly exasperated human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer'
+        : 'a visibly annoyed human-like expression — sharply furrowed eyebrows, slightly clenched teeth, exaggerated bulging cartoon eyes');
+
+  const imagePrompt = 'A '+objEn+' featuring '+moodExprPart+'.\n' +
+    'The face is drawn directly onto the surface of the '+objEn+' — eyes, nose, and mouth painted or embedded on the object itself. Do NOT replace or morph the object into a real human face. The '+objEn+' keeps its natural shape and material.\n' +
+    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. One arm is '+(S.concept==='tip'?'gesturing upward as if explaining a point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'resting or mid-motion':'lifted as if scolding')+'. No legs or feet. The character remains grounded, sitting or resting naturally on its base without any floating effect.\n' +
+    'The entire object must be visible in the frame — show the full character body, not just the upper part. Medium to wide shot composition so the viewer sees the object as a whole character within its environment.\n' +
+    '\n' +
+    'Style: '+styleTpl.base+'.\n' +
+    'Real-world scale: the '+objEn+' must be '+sizeHint+'.\n' +
+    '\n' +
+    'Scene: '+sceneLoc+'.\n' +
+    'Background details: '+sceneProps+'. The setting feels lived-in and authentic — multiple realistic props naturally placed, not empty or minimalist. Background stays softer in focus than the subject.\n' +
+    'Subtle environmental life: '+scene.ambient+'.\n' +
+    '\n' +
+    'Vertical 9:16 composition, cinematic lighting, highly detailed. No text overlays, no subtitles, no captions, no watermarks, no UI.';
+
+  // ═ 영상 프롬프트 ═
+  const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
+  const scriptOriginal = script;
+  const scriptForGuide = scriptEN||script;
+  const isTip=S.concept==='tip';
+
+  const functionMotion = getFunctionMotion(S.obj);
+  const moodPerformEN = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].perform : '';
+  const moodLabel = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].label : (isTip?'설명':'짜증');
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
   const videoPrompt =
     'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
-    'Animate this character with angry upper-body movement.\n' +
-    'The character is yelling: "' + dialogue + '"\n' +
+    'Animate this character with upper-body movement showing the following emotion: ' + moodLabel + '.\n' +
+    'The character is speaking: "'+scriptOriginal+'"\n' +
     'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
+    (moodFace ? 'Facial expression throughout the clip: '+moodFace+'.\n' : '') +
+    (moodPerformEN ? 'Performance tone: '+moodPerformEN+'.\n' : '') +
     'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
-    'Gestures naturally match the tone and flow of the dialogue:\n' +
-    'pointing one finger directly at the camera when accusing,\n' +
-    'raising both open palms in a "why would you do that" gesture\n' +
-    'when expressing frustration or disbelief.\n' +
-    'Gestures should feel reactive and conversational, not mechanical or repetitive.\n' +
-    'Mouth opens and closes as if speaking angrily.\n' +
-    'Eyebrows furrow deeply, eyes bulge with rage.\n' +
+    'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
+    'Mouth opens and closes naturally in sync with the spoken words.\n' +
     'The character stays grounded — no floating or jumping.\n' +
     'Camera mostly static with a slight zoom-in.\n' +
-    'Exaggerated, Pixar-style animation.\n' +
+    'Style: '+styleTpl.note+' — preserve the style of the uploaded image.\n' +
     (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' +
       '🚫 CRITICAL FACE PRESERVATION RULES (반드시 지켜야 함):\n' +
       '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. NEVER duplicate, clone, or re-generate the face anywhere else during the animation. NO second face appearing next to or above the opening part.\n' +
       '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): determine which section the face is attached to in the reference image, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
       '3. If the face-bearing part MUST move or open, then the face moves naturally WITH that part — NEVER jumps to a new location, NEVER splits, NEVER duplicates. If the rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
       '4. No character should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face.\n' : '') +
-    (fnMotion ? 'Surrounding ambient details add a sense of life: '+fnMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
-    'Audio: angry adult Korean voice with scolding tone.\n' +
+    (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with '+scene.ambient+'. Keep these visible but not distracting from the talking character.\n' : 'Subtle environmental life: '+scene.ambient+'.\n') +
+    'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker.\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
     'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
     'No roaring, no monster sounds, no creature sounds.\n' +
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
     'do NOT replace or morph into a real human face.\n' +
+    'Duration ~'+(S.dur==='30'?'30':'10')+' seconds. 9:16 vertical.\n' +
     'Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
-  try {
-    const stats=JSON.parse(localStorage.getItem('usage_stats')||'{}');
-    stats.totalGenerates=(stats.totalGenerates||0)+1;
-    stats.lastGenerate=new Date().toISOString();
-    const today=new Date().toISOString().split('T')[0];
-    if(!stats.daily)stats.daily={};
-    stats.daily[today]=(stats.daily[today]||0)+1;
-    if(!stats.byStyle)stats.byStyle={};
-    stats.byStyle[S.style]=(stats.byStyle[S.style]||0)+1;
-    if(!stats.byObject)stats.byObject={};
-    stats.byObject[S.obj]=(stats.byObject[S.obj]||0)+1;
-    if(!stats.byConcept)stats.byConcept={};
-    stats.byConcept['angry']=(stats.byConcept['angry']||0)+1;
-    if(!stats.byCountry)stats.byCountry={};
-    stats.byCountry['kr']=(stats.byCountry['kr']||0)+1;
-    localStorage.setItem('usage_stats',JSON.stringify(stats));
-  } catch(e){}
+  // 대본 탭 세팅
+  currentScriptLang='native';
+  updateScriptDisplay();
 
   const wrap=document.getElementById('resultWrap');
   wrap.classList.add('show');
@@ -1172,58 +1968,158 @@ async function generate(){
   btn.disabled=false;btn.textContent='🔥 프롬프트 생성하기';
 }
 
-// ═══ API 키 ═══
+function updateScriptDisplay(){
+  const label1=document.getElementById('scriptLabel1');
+  const out1=document.getElementById('scrOut1');
+  const label2=document.getElementById('scriptLabel2');
+  const out2=document.getElementById('scrOut2');
+  const transCard=document.getElementById('translationCard');
+  const out3=document.getElementById('scrOut3');
+
+  if(S.country==='jp'){
+    // 메인: 일본어 (영상에 쓸 언어)
+    label1.textContent='📝 台本 · 日本語 (メイン)';
+    out1.textContent=lastScriptJP||'(없음)';
+    // 번역: 한국어
+    label2.textContent='🇰🇷 한국어 번역 (내용 확인용)';
+    out2.textContent=lastScriptKR||'(번역 없음 — API 키 필요)';
+    transCard.style.display='block';
+  } else {
+    label1.textContent='📝 대본 · 한국어';
+    out1.textContent=lastScriptKR||'(없음)';
+    transCard.style.display='none';
+  }
+  out3.textContent=lastScriptEN||'(영어 번역 없음)';
+}
+
+function switchScript(){ /* 더이상 사용 안 함 (병렬 표시로 변경) */ }
+
+// ═══ 유틸 ═══
+function toggleDark(){
+  const isDark=document.body.classList.toggle('dark');
+  document.getElementById('darkToggle').textContent=isDark?'☀️':'🌙';
+  try{localStorage.setItem('darkMode_v3',isDark?'1':'0');}catch(e){}
+}
+
 function saveApiKey(){
-  const statusEl=document.getElementById('apiKeyStatus');
-  if(!statusEl){alert('⚠️ 페이지 로딩 중.');return;}
-  statusEl.textContent='⏳ 저장 시도 중...';statusEl.style.color='#888';
-  const inputEl=document.getElementById('apiKeyInput');
-  if(!inputEl){statusEl.textContent='❌ 입력창 없음';statusEl.style.color='#dc2626';return;}
-  const key=inputEl.value.trim();
-  if(!key){statusEl.textContent='⚠️ API 키를 먼저 입력해주세요.';statusEl.style.color='#f59e0b';return;}
-  if(key.includes('•')||key.includes('*')){
-    try{
-      const existing=localStorage.getItem('openai_api_key');
-      if(existing&&!existing.includes('•')&&!existing.includes('*')){
-        statusEl.textContent='✅ 이미 저장된 API 키 있음. 새 키 입력하려면 🗑️ 먼저.';statusEl.style.color='#22c55e';return;
-      } else {statusEl.textContent='⚠️ 유효한 API 키를 입력해주세요.';statusEl.style.color='#f59e0b';return;}
-    }catch(e){statusEl.textContent='❌ localStorage 접근 불가';statusEl.style.color='#dc2626';return;}
+  // 즉시 시각적 피드백 (버튼이 반응하는지 확인 가능)
+  const statusEl = document.getElementById('apiKeyStatus');
+  if(!statusEl){
+    alert('⚠️ 페이지가 아직 로딩 중입니다. 잠시 후 다시 시도해주세요.');
+    return;
   }
-  if(!key.startsWith('sk-')){statusEl.textContent='⚠️ OpenAI API 키 형식 아님.';statusEl.style.color='#f59e0b';return;}
-  try{
-    localStorage.setItem('openai_api_key',key);
-    if(localStorage.getItem('openai_api_key')!==key){statusEl.textContent='❌ 저장 확인 실패';statusEl.style.color='#dc2626';return;}
-  }catch(e){statusEl.textContent='❌ 저장 실패: '+e.message;statusEl.style.color='#dc2626';return;}
-  statusEl.textContent='✅ OpenAI API 키 저장 완료!';statusEl.style.color='#22c55e';
-  inputEl.value='sk-••••••••••••••••';
+  statusEl.textContent = '⏳ 저장 시도 중...';
+  statusEl.style.color = '#888';
+
+  const inputEl = document.getElementById('apiKeyInput');
+  if(!inputEl){
+    statusEl.textContent = '❌ 입력창을 찾을 수 없음';
+    statusEl.style.color = '#dc2626';
+    return;
+  }
+
+  const key = inputEl.value.trim();
+
+  if(!key){
+    statusEl.textContent = '⚠️ API 키를 먼저 입력해주세요.';
+    statusEl.style.color = '#f59e0b';
+    return;
+  }
+
+  // 마스킹된 값 ( sk-•••• )은 저장 거부
+  if(key.includes('•') || key.includes('*')){
+    try {
+      const existing = localStorage.getItem('openai_api_key');
+      if(existing && !existing.includes('•') && !existing.includes('*')){
+        statusEl.textContent = '✅ 이미 저장된 API 키가 있습니다. 새 키 입력하려면 먼저 🗑️ 삭제 버튼을 누르세요.';
+        statusEl.style.color = '#22c55e';
+        return;
+      } else {
+        statusEl.textContent = '⚠️ 유효한 API 키를 입력해주세요 (마스킹 표시만 있음)';
+        statusEl.style.color = '#f59e0b';
+        return;
+      }
+    } catch(e){
+      statusEl.textContent = '❌ localStorage 접근 불가 — 시크릿 모드인지 확인';
+      statusEl.style.color = '#dc2626';
+      return;
+    }
+  }
+
+  if(!key.startsWith('sk-')){
+    statusEl.textContent = '⚠️ OpenAI API 키 형식이 아닙니다. sk-proj- 또는 sk- 로 시작해야 합니다.';
+    statusEl.style.color = '#f59e0b';
+    return;
+  }
+
+  // 실제 저장
+  try {
+    localStorage.setItem('openai_api_key', key);
+    const verify = localStorage.getItem('openai_api_key');
+    if(verify !== key){
+      statusEl.textContent = '❌ 저장 확인 실패 (브라우저가 저장을 차단했을 수 있음)';
+      statusEl.style.color = '#dc2626';
+      return;
+    }
+  } catch(e){
+    console.error('API 키 저장 실패:', e);
+    statusEl.textContent = '❌ 저장 실패: ' + e.message + ' — 시크릿 모드나 iframe 환경일 수 있음';
+    statusEl.style.color = '#dc2626';
+    return;
+  }
+
+  statusEl.textContent = '✅ OpenAI API 키 저장 완료! 이 브라우저에서는 새로고침해도 유지됩니다.';
+  statusEl.style.color = '#22c55e';
+  inputEl.value = 'sk-••••••••••••••••';
 }
+
 function clearApiKey(){
-  const statusEl=document.getElementById('apiKeyStatus');
-  try{localStorage.removeItem('openai_api_key');}catch(e){
-    if(statusEl){statusEl.textContent='❌ 삭제 실패';statusEl.style.color='#dc2626';}return;
+  const statusEl = document.getElementById('apiKeyStatus');
+  try {
+    localStorage.removeItem('openai_api_key');
+  } catch(e){
+    if(statusEl){
+      statusEl.textContent = '❌ 삭제 실패: ' + e.message;
+      statusEl.style.color = '#dc2626';
+    }
+    return;
   }
-  const inputEl=document.getElementById('apiKeyInput');
-  if(inputEl)inputEl.value='';
-  if(statusEl){statusEl.textContent='🗑️ API 키 삭제됨.';statusEl.style.color='#f87171';}
+  const inputEl = document.getElementById('apiKeyInput');
+  if(inputEl) inputEl.value = '';
+  if(statusEl){
+    statusEl.textContent = '🗑️ API 키 삭제됨. 새 키를 입력하고 저장해주세요.';
+    statusEl.style.color = '#f87171';
+  }
 }
+
 function getApiKey(){
-  try{
-    const k=localStorage.getItem('openai_api_key')||'';
-    if(k.includes('•')||k.includes('*')){localStorage.removeItem('openai_api_key');return '';}
+  try {
+    const k = localStorage.getItem('openai_api_key') || '';
+    // 혹시 과거 버그로 마스킹 값이 저장되어 있으면 삭제
+    if(k.includes('•') || k.includes('*')){
+      localStorage.removeItem('openai_api_key');
+      return '';
+    }
     return k;
-  }catch(e){return '';}
+  } catch(e){
+    console.error('localStorage 접근 실패:', e);
+    return '';
+  }
 }
 
 // ═══ Railway 프록시 설정 ═══
 const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
 
 async function callAI(system,user){
-  const apiKey=getApiKey();
-  if(!apiKey)throw new Error('API 키 없음');
-  const res=await fetch(PROXY_URL + '/openai/chat',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
+  const apiKey = getApiKey();
+  if(!apiKey){throw new Error('API 키 없음');}
+
+  const res = await fetch(PROXY_URL + '/openai/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
       apiKey: apiKey,
       system: system,
       user: user,
@@ -1231,16 +2127,19 @@ async function callAI(system,user){
       temperature: 0.95
     })
   });
+
   if(!res.ok){
-    const err=await res.json().catch(()=>({}));
-    throw new Error((err && err.error)||'프록시 API 오류 '+res.status);
+    const err = await res.json().catch(()=>({}));
+    const msg = (err && err.error) || ('프록시 API 오류 ' + res.status);
+    throw new Error(msg);
   }
-  const d=await res.json();
+
+  const d = await res.json();
   return d.text || '';
 }
 
 // ═══ 사물 맞춤 배경 + ambient 동적 생성 ═══
-async function getScene(object, category){
+async function getScene(object, country){
   const apiKey = getApiKey();
   if(!apiKey) return null;
 
@@ -1251,8 +2150,7 @@ async function getScene(object, category){
       body: JSON.stringify({
         apiKey: apiKey,
         object: object,
-        country: 'kr',
-        category: category
+        country: country || 'kr'
       })
     });
     if(!res.ok) return null;
@@ -1279,7 +2177,7 @@ async function getMotionAI(object){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         apiKey: apiKey,
-        system: 'You are a visual motion designer for short-form video. Given any object, describe in ONE English sentence the most visually-satisfying motion that would happen around or from this specific object to make a scene feel alive. If it is a device, describe its functional working motion. If plant/flower, butterflies/bees/pollen. If food, steam/sizzle. If animal, natural movement. Output ONLY the motion sentence, no preamble, no quotes.',
+        system: 'You are a visual motion designer for short-form video. Given any object, describe in ONE English sentence the most visually-satisfying motion that would happen around or from this specific object. Output ONLY the motion sentence, no preamble, no quotes.',
         user: 'Object: ' + object + '\n\nWhat is its visually-interesting motion?',
         max_tokens: 150,
         temperature: 0.7
@@ -1294,8 +2192,8 @@ async function getMotionAI(object){
   }
 }
 
-// ═══ 웹 검색 기반 정보 수집 ═══
-async function getResearch(object, topic){
+// ═══ 웹 검색 기반 정보 수집 (꿀팁/민폐 상황의 실제 정보) ═══
+async function getResearch(object, topic, country){
   const apiKey = getApiKey();
   if(!apiKey) return null;
   try {
@@ -1306,7 +2204,7 @@ async function getResearch(object, topic){
         apiKey: apiKey,
         object: object,
         topic: topic,
-        country: 'kr'
+        country: country || 'kr'
       })
     });
     if(!res.ok) return null;
@@ -1323,34 +2221,32 @@ async function getResearch(object, topic){
   }
 }
 
-// ═══ 유틸 ═══
-function toggleDark(){
-  const isDark=document.body.classList.toggle('dark');
-  document.getElementById('darkToggle').textContent=isDark?'☀️':'🌙';
-  try{localStorage.setItem('darkMode_angry',isDark?'1':'0');}catch(e){}
-}
 function act(id){const e=document.getElementById(id);if(e){e.classList.add('active');e.classList.remove('done');}}
-function done(id){const e=document.getElementById(id);if(e)e.classList.add('active','done');}
-function deact(id){const e=document.getElementById(id);if(e)e.classList.remove('active','done');}
+function done(id){const e=document.getElementById(id);if(e){e.classList.add('active','done');}}
+function deact(id){const e=document.getElementById(id);if(e){e.classList.remove('active','done');}}
+
 function updateSummary(){
   const p=[];
-  if(S.cat)p.push('카테고리: <b>'+S.cat+'</b>');
-  if(S.obj)p.push('오브젝트: <b>'+S.obj+'</b>');
-  if(S.loc)p.push('장소: <b>'+S.loc+'</b>');
+  p.push('국가: <b>'+(S.country==='kr'?'🇰🇷 한국':'🇯🇵 일본')+'</b>');
+  p.push('컨셉: <b>'+(S.concept==='tip'?'💡 꿀팁':'😤 민폐 지적')+'</b>');
+  if(S.obj)p.push('사물: <b>'+S.obj+'</b>');
+  if(S.sit)p.push('상황: <b>'+(S.sit.length>30?S.sit.substring(0,30)+'…':S.sit)+'</b>');
   if(S.style)p.push('스타일: <b>'+S.style+'</b>');
-  p.push('무드: <b>'+S.mood+'</b>');
+  if(S.mood && MOODS[S.mood])p.push('감정: <b>'+MOODS[S.mood].label+'</b>');
   document.getElementById('summaryBar').innerHTML=p.join(' · ');
 }
+
 function switchTab(t){
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['img','vid'][i]===t));
-  ['panelImg','panelVid'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
-  const target=document.getElementById(t==='img'?'panelImg':'panelVid');
-  if(target)target.classList.add('active');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['img','vid','scr'][i]===t));
+  ['panelImg','panelVid','panelScr'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
+  const target=document.getElementById(t==='img'?'panelImg':(t==='vid'?'panelVid':'panelScr'));
+  if(target) target.classList.add('active');
 }
+
 function doCopy(textId,btnId){
   const text=document.getElementById(textId).textContent;
   const btn=document.getElementById(btnId);
-  if(!text.trim()){showErr('복사할 내용 없음.');return;}
+  if(!text.trim()){showErr('복사할 내용이 없습니다.');return;}
   navigator.clipboard.writeText(text).then(()=>{
     btn.textContent='✅ 복사됨!';btn.classList.add('ok');
     setTimeout(()=>{btn.textContent='📋 복사';btn.classList.remove('ok');},2000);
@@ -1363,29 +2259,26 @@ function doCopy(textId,btnId){
     setTimeout(()=>{btn.textContent='📋 복사';btn.classList.remove('ok');},2000);
   });
 }
+
 function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000);}
 function hideErr(){document.getElementById('errMsg').style.display='none';}
 
+// ═══ 초기화 ═══
 window.addEventListener('load',()=>{
-  buildTopics();
-  try {
-    const stats=JSON.parse(localStorage.getItem('usage_stats')||'{}');
-    stats.totalVisits=(stats.totalVisits||0)+1;
-    stats.firstVisit=stats.firstVisit||new Date().toISOString();
-    stats.lastVisit=new Date().toISOString();
-    localStorage.setItem('usage_stats',JSON.stringify(stats));
-  }catch(e){}
-  try {
-    if(localStorage.getItem('darkMode_angry')==='1'){
+  // 카테고리 선택 기반이라 초기엔 objectGroups는 비워둠
+  try{
+    if(localStorage.getItem('darkMode_v3')==='1'){
       document.body.classList.add('dark');
       document.getElementById('darkToggle').textContent='☀️';
     }
-  } catch(e){}
+  }catch(e){}
   const saved=getApiKey();
   if(saved){
     document.getElementById('apiKeyInput').value='sk-••••••••••••••••';
-    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키 있음.';
+    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키 있음 (새로 저장할 땐 먼저 삭제 후 입력).';
     document.getElementById('apiKeyStatus').style.color='#22c55e';
+  } else {
+    document.getElementById('apiKeyStatus').textContent='API 키를 입력하면 AI 대본 자동생성이 활성화됩니다.';
   }
   updateSummary();
 });
