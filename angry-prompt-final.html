@@ -1007,55 +1007,54 @@ async function generate(){
     if(aiScene.ambient) ambient = aiScene.ambient;
   }
 
-  const imagePrompt = 'A ' + objEn + ' featuring ' + moodEn + '.\n' +
-    'The face is drawn directly onto the surface of the ' + objEn + ' — eyes, nose, and mouth painted or embedded on the object itself. Do NOT replace or morph the object into a real human face. The ' + objEn + ' keeps its natural shape and material.\n' +
-    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. One arm is pointed forcefully toward the viewer as if accusing, while the other is lifted as if scolding. No legs or feet. The character remains grounded, sitting or resting naturally on its base without any floating effect.\n' +
-    '\n' +
-    'Style: ' + styleTpl.base + '.\n' +
-    'Real-world scale: the ' + objEn + ' must be ' + sizeHint + '.\n' +
-    '\n' +
-    'Scene: ' + enhancedLoc + '.\n' +
-    'Background details: ' + enhancedProps + '. The setting feels lived-in and authentic — multiple realistic props naturally placed, not empty or minimalist. Background stays softer in focus than the subject.\n' +
-    'Subtle environmental life: ' + ambient + '.\n' +
-    '\n' +
-    ratio + ' composition, cinematic lighting, highly detailed. No text overlays, no subtitles, no captions, no watermarks.';
+  // 3단계 폴백 모션
+  let fnMotion = getAngryFunctionMotion(S.obj);
+  if(!fnMotion && aiScene && aiScene.motion){
+    fnMotion = aiScene.motion;
+  }
+  if(!fnMotion){
+    try {
+      const aiMotion = await getMotionAI(objEn);
+      if(aiMotion) fnMotion = aiMotion;
+    } catch(e){ console.warn('motion AI failed:', e); }
+  }
+  const ambientLine = fnMotion
+    ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+ambient+'.'
+    : ' Surrounding ambient details add a sense of life: '+ambient+'.';
 
-  const angryFunctionMotion = getAngryFunctionMotion(S.obj);
+  const imagePrompt = 'A ' + objEn + ' featuring an angry human-like expression — sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes. ' +
+    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
+    'One arm is pointed forcefully toward the viewer as if accusing, while the other is lifted as if scolding. ' +
+    'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
+    'The ' + objEn + ' retains a realistic texture with fine surface details. ' +
+    'Scene: ' + enhancedLoc + ' — depicted in a realistic setting with natural lighting, ' + enhancedProps + '.' +
+    ambientLine + ' ' +
+    'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text, no subtitles, no captions, no watermarks, no logos anywhere in the frame.';
 
   const videoPrompt =
+    'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
     'Animate this character with angry upper-body movement.\n' +
-    'The character is yelling in natural Korean: "' + dialogue + '"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change to polite form (존댓말), do not paraphrase, do not add or remove words. Every word exactly as written, with an angry scolding tone.\n' +
-    '\n' +
-    'Character motion rules:\n' +
-    '- The character body stays grounded and mostly still. No floating, no jumping, no large body shifts.\n' +
-    '- Mouth opens and closes naturally, synced to the angry Korean speech.\n' +
-    '- Eyes blink, eyebrows furrow deeply with anger, occasional angry glares.\n' +
-    '- Face stays as part of the object surface — NOT a separate human face. Do NOT morph the object into a human. Eyes, mouth, and brows are drawn on the object itself.\n' +
-    '- Hands/arms make small natural angry gestures that match the dialogue beats (finger point when accusing, palm raise when expressing disbelief). Gestures return to rest after each beat. Arms stay attached and visible only in their natural position.\n' +
-    '- Character remains in the same position as the uploaded image. No pose changes.\n' +
-    '\n' +
-    'Scene & background (KEEP FROM UPLOADED IMAGE):\n' +
-    '- Use the uploaded image as the first frame. Preserve background, props, labels, colors, and composition exactly.\n' +
-    '- Setting: ' + enhancedLoc + '.\n' +
-    '\n' +
-    'Background life — this is where the scene becomes visually interesting:\n' +
-    (angryFunctionMotion
-      ? '- ' + angryFunctionMotion + '\n'
-      : ''
-    ) +
-    '- ' + ambient + '\n' +
-    '- These background motions should be clearly visible and satisfying to watch, but not distract from the talking character.\n' +
-    '\n' +
-    'Camera: static shot, maybe a 3% slow push-in. No pans, tilts, cuts, or zooms.\n' +
-    '\n' +
-    'Audio: angry adult Korean speaker with scolding tone. Clean dry sound — no echo, no reverb, no hollow sound, no music. No roaring, no monster sounds, no creature sounds.\n' +
-    '\n' +
-    'Final render rules (CRITICAL):\n' +
-    '- No text, no subtitles, no captions appearing in the video.\n' +
-    '- No watermarks, no logos, no UI.\n' +
-    '- Duration ~' + (S.dur==='30'?'30':'10') + ' seconds. ' + ratio + '.\n' +
-    '- Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
+    'The character is yelling: "' + dialogue + '"\n' +
+    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
+    'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
+    'Gestures naturally match the tone and flow of the dialogue:\n' +
+    'pointing one finger directly at the camera when accusing,\n' +
+    'raising both open palms in a "why would you do that" gesture\n' +
+    'when expressing frustration or disbelief.\n' +
+    'Gestures should feel reactive and conversational, not mechanical or repetitive.\n' +
+    'Mouth opens and closes as if speaking angrily.\n' +
+    'Eyebrows furrow deeply, eyes bulge with rage.\n' +
+    'The character stays grounded — no floating or jumping.\n' +
+    'Camera mostly static with a slight zoom-in.\n' +
+    'Exaggerated, Pixar-style animation.\n' +
+    (fnMotion ? 'Surrounding ambient details add a sense of life: '+fnMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
+    'Audio: angry adult Korean voice with scolding tone.\n' +
+    'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
+    'No roaring, no monster sounds, no creature sounds.\n' +
+    'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
+    'The character\'s face must remain as the object —\n' +
+    'do NOT replace or morph into a real human face.\n' +
+    'Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -1173,11 +1172,37 @@ async function getScene(object, category){
     return {
       loc: d.loc || '',
       props: d.props || '',
-      ambient: d.ambient || ''
+      ambient: d.ambient || '',
+      motion: d.motion || ''
     };
   } catch(e){
     console.error('[getScene] error:', e);
     return null;
+  }
+}
+
+// 사물별 작동/주변 모션 전용 AI 호출 (FUNCTION_MOTION 매칭 없을 때 fallback)
+async function getMotionAI(object){
+  const apiKey = getApiKey();
+  if(!apiKey) return '';
+  try {
+    const res = await fetch(PROXY_URL + '/openai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        system: 'You are a visual motion designer for short-form video. Given any object, describe in ONE English sentence the most visually-satisfying motion that would happen around or from this specific object to make a scene feel alive. If it is a device, describe its functional working motion. If plant/flower, butterflies/bees/pollen. If food, steam/sizzle. If animal, natural movement. Output ONLY the motion sentence, no preamble, no quotes.',
+        user: 'Object: ' + object + '\n\nWhat is its visually-interesting motion?',
+        max_tokens: 150,
+        temperature: 0.7
+      })
+    });
+    if(!res.ok) return '';
+    const d = await res.json();
+    return (d.text || '').trim().replace(/^["']|["']$/g, '');
+  } catch(e){
+    console.error('[getMotionAI] error:', e);
+    return '';
   }
 }
 
