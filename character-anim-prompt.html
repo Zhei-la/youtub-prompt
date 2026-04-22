@@ -368,6 +368,23 @@ const LS_THEME = 'charanim_theme';
 const LS_PRESETS = 'charanim_presets';
 
 /* ============================================================
+ * TRACKING (anonymous, IP-based)
+ * ============================================================ */
+const APP_ID = 'character-anim';
+const APP_NAME = '애니메이션 프롬프트 생성기';
+function track(action) {
+  try {
+    fetch(`${PROXY_URL}/track/${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appId: APP_ID, name: APP_NAME }),
+      keepalive: true,
+    }).catch(()=>{});
+  } catch(_) {}
+}
+track('visit');
+
+/* ============================================================
  * DATA
  * ============================================================ */
 const JOBS = [
@@ -1267,6 +1284,7 @@ $('#generateBtn').addEventListener('click', async () => {
     await generateScript();
     if (!state.scenes.length) return;
   }
+  track('generate');
   renderResult();
 });
 </script>
