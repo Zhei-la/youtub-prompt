@@ -929,16 +929,16 @@ const EMOTION_REVEAL_STYLE = {
 // ═══ 사물별 "기능 시연" 매핑 — 캐릭터가 자기 기능을 직접 보여줌 ═══
 const FUNCTION_REVEAL = {
   '🧊 냉장고': {
-    action: 'opens its own refrigerator door with one cartoon arm',
-    reveal: 'revealing the interior — shelves stacked with kimchi containers, plastic water bottles, leftover takeout boxes, a half-empty milk carton, cold white interior light spilling out, cold condensation drifting from the open door'
+    action: 'opens ONLY the lower refrigerator door (the one WITHOUT the face) with one cartoon arm, keeping the upper freezer door with the face completely still and closed',
+    reveal: 'revealing the interior of the lower fridge compartment — shelves stacked with kimchi containers, plastic water bottles, leftover takeout boxes, a half-empty milk carton, cold white interior light spilling out from below, cold condensation drifting. The face on the upper part stays locked in place, showing its expression while pointing at the open compartment below'
   },
   '🌀 세탁기': {
-    action: 'spins up its drum dramatically',
-    reveal: 'the drum behind the glass door visibly rotating with tumbling laundry (t-shirts, socks, towels) inside, water suds sloshing, soap bubbles pressing against the glass, the whole machine body vibrating with the spin cycle'
+    action: 'starts the drum spinning behind its transparent glass door (the door itself stays closed — the spinning happens visibly THROUGH the glass; the face on the main body stays fixed in place)',
+    reveal: 'through the clear glass door we see the drum rotating with tumbling laundry (t-shirts, socks, towels) inside, water suds sloshing, soap bubbles pressing against the glass from the inside, the whole body slightly vibrating with the cycle. The face remains locked on its original position on the front panel'
   },
   '🍚 전기밥솥': {
-    action: 'pops its own lid open',
-    reveal: 'a massive burst of steam erupting upward, fluffy white rice visible inside, the pressure valve still hissing, warm yellow interior light glowing on the rice'
+    action: 'releases a massive burst of steam from the steam vent on top (the lid itself stays closed — NO lid opening; the face on the front body stays completely fixed)',
+    reveal: 'powerful steam billowing upward from the top vent, pressure valve hissing loudly, condensation droplets forming around the lid edge, the inner cooking light faintly glowing. The face on the front remains unchanged and visible'
   },
   '❄️ 에어컨': {
     action: 'snaps its louvers wide open',
@@ -953,8 +953,8 @@ const FUNCTION_REVEAL = {
     reveal: 'the intake visibly pulling in dust particles, crumbs, hair, and small debris from the floor, motor housing vibrating, the bristle roller spinning fast at the base, LED power indicator glowing bright'
   },
   '🗑️ 쓰레기통': {
-    action: 'flips its lid open',
-    reveal: 'the contents inside — crumpled plastic bags, coffee cups, food wrappers, orange peels — visible inside, a faint odor shimmer rising, a tiny fly buzzing out'
+    action: 'flips its own lid open wide (if the face is on the lid, it rotates upward naturally along with the lid, staying attached to the lid surface as it tilts back — the face is NOT duplicated anywhere else; if the face is on the body, the face stays still and only the lid flips)',
+    reveal: 'the contents inside become visible — crumpled plastic bags, coffee cups, food wrappers, orange peels piled up, a faint odor shimmer rising, a tiny fly buzzing out. The lid stays attached, either tilted back with the face rotated up along with it, or the lid open while the face on the body remains still'
   },
   '☕ 커피잔': {
     action: 'tilts itself slightly to show the surface',
@@ -1913,7 +1913,12 @@ async function generate(){
     'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
     'Performance tone: '+moodData.perform+'.\n' +
     'Facial expression throughout the clip: '+moodData.face+'.\n' +
-    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' : '') +
+    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' +
+      '🚫 CRITICAL FACE PRESERVATION RULES (반드시 지켜야 함):\n' +
+      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. NEVER duplicate, clone, or re-generate the face anywhere else during the animation. NO second face appearing next to or above the opening part.\n' +
+      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): determine which section the face is attached to in the reference image, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still. For example, if the face is on the upper freezer door, only the lower fridge door opens while the upper section stays perfectly still with the face intact.\n' +
+      '3. If the face-bearing part MUST move or open, then the face moves naturally WITH that part (rotating, tilting, going off-screen as the door swings) — NEVER jumps to a new location, NEVER splits, NEVER duplicates. If the rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere to "keep it visible".\n' +
+      '4. No character should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face.\n' : '') +
     'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
     'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
     'Mouth opens and closes naturally in sync with the spoken words, matching the emotion.\n' +
