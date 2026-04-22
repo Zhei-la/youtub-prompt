@@ -291,15 +291,25 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S4: 스타일 -->
+<!-- S4: 감정 표현 -->
 <div class="step" id="s3">
   <div class="step-hd">
     <div class="step-num">4</div>
-    <div class="step-title">비주얼 스타일</div>
+    <div class="step-title">감정 표현</div>
   </div>
-  <div class="chips" id="styleChips">
-    <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
-    <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
+  <div class="chips" id="moodChips">
+    <div class="chip" data-val="annoyed" onclick="selMood(this)">😒 짜증남</div>
+    <div class="chip" data-val="angry" onclick="selMood(this)">😤 화남</div>
+    <div class="chip" data-val="furious" onclick="selMood(this)">🤬 격분</div>
+    <div class="chip" data-val="scolding" onclick="selMood(this)">☝️ 훈계하는</div>
+    <div class="chip" data-val="disappointed" onclick="selMood(this)">😞 실망한</div>
+    <div class="chip" data-val="shocked" onclick="selMood(this)">😨 당황/충격</div>
+    <div class="chip" data-val="smug" onclick="selMood(this)">😏 잘난척</div>
+    <div class="chip" data-val="tired" onclick="selMood(this)">😩 지친/한숨</div>
+    <div class="chip" data-val="worried" onclick="selMood(this)">😟 걱정하는</div>
+    <div class="chip" data-val="sassy" onclick="selMood(this)">💅 새침한</div>
+    <div class="chip" data-val="crying_angry" onclick="selMood(this)">😭 울분</div>
+    <div class="chip" data-val="chibi_rage" onclick="selMood(this)">👹 폭발 직전</div>
   </div>
   <div class="style-note" id="styleNote"></div>
 </div>
@@ -784,11 +794,68 @@ const SITUATIONS = {
 };
 
 // ═══ 스타일 템플릿 (배경 디테일 강화) ═══
-const STYLE_TEMPLATES = {
-  pixar:{note:'🎬 픽사 3D — 사물 전체 보이게, 팔다리 달린 캐릭터, 따뜻한 조명',
-    base:'Pixar-style 3D animated character, the entire object is clearly visible in the frame from top to bottom with cartoon face embedded on its surface and two slender stylized arms extending from its sides, warm volumetric studio lighting, vibrant saturated colors, cinematic composition showing the whole character in its environment, highly detailed Pixar render quality, masterpiece quality'},
-  anime:{note:'🌸 애니 — 셀 쉐이딩, 큰 눈, 감정 과장',
-    base:'Studio Ghibli style anime illustration, clean hand-drawn linework, cel shading, the object has expressive anime eyes and small stylized arms, atmospheric background'}
+// ═══ 감정 표현 맵 (이미지 표정 + 영상 연기 톤) ═══
+const MOODS = {
+  annoyed:{
+    label:'😒 짜증남',
+    face:'eyebrows furrowed slightly, lips pressed tight in annoyance, eyes narrowed with mild irritation',
+    perform:'irritated, mildly fed up — like sighing hard through words, short clipped sentences, eye-rolls baked into the tone'
+  },
+  angry:{
+    label:'😤 화남',
+    face:'sharply furrowed eyebrows, clenched teeth visible, exaggerated bulging cartoon eyes with visible anger',
+    perform:'angry and direct — each word punched with frustration, forceful breathing, escalating emphasis'
+  },
+  furious:{
+    label:'🤬 격분',
+    face:'extremely furrowed brows pulled into a deep V, bared teeth in a full snarl, wide bulging eyes with cartoon rage lines, veins popping on forehead',
+    perform:'explosive rage — voice cracking with fury, shouting volume, spitting each word like it physically hurts'
+  },
+  scolding:{
+    label:'☝️ 훈계하는',
+    face:'stern authoritative frown, one finger prominently pointing forward, eyes locked onto the viewer in lecture mode, slight head tilt',
+    perform:'lecturing parent tone — measured but firm, pausing between points for emphasis, every sentence lands like a verdict'
+  },
+  disappointed:{
+    label:'😞 실망한',
+    face:'deep exhausted eyes with heavy lids, mouth turned downward at the corners, eyebrows relaxed but sad, the look of someone who has given up',
+    perform:'quiet disappointment — soft low voice, long pauses, sighs between sentences, the kind that hits harder than yelling'
+  },
+  shocked:{
+    label:'😨 당황/충격',
+    face:'eyes wide open in disbelief, mouth slightly agape, eyebrows raised high, the whole face frozen in shock',
+    perform:'stunned disbelief — voice rising in shock, stuttering slightly, repeating key words like "진짜?" "지금?"'
+  },
+  smug:{
+    label:'😏 잘난척',
+    face:'one eyebrow arched high, corner of mouth lifted in a knowing smirk, eyes half-lidded with smugness',
+    perform:'condescending expert — slow deliberate pacing, implying "너 이거 몰랐지?" energy, slight chuckle baked in'
+  },
+  tired:{
+    label:'😩 지친/한숨',
+    face:'eyebrows sagging outward in exhaustion, heavy eyelids, mouth slightly open with a weary expression, dark circles',
+    perform:'deeply exhausted — voice sounds worn out, long breaths before sentences, like they have explained this a hundred times'
+  },
+  worried:{
+    label:'😟 걱정하는',
+    face:'eyebrows pulled together in the middle in concern, mouth slightly frowning, eyes wide with genuine worry',
+    perform:'concerned caretaker — gentle but urgent tone, soft worry behind each sentence, pleading slightly'
+  },
+  sassy:{
+    label:'💅 새침한',
+    face:'one hand on hip pose vibe with pursed lips, eyes rolling slightly, chin tilted up with attitude',
+    perform:'sassy friend — quick clever delivery, slight drawl on certain syllables, playful but cutting'
+  },
+  crying_angry:{
+    label:'😭 울분',
+    face:'eyes welling up with tears of rage, cheeks flushed red, mouth trembling between anger and sorrow',
+    perform:'voice cracking between anger and tears — raw emotion, occasional sniffle, words tumbling out emotionally'
+  },
+  chibi_rage:{
+    label:'👹 폭발 직전',
+    face:'super-deformed chibi rage with huge sweat drop, cross-shaped vein popping on forehead, huge angry eyes, teeth grinding visibly',
+    perform:'barely contained explosion — breath getting shorter, voice tightening, on the verge of completely losing it'
+  }
 };
 
 // ═══ 배경 상황별 소품 매핑 (이미지 프롬프트 디테일 강화용) ═══
@@ -1009,7 +1076,7 @@ const DIALOGUE_TONE = {
 };
 
 // ═══ STATE ═══
-const S={country:'kr',concept:'tip',obj:null,objEn:null,objJp:null,sit:null,sitAI:null,style:null,dur:'10',voice:'adult_m'};
+const S={country:'kr',concept:'tip',obj:null,objEn:null,objJp:null,sit:null,sitAI:null,mood:null,dur:'10',voice:'adult_m'};
 let lastScriptKR='',lastScriptJP='',lastScriptEN='';
 let currentScriptLang='native';
 let usedScripts=[];
@@ -1022,8 +1089,8 @@ function selCountry(el){
   S.obj=null;S.objEn=null;S.objJp=null;S.sit=null;
   buildObjects();
   document.getElementById('sitChips').innerHTML='';
-  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
-  S.style=null;
+  document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
+  S.mood=null;
   document.getElementById('styleNote').style.display='none';
   deact('s2');deact('s3');deact('s4');
   updateSummary();
@@ -1100,8 +1167,8 @@ function selSit(displayText, aiValue, el){
   S.sit = displayText;           // 화면에 보이는 한글
   S.sitAI = aiValue || displayText;  // AI에 전달할 현지어(일본이면 일본어)
   done('s2');act('s3');deact('s4');
-  S.style=null;
-  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
+  S.mood=null;
+  document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
   document.getElementById('styleNote').style.display='none';
   updateSummary();
 }
@@ -1136,12 +1203,12 @@ function addCustom(type){
 }
 
 // ═══ 스타일 ═══
-function selStyle(el){
-  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
+function selMood(el){
+  document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  S.style=el.dataset.val;
+  S.mood=el.dataset.val;
   const note=document.getElementById('styleNote');
-  note.textContent=STYLE_TEMPLATES[S.style].note;
+  note.textContent=MOODS[S.mood].label+' — 이 감정으로 표정·말투·연기가 설계됩니다';
   note.style.display='block';
   done('s3');act('s4');
   updateSummary();
@@ -1319,7 +1386,7 @@ async function aiRandomSit(){
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
 async function genDialogue(regen){
-  console.log('[genDialogue] 시작, S=', JSON.stringify({obj:S.obj, sit:S.sit, concept:S.concept, country:S.country, style:S.style, dur:S.dur}));
+  console.log('[genDialogue] 시작, S=', JSON.stringify({obj:S.obj, sit:S.sit, concept:S.concept, country:S.country, mood:S.mood, dur:S.dur}));
 
   const dialogueEl = document.getElementById('dialogue');
   if(!dialogueEl){
@@ -1352,7 +1419,8 @@ async function genDialogue(regen){
   dialogueEl.placeholder = '⏳ AI가 대본을 생성하고 있습니다...';
   const isTip=S.concept==='tip';
   const isJP=S.country==='jp';
-  const styleTone=(DIALOGUE_TONE[S.country]||DIALOGUE_TONE.kr)[S.style]||'자연스러운 구어체';
+  const moodData = MOODS[S.mood] || MOODS.annoyed;
+  const styleTone = moodData.perform;
 
   // ═════════════════════════════════════════════════
   // 품질 강제: 실제 레퍼런스 대본을 few-shot으로 주입
@@ -1521,11 +1589,9 @@ ${BAN_RULES_KR}
 "내 대본의 모든 문장이 구체적인 정보를 담고 있나? 영양가 없는 감성 문장 없나? 독자가 실제로 뭔가 배우거나 공감할 요소가 있나?"
 없으면 다시 써.`;
 
-  // 웹툰 스타일: 이전 대사 이어쓰기 지시 추가
-  const webtoonPrev = (S.style==='webtoon') ? (document.getElementById('webtoonPrevScript')||{}).value||'' : '';
-  const continuationHint = webtoonPrev.trim()
-    ? '\n\n📖 이어쓰기 요청: 이전 사물이 이런 말을 했어:\n"'+webtoonPrev.trim()+'"\n\n이 대사를 듣고 자연스럽게 반응/대꾸/말대답하는 대본을 써. 같은 대화 흐름이라는 걸 느낄 수 있게, 하지만 이번 사물의 성격으로. (예: 이전 사물이 "야 선풍기!" 라고 했으면, "뭐 임마? 왜 나한테 그래?" 같은 대꾸로 시작)'
-    : '';
+  // (웹툰 스타일 제거됨 — 이어쓰기 기능 사용 안 함)
+  const webtoonPrev = '';
+  const continuationHint = '';
 
   const userPrompt = isJP
     ? `物: ${S.objJp||S.objEn||S.obj}
@@ -1565,7 +1631,7 @@ ${BAN_RULES_KR}
 async function generate(){
   if(!S.obj){showErr('사물을 선택해주세요.');return;}
   if(!S.sit){showErr('상황을 선택해주세요.');return;}
-  if(!S.style){showErr('스타일을 선택해주세요.');return;}
+  if(!S.mood){showErr('감정 표현을 선택해주세요.');return;}
   hideErr();
 
   const btn=document.getElementById('genBtn');
@@ -1622,7 +1688,7 @@ async function generate(){
   lastScriptEN = scriptEN||script;
 
   // ═ 이미지 프롬프트 ═
-  const styleTpl=STYLE_TEMPLATES[S.style];
+  const moodData = MOODS[S.mood] || MOODS.annoyed;
   // 1) 먼저 SCENE_PROPS 하드코딩 시도 (빠름)
   let scene = SCENE_PROPS[S.country][S.obj];
   // 2) 없으면 Railway 프록시로 AI에게 실시간 생성 요청
@@ -1663,7 +1729,7 @@ async function generate(){
     ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+scene.ambient+'.'
     : ' Surrounding ambient details add a sense of life: '+scene.ambient+'.';
 
-  const imagePrompt = 'A '+objEn+' featuring an '+(S.concept==='tip'?'expressive instructive':'angry')+' human-like expression — '+(S.concept==='tip'?'arched eyebrows, slightly pursed lips, focused eyes that look straight at the viewer':'sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes')+'. ' +
+  const imagePrompt = 'A '+objEn+' featuring a human-like expression — '+moodData.face+'. ' +
     'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
     'One arm is '+(S.concept==='tip'?'raised mid-gesture as if explaining a key point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'open palm raised as if presenting':'lifted as if scolding')+'. ' +
     'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
@@ -1680,27 +1746,22 @@ async function generate(){
 
   // 영상 프롬프트도 위에서 구한 fnMotion 재사용 (중복 호출 방지)
   const functionMotion = fnMotion;
-  const moveAdjective = isTip ? 'expressive instructive' : 'angry';
-  const verbingEn = isTip ? 'speaking' : 'yelling';
 
   const videoPrompt =
     'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
-    'Animate this character with '+moveAdjective+' upper-body movement.\n' +
-    'The character is '+verbingEn+': "'+scriptOriginal+'"\n' +
+    'Animate this character with upper-body movement showing the following emotion: '+moodData.label+'.\n' +
+    'The character is speaking: "'+scriptOriginal+'"\n' +
     'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
+    'Performance tone: '+moodData.perform+'.\n' +
+    'Facial expression throughout the clip: '+moodData.face+'.\n' +
     'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
-    'Gestures naturally match the tone and flow of the dialogue:\n' +
-    'pointing one finger directly at the camera when '+(isTip?'emphasizing':'accusing')+',\n' +
-    'raising both open palms in a "'+(isTip?'listen up':'why would you do that')+'" gesture\n' +
-    'when expressing '+(isTip?'an important point':'frustration or disbelief')+'.\n' +
-    'Gestures should feel reactive and conversational, not mechanical or repetitive.\n' +
-    'Mouth opens and closes as if speaking '+(isTip?'firmly':'angrily')+'.\n' +
-    'Eyebrows '+(isTip?'arch with focus, eyes lock onto the viewer':'furrow deeply, eyes bulge with rage')+'.\n' +
+    'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
+    'Mouth opens and closes naturally in sync with the spoken words, matching the emotion.\n' +
     'The character stays grounded — no floating or jumping.\n' +
     'Camera mostly static with a slight zoom-in.\n' +
-    'Exaggerated, Pixar-style animation.\n' +
+    'Exaggerated, Pixar-style 3D animation.\n' +
     (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
-    'Audio: '+(isTip?'calm but firm Korean adult voice':'angry adult Korean voice with scolding tone')+'.\n' +
+    'Audio: Korean adult voice delivering the line with the matching emotion ('+moodData.label+').\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
     'No roaring, no monster sounds, no creature sounds.\n' +
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
@@ -1985,7 +2046,7 @@ function updateSummary(){
   p.push('컨셉: <b>'+(S.concept==='tip'?'💡 꿀팁':'😤 민폐 지적')+'</b>');
   if(S.obj)p.push('사물: <b>'+S.obj+'</b>');
   if(S.sit)p.push('상황: <b>'+(S.sit.length>30?S.sit.substring(0,30)+'…':S.sit)+'</b>');
-  if(S.style)p.push('스타일: <b>'+S.style+'</b>');
+  if(S.mood)p.push('감정: <b>'+(MOODS[S.mood]?MOODS[S.mood].label:S.mood)+'</b>');
   document.getElementById('summaryBar').innerHTML=p.join(' · ');
 }
 
