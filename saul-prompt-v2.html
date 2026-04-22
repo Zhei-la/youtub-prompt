@@ -798,61 +798,73 @@ const SITUATIONS = {
 const MOODS = {
   annoyed:{
     label:'😒 짜증남',
+    imgFace:'a neutral face with very subtle irritation — eyebrows slightly angled, calm mouth',
     face:'eyebrows furrowed slightly, lips pressed tight in annoyance, eyes narrowed with mild irritation',
     perform:'irritated, mildly fed up — like sighing hard through words, short clipped sentences, eye-rolls baked into the tone'
   },
   angry:{
     label:'😤 화남',
+    imgFace:'a calm, composed expression with slight tension — small frown, serious eyes, lips gently closed',
     face:'sharply furrowed eyebrows, clenched teeth visible, exaggerated bulging cartoon eyes with visible anger',
     perform:'angry and direct — each word punched with frustration, forceful breathing, escalating emphasis'
   },
   furious:{
     label:'🤬 격분',
+    imgFace:'a stern serious expression, controlled and grounded — eyebrows firmly set, mouth straight',
     face:'extremely furrowed brows pulled into a deep V, bared teeth in a full snarl, wide bulging eyes with cartoon rage lines, veins popping on forehead',
     perform:'explosive rage — voice cracking with fury, shouting volume, spitting each word like it physically hurts'
   },
   scolding:{
     label:'☝️ 훈계하는',
+    imgFace:'a composed thoughtful expression — mild focused eyes, slightly closed mouth, calm and observant',
     face:'stern authoritative frown, one finger prominently pointing forward, eyes locked onto the viewer in lecture mode, slight head tilt',
     perform:'lecturing parent tone — measured but firm, pausing between points for emphasis, every sentence lands like a verdict'
   },
   disappointed:{
     label:'😞 실망한',
+    imgFace:'a soft subdued expression — slightly lowered eyes, mouth gently closed, neutral',
     face:'deep exhausted eyes with heavy lids, mouth turned downward at the corners, eyebrows relaxed but sad, the look of someone who has given up',
     perform:'quiet disappointment — soft low voice, long pauses, sighs between sentences, the kind that hits harder than yelling'
   },
   shocked:{
     label:'😨 당황/충격',
+    imgFace:'a neutral alert expression — mildly raised eyebrows, calm open eyes',
     face:'eyes wide open in disbelief, mouth slightly agape, eyebrows raised high, the whole face frozen in shock',
     perform:'stunned disbelief — voice rising in shock, stuttering slightly, repeating key words like "진짜?" "지금?"'
   },
   smug:{
     label:'😏 잘난척',
+    imgFace:'a subtle confident expression — slight upward tilt of one side of the mouth, relaxed knowing eyes',
     face:'one eyebrow arched high, corner of mouth lifted in a knowing smirk, eyes half-lidded with smugness',
     perform:'condescending expert — slow deliberate pacing, implying "너 이거 몰랐지?" energy, slight chuckle baked in'
   },
   tired:{
     label:'😩 지친/한숨',
+    imgFace:'a relaxed neutral expression — gently closed mouth, softly settled eyes',
     face:'eyebrows sagging outward in exhaustion, heavy eyelids, mouth slightly open with a weary expression, dark circles',
     perform:'deeply exhausted — voice sounds worn out, long breaths before sentences, like they have explained this a hundred times'
   },
   worried:{
     label:'😟 걱정하는',
+    imgFace:'a gentle thoughtful expression — eyebrows softly drawn together, calm attentive eyes',
     face:'eyebrows pulled together in the middle in concern, mouth slightly frowning, eyes wide with genuine worry',
     perform:'concerned caretaker — gentle but urgent tone, soft worry behind each sentence, pleading slightly'
   },
   sassy:{
     label:'💅 새침한',
+    imgFace:'a composed neutral look — slight pursed lips, confident still eyes',
     face:'one hand on hip pose vibe with pursed lips, eyes rolling slightly, chin tilted up with attitude',
     perform:'sassy friend — quick clever delivery, slight drawl on certain syllables, playful but cutting'
   },
   crying_angry:{
     label:'😭 울분',
+    imgFace:'a quiet somber expression — slightly reddened under-eyes, closed calm mouth',
     face:'eyes welling up with tears of rage, cheeks flushed red, mouth trembling between anger and sorrow',
     perform:'voice cracking between anger and tears — raw emotion, occasional sniffle, words tumbling out emotionally'
   },
   chibi_rage:{
     label:'👹 폭발 직전',
+    imgFace:'a subtly tense expression — firmly set mouth, focused eyes, controlled composure',
     face:'super-deformed chibi rage with huge sweat drop, cross-shaped vein popping on forehead, huge angry eyes, teeth grinding visibly',
     perform:'barely contained explosion — breath getting shorter, voice tightening, on the verge of completely losing it'
   }
@@ -1887,7 +1899,7 @@ async function generate(){
     ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+scene.ambient+'.'
     : ' Surrounding ambient details add a sense of life: '+scene.ambient+'.';
 
-  const imagePrompt = 'A '+objEn+' featuring a human-like expression — '+moodData.face+'. ' +
+  const imagePrompt = 'A '+objEn+' featuring a human-like expression — '+(moodData.imgFace||moodData.face)+'. ' +
     'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
     'One arm is '+(S.concept==='tip'?'raised mid-gesture as if explaining a key point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'open palm raised as if presenting':'lifted as if scolding')+'. ' +
     'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
@@ -1928,6 +1940,7 @@ async function generate(){
     (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
     'Audio: Korean adult voice delivering the line with the matching emotion ('+moodData.label+').\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
+    'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
     'No roaring, no monster sounds, no creature sounds.\n' +
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
