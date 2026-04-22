@@ -246,21 +246,9 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<div class="step" id="s4">
-  <div class="step-hd">
-    <div class="step-num">4</div><div class="step-title">비주얼 스타일</div>
-    <div class="step-actions"><button class="btn-sm" onclick="aiRandom(4)">🎲 랜덤</button></div>
-  </div>
-  <div class="chips" id="styleChips">
-    <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
-    <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니메이션</div>
-  </div>
-  <div class="style-note" id="styleNote"></div>
-</div>
-
 <div class="step" id="s5">
   <div class="step-hd">
-    <div class="step-num">5</div><div class="step-title">표정 무드</div>
+    <div class="step-num">4</div><div class="step-title">감정 표현</div>
     <div class="step-actions"><button class="btn-sm" onclick="aiRandom(5)">🎲 랜덤</button></div>
   </div>
   <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;" id="moodGuide"></div>
@@ -503,7 +491,7 @@ const STYLE_DIALOGUE_TONE = {
 };
 
 // ═══ STATE ═══
-const S={cat:null,obj:null,objEn:null,loc:null,locEn:null,style:null,mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'10'};
+const S={cat:null,obj:null,objEn:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'10'};
 let usedDialogues=[];
 
 function buildTopics(){
@@ -623,26 +611,17 @@ async function aiRandomTopic(){
 function selCat(el){
   document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');S.cat=el.dataset.val;
-  S.obj=null;S.objEn=null;S.loc=null;S.locEn=null;S.style=null;
+  S.obj=null;S.objEn=null;S.loc=null;S.locEn=null;S.style='pixar';
   buildObjs(S.cat);
   act('s1');act('s2');deact('s3');deact('s4');deact('s5');deact('s6');
   updateSummary();
-}
-function selStyle(el){
-  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');S.style=el.dataset.val;
-  const note=document.getElementById('styleNote');
-  note.textContent=STYLE_PROMPTS[S.style]?.note||'';
-  note.style.display='block';
-  buildMoods(S.style);
-  done('s4');act('s5');act('s6');updateSummary();
 }
 function buildMoods(style){
   const wrap=document.getElementById('moodChips');
   const guide=document.getElementById('moodGuide');
   wrap.innerHTML='';
-  const moodList=STYLE_MOODS[style]||['angry'];
-  guide.textContent=STYLE_PROMPTS[style].note+' 전용 무드';
+  const moodList=STYLE_MOODS[style]||STYLE_MOODS.pixar||['angry'];
+  if(guide) guide.textContent='감정 표현 선택 (화난 톤)';
   S.mood=moodList[0];
   moodList.forEach((m,i)=>{
     const d=document.createElement('div');
@@ -665,9 +644,8 @@ function selObj(kr,en){
   document.querySelectorAll('#objChips .chip').forEach(c=>{if(c.dataset.val===en)c.classList.add('active');});
   S.obj=kr;S.objEn=en;
   buildLocs(S.cat);
-  done('s2');act('s3');deact('s4');deact('s5');
-  S.loc=null;S.locEn=null;S.style=null;
-  document.getElementById('styleNote').style.display='none';
+  done('s2');act('s3');deact('s5');
+  S.loc=null;S.locEn=null;S.style='pixar';
   updateSummary();
 }
 function buildLocs(cat){
@@ -678,7 +656,9 @@ function selLoc(kr,en){
   document.querySelectorAll('#locChips .chip').forEach(c=>c.classList.remove('active'));
   document.querySelectorAll('#locChips .chip').forEach(c=>{if(c.dataset.val===en)c.classList.add('active');});
   S.loc=kr;S.locEn=en;
-  done('s3');act('s4');deact('s5');S.style=null;updateSummary();
+  S.style='pixar';
+  buildMoods('pixar');
+  done('s3');act('s5');act('s6');updateSummary();
 }
 function addCustom(type){
   const inp=document.getElementById(type==='obj'?'objInput':'locInput');
@@ -767,14 +747,20 @@ async function aiRandom(step){
     return;
   }
   if(step===4){
-    const chips=document.querySelectorAll('#styleChips .chip');
-    selStyle(chips[Math.floor(Math.random()*chips.length)]);return;
+    // 스타일은 픽사 고정 — step 4 호출 시 바로 mood 랜덤으로 넘어감
+    const chips=document.querySelectorAll('#moodChips .chip');
+    if(chips.length>0){
+      const idx=Math.floor(Math.random()*chips.length);
+      const key=(STYLE_MOODS.pixar||['angry'])[idx]||'angry';
+      selMood(chips[idx],key);
+    }
+    return;
   }
   if(step===5){
     const chips=document.querySelectorAll('#moodChips .chip');
     if(chips.length>0){
       const idx=Math.floor(Math.random()*chips.length);
-      const key=STYLE_MOODS[S.style][idx];
+      const key=(STYLE_MOODS.pixar||['angry'])[idx]||'angry';
       selMood(chips[idx],key);
     }
     return;
@@ -963,7 +949,7 @@ ${BAN_RULES}
 async function generate(){
   if(!S.obj){showErr('오브젝트를 선택해주세요.');return;}
   if(!S.loc){showErr('장소를 선택해주세요.');return;}
-  if(!S.style){showErr('스타일을 선택해주세요.');return;}
+  if(!S.style) S.style='pixar';
   hideErr();
 
   const btn=document.getElementById('genBtn');
