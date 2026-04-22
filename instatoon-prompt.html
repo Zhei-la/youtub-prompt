@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>인스타툰 프롬프트 생성기 — by 제일라</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0e0e11;
+    --card: #1a1a1f;
+    --card-2: #22222a;
+    --border: #2a2a30;
+    --accent: #f59e0b;
+    --accent-2: #fbbf24;
+    --text: #e8e8ec;
+    --muted: #9a9aa5;
+    --danger: #ef4444;
+    --ok: #22c55e;
+    --radius: 14px;
+  }
+  [data-theme="light"] {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --card-2: #f3f4f6;
+    --border: #e5e5e5;
+    --text: #1a1a1f;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', system-ui, sans-serif; }
+  body { min-height: 100vh; padding: 20px 16px 80px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  /* ===== Header ===== */
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .title { font-weight: 900; font-size: 24px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .theme-btn {
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 16px;
+  }
+  .theme-btn:hover { background: var(--card-2); }
+
+  /* ===== Card / Step ===== */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px;
+  }
+  .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .step-num {
+    background: var(--accent); color: #111; font-weight: 900;
+    width: 26px; height: 26px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 13px;
+  }
+  .step-title { font-weight: 700; font-size: 15px; }
+  .step-actions { margin-left: auto; display: flex; gap: 6px; }
+
+  /* ===== API Key ===== */
+  .apikey-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .apikey-row input {
+    flex: 1; min-width: 220px; background: var(--card-2); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 13px;
+    font-family: monospace;
+  }
+  .btn {
+    background: var(--card-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 14px; cursor: pointer; font-size: 13px; font-weight: 700;
+    transition: all .15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #111; border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-2); color: #111; }
+  .btn.ghost { background: transparent; }
+  .btn.small { padding: 6px 10px; font-size: 12px; }
+  .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+  /* ===== Chip ===== */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--card-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 999px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 700;
+    transition: all .15s; user-select: none;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: #111; border-color: var(--accent); }
+  .chip.big { padding: 10px 16px; font-size: 14px; }
+
+  /* ===== Concept cards (2-3 중 선택) ===== */
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .concept-card {
+    background: var(--card-2); border: 2px solid var(--border); border-radius: 12px;
+    padding: 14px; cursor: pointer; transition: all .15s;
+  }
+  .concept-card:hover { border-color: var(--accent); }
+  .concept-card.active { border-color: var(--accent); background: rgba(245, 158, 11, 0.08); }
+  .concept-card .emoji { font-size: 28px; margin-bottom: 6px; }
+  .concept-card .name { font-weight: 900; font-size: 14px; margin-bottom: 4px; }
+  .concept-card .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ===== Upload ===== */
+  .upload-area {
+    display: flex; gap: 16px; align-items: stretch; flex-wrap: wrap;
+  }
+  .upload-box {
+    flex: 0 0 180px; height: 180px; border: 2px dashed var(--border); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    cursor: pointer; background: var(--card-2); text-align: center; padding: 10px;
+    transition: all .15s; position: relative; overflow: hidden;
+  }
+  .upload-box:hover { border-color: var(--accent); }
+  .upload-box.has-image { border-style: solid; padding: 0; }
+  .upload-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .upload-box .hint { color: var(--muted); font-size: 12px; }
+  .upload-box .hint-big { font-size: 26px; margin-bottom: 4px; }
+  .upload-box input[type="file"] { display: none; }
+  .upload-info { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 8px; }
+  .upload-info textarea {
+    width: 100%; min-height: 130px; background: var(--card-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    font-family: 'Noto Sans KR', monospace; font-size: 12px; line-height: 1.6; resize: vertical;
+  }
+  .upload-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ===== Input / Textarea ===== */
+  .text-input {
+    width: 100%; background: var(--card-2); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 12px; border-radius: 10px; font-size: 14px; font-family: inherit;
+  }
+  textarea.text-input { min-height: 60px; resize: vertical; }
+  .input-row { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; }
+  .input-row .text-input { flex: 1; min-width: 240px; }
+
+  /* ===== Cut count ===== */
+  .cut-count-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .cut-count-row input[type="number"] {
+    width: 70px; background: var(--card-2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 10px; border-radius: 10px; font-size: 13px;
+  }
+
+  /* ===== Mood selector ===== */
+  .mood-mode { display: flex; gap: 8px; margin-bottom: 10px; }
+  .mood-arc-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .mood-arc-row .arc-slot {
+    background: var(--card-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px; text-align: center;
+  }
+  .mood-arc-row .arc-label { font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+  .mood-arc-row .arc-value { font-size: 14px; font-weight: 700; }
+  .mood-arc-row .arc-slot.highlight { border-color: var(--accent); }
+
+  /* ===== Result Tabs ===== */
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 8px; overflow-x: auto; }
+  .tab {
+    background: var(--card-2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 14px; border-radius: 10px 10px 0 0; cursor: pointer; font-size: 13px; font-weight: 700;
+    white-space: nowrap;
+  }
+  .tab.active { background: var(--accent); color: #111; border-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ===== Output box ===== */
+  .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .output-label { font-weight: 700; font-size: 13px; color: var(--muted); }
+  .output-box {
+    background: var(--card-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px; font-size: 13px; white-space: pre-wrap; word-break: break-word;
+    font-family: 'Noto Sans KR', monospace; line-height: 1.6;
+  }
+  .output-box.small { font-size: 12px; }
+
+  /* ===== Script editor ===== */
+  .cut-row {
+    display: flex; gap: 10px; align-items: flex-start; background: var(--card-2);
+    padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border);
+  }
+  .cut-row .cut-idx {
+    flex: 0 0 auto; background: var(--accent); color: #111; font-weight: 900;
+    padding: 4px 8px; border-radius: 8px; font-size: 12px;
+  }
+  .cut-row .cut-body { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .cut-row .cut-mood { font-size: 11px; color: var(--muted); font-weight: 700; }
+  .cut-row textarea {
+    width: 100%; background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px; font-family: inherit; font-size: 13px; resize: vertical; min-height: 50px;
+  }
+  .cut-row input.gesture {
+    width: 100%; background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 8px; font-family: inherit; font-size: 12px;
+  }
+
+  /* ===== Generate button ===== */
+  .generate-wrap { text-align: center; margin: 20px 0; }
+  .generate-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #111; border: none; padding: 14px 32px; border-radius: 14px;
+    font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+    transition: all .15s;
+  }
+  .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ===== Loading ===== */
+  .spinner {
+    display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #111; padding: 10px 18px; border-radius: 10px;
+    font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; }
+
+  .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+
+  /* ===== Section collapsed ===== */
+  .collapsed-info {
+    font-size: 12px; color: var(--muted); padding: 6px 10px; background: var(--card-2);
+    border-radius: 8px; border: 1px dashed var(--border);
+  }
+
+  /* ===== Divider ===== */
+  .divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 560px) {
+    .title { font-size: 20px; }
+    .upload-box { flex: 0 0 140px; height: 140px; }
+    .mood-arc-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="title">🎞️ 인스타툰 프롬프트 생성기</div>
+      <div class="subtitle">캐릭터 일관성 유지하는 N컷 인스타툰 · by 제일라</div>
+    </div>
+    <button class="theme-btn" id="themeBtn" title="테마 전환">🌙</button>
+  </div>
+
+  <!-- API KEY -->
+  <div class="card">
+    <div class="step-head">
+      <span style="font-size:18px;">🔑</span>
+      <span class="step-title">API KEY</span>
+      <div class="step-actions">
+        <button class="btn small" id="saveKey">저장</button>
+        <button class="btn small danger" id="clearKey">삭제</button>
+      </div>
+    </div>
+    <div class="apikey-row">
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+    </div>
+    <div class="note">OpenAI API 키를 입력하면 AI 캐릭터 분석 / 대본 생성 / 주제 추천이 활성화됩니다.</div>
+  </div>
+
+  <!-- STEP 1: Upload -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">1</span>
+      <span class="step-title">📸 캐릭터 이미지 업로드</span>
+      <div class="step-actions">
+        <button class="btn small" id="analyzeBtn" disabled>🔍 AI 분석</button>
+      </div>
+    </div>
+    <div class="upload-area">
+      <label class="upload-box" id="uploadBox" for="fileInput">
+        <span class="hint-big">📷</span>
+        <span class="hint">클릭해서 캐릭터 이미지 업로드<br/>(기존 사물 캐릭터)</span>
+        <input type="file" id="fileInput" accept="image/*" />
+      </label>
+      <div class="upload-info">
+        <textarea id="charDesc" placeholder="캐릭터 특징 설명이 여기 자동으로 채워집니다. (수정 가능)&#10;&#10;예: A white refrigerator character with frowning eyebrows, anxious expression, thin silver arms on the left side, set in a green kitchen with a window and steam rising..."></textarea>
+        <div class="upload-btns">
+          <button class="btn small ghost" id="removeImage">🗑️ 이미지 제거</button>
+          <button class="btn small ghost" id="clearDesc">✏️ 설명 지우기</button>
+        </div>
+      </div>
+    </div>
+    <div class="note">💡 이 설명이 모든 컷 프롬프트에 복붙되어 캐릭터 일관성을 보장합니다.</div>
+  </div>
+
+  <!-- STEP 2: Concept -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">2</span>
+      <span class="step-title">💡 컨셉 선택</span>
+    </div>
+    <div class="concept-grid" id="conceptGrid">
+      <div class="concept-card" data-concept="empathy">
+        <div class="emoji">🥺</div>
+        <div class="name">공감 에피소드</div>
+        <div class="desc">시청자가 "맞아맞아" 할 일상 경험담</div>
+      </div>
+      <div class="concept-card" data-concept="nag">
+        <div class="emoji">😤</div>
+        <div class="name">민폐 훈계</div>
+        <div class="desc">누가 잘못했던 상황 재현 + 잔소리</div>
+      </div>
+      <div class="concept-card" data-concept="tip">
+        <div class="emoji">💡</div>
+        <div class="name">꿀팁/지식</div>
+        <div class="desc">사물이 알려주는 유용한 정보</div>
+      </div>
+      <div class="concept-card" data-concept="observe">
+        <div class="emoji">📖</div>
+        <div class="name">일상 관찰</div>
+        <div class="desc">사물이 본 집주인의 하루</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Topic -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">3</span>
+      <span class="step-title">🎯 주제 입력</span>
+      <div class="step-actions">
+        <button class="btn small" id="aiTopicBtn">🎲 AI 생성</button>
+      </div>
+    </div>
+    <textarea class="text-input" id="topicInput" placeholder="예: 배고픈데 냉장고에 아무것도 없을 때 / 샤워하면서 삶 돌아보기"></textarea>
+  </div>
+
+  <!-- STEP 4: Cut count -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">4</span>
+      <span class="step-title">🎬 컷 수 선택</span>
+    </div>
+    <div class="cut-count-row">
+      <div class="chip-row" id="cutCountRow">
+        <div class="chip cut-chip" data-cuts="1">1컷</div>
+        <div class="chip cut-chip active" data-cuts="3">3컷</div>
+        <div class="chip cut-chip" data-cuts="4">4컷</div>
+        <div class="chip cut-chip" data-cuts="6">6컷</div>
+        <div class="chip cut-chip" data-cuts="8">8컷</div>
+        <div class="chip cut-chip" data-cuts="custom">커스텀</div>
+      </div>
+      <input type="number" id="customCut" min="2" max="10" value="3" style="display:none;" />
+    </div>
+  </div>
+
+  <!-- STEP 5: Mood arc -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">5</span>
+      <span class="step-title">😤 감정 흐름</span>
+    </div>
+    <div class="mood-mode">
+      <div class="chip mood-mode-chip active" data-mode="same">🎯 전체 같은 감정</div>
+      <div class="chip mood-mode-chip" data-mode="arc">🎢 감정 변화 (아크)</div>
+    </div>
+    <div class="chip-row" id="moodChipRow">
+      <!-- mood chips injected -->
+    </div>
+    <div class="mood-arc-row" id="moodArcRow" style="display:none;">
+      <div class="arc-slot highlight" data-slot="start">
+        <div class="arc-label">시작</div>
+        <div class="arc-value" id="arcStart">-</div>
+      </div>
+      <div class="arc-slot" data-slot="middle">
+        <div class="arc-label">중간</div>
+        <div class="arc-value" id="arcMiddle">-</div>
+      </div>
+      <div class="arc-slot" data-slot="end">
+        <div class="arc-label">끝</div>
+        <div class="arc-value" id="arcEnd">-</div>
+      </div>
+    </div>
+    <div class="note" id="moodHelp">감정을 클릭하세요.</div>
+  </div>
+
+  <!-- STEP 6: Style -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">6</span>
+      <span class="step-title">🎨 스타일</span>
+      <span id="styleSuggest" class="collapsed-info" style="display:none;"></span>
+    </div>
+    <div class="chip-row" id="styleRow">
+      <div class="chip style-chip active" data-style="pixar">🎬 픽사 3D</div>
+      <div class="chip style-chip" data-style="webtoon">📱 웹툰</div>
+      <div class="chip style-chip" data-style="sketch">✏️ 스케치</div>
+      <div class="chip style-chip" data-style="bmeme">🤪 병맛 만화</div>
+      <div class="chip style-chip" data-style="realistic">📸 3D 리얼</div>
+    </div>
+  </div>
+
+  <!-- STEP 7: Subtitle -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">7</span>
+      <span class="step-title">📝 자막 스타일</span>
+    </div>
+    <div style="font-size:12px; color:var(--muted); font-weight:700; margin-bottom:6px;">자막 위치</div>
+    <div class="chip-row" id="subPosRow" style="margin-bottom:12px;">
+      <div class="chip sub-pos-chip active" data-pos="bottom-bar">📝 하단 흰색 자막바</div>
+      <div class="chip sub-pos-chip" data-pos="speech-bubble">💬 말풍선</div>
+      <div class="chip sub-pos-chip" data-pos="overlay">🎨 이미지 오버레이</div>
+      <div class="chip sub-pos-chip" data-pos="none">❌ 자막 없음</div>
+    </div>
+    <div style="font-size:12px; color:var(--muted); font-weight:700; margin-bottom:6px;">자막 톤</div>
+    <div class="chip-row" id="subToneRow">
+      <div class="chip sub-tone-chip active" data-tone="casual">😎 반말</div>
+      <div class="chip sub-tone-chip" data-tone="polite">🙏 존댓말</div>
+      <div class="chip sub-tone-chip" data-tone="meme">🤣 밈 톤</div>
+      <div class="chip sub-tone-chip" data-tone="poetic">🌙 시적</div>
+    </div>
+  </div>
+
+  <!-- STEP 8: Script generation -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">8</span>
+      <span class="step-title">📖 대본 생성</span>
+      <div class="step-actions">
+        <button class="btn small" id="genScriptBtn">✨ AI 대본 생성</button>
+        <button class="btn small ghost" id="regenScriptBtn">🔄 다시 생성</button>
+      </div>
+    </div>
+    <div id="scriptEditor">
+      <div class="collapsed-info">컷별 대사가 여기에 생성됩니다. 수정 가능.</div>
+    </div>
+  </div>
+
+  <!-- STEP 9: Series continuation (optional) -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">9</span>
+      <span class="step-title">🔗 시리즈 이어보기 (선택)</span>
+    </div>
+    <textarea class="text-input" id="prevContext" placeholder="이전 화 줄거리나 마지막 대사를 붙여넣으면 이어지는 스토리로 대본을 생성합니다. (비워두면 무시)"></textarea>
+  </div>
+
+  <!-- Generate button -->
+  <div class="generate-wrap">
+    <button class="generate-btn" id="generateBtn">🔥 프롬프트 생성하기</button>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="resultCard" style="display:none;">
+    <div class="step-head">
+      <span style="font-size:18px;">🎉</span>
+      <span class="step-title">결과</span>
+      <div class="step-actions">
+        <button class="btn small ghost" id="copyAllBtn">📋 전체 복사</button>
+      </div>
+    </div>
+    <div class="tabs" id="resultTabs">
+      <div class="tab active" data-tab="script">📖 대본</div>
+      <!-- cut tabs injected -->
+    </div>
+    <div id="resultPanels"></div>
+  </div>
+
+  <div class="footer">인스타툰 프롬프트 생성기 · by 제일라</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+ * CONFIG
+ * ============================================================ */
+const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+const LS_KEY = 'instatoon_api_key';
+const LS_THEME = 'instatoon_theme';
+
+/* ============================================================
+ * MOODS (기존 MOODS 재활용 + 인스타툰 특화 추가)
+ * ============================================================ */
+const MOODS = {
+  'calm':       { emoji: '😐', label: '평온',       face: 'neutral expression, relaxed mouth' },
+  'annoyed':    { emoji: '😒', label: '짜증남',     face: 'annoyed expression with side-eye and tight lips' },
+  'angry':      { emoji: '😤', label: '화남',       face: 'angry expression with furrowed brow' },
+  'furious':    { emoji: '🤬', label: '격분',       face: 'furious expression with wide open mouth' },
+  'lecture':    { emoji: '☝️', label: '훈계',       face: 'stern lecturing expression, finger raised' },
+  'disappoint': { emoji: '😞', label: '실망',       face: 'disappointed expression, eyes looking down' },
+  'shock':      { emoji: '😨', label: '충격',       face: 'shocked expression, wide eyes and open mouth' },
+  'smug':       { emoji: '😏', label: '잘난척',     face: 'smug expression with raised eyebrow' },
+  'tired':      { emoji: '😩', label: '지친',       face: 'exhausted expression with closed eyes' },
+  'worried':    { emoji: '😟', label: '걱정',       face: 'worried expression with downturned mouth' },
+  'cute':       { emoji: '💅', label: '새침',       face: 'prim and proper expression' },
+  'cry':        { emoji: '😭', label: '울분',       face: 'crying expression with tears' },
+  'explode':    { emoji: '👹', label: '폭발직전',   face: 'about-to-explode expression, red face' },
+  'happy':      { emoji: '😊', label: '행복',       face: 'happy smiling expression' },
+  'surprised':  { emoji: '😲', label: '놀람',       face: 'surprised expression, mouth agape' },
+  'confused':   { emoji: '🤔', label: '혼란',       face: 'confused expression, furrowed brow' },
+};
+
+const STYLES = {
+  pixar:     'Pixar-style 3D animation with soft lighting, vibrant colors, expressive cartoony features',
+  webtoon:   'Korean webtoon style, clean hand-drawn lines, flat cel-shading, vivid palette',
+  sketch:    'Pencil and ink sketch style, black and white with light hatching',
+  bmeme:     'Ironic deep-fried meme illustration, crude shapes, oversaturated colors, absurdist humor',
+  realistic: 'Photorealistic 3D render, soft cinematic lighting, shallow depth of field, magazine-quality composition'
+};
+
+const CONCEPT_LABELS = {
+  empathy: '공감 에피소드 — 시청자가 공감할 일상 경험담',
+  nag:     '민폐 훈계 — 잘못된 행동에 대한 사물의 잔소리',
+  tip:     '꿀팁/지식 — 사물이 유용한 정보 전달',
+  observe: '일상 관찰 — 사물이 본 집주인의 하루'
+};
+
+const SUB_POS = {
+  'bottom-bar':    { label: '하단 흰색 자막바', en: 'Bold Korean subtitle in a clean white bar at the bottom of the image (like a TikTok/Instagram reel caption), black text, sans-serif, clearly legible' },
+  'speech-bubble': { label: '말풍선',           en: 'Classic comic speech bubble with the Korean dialogue, clean tail pointing at the character' },
+  'overlay':       { label: '오버레이',         en: 'Korean text overlay integrated into the scene, bold, with subtle shadow for readability' },
+  'none':          { label: '자막 없음',        en: 'No subtitle, pure image composition'}
+};
+
+const SUB_TONES = {
+  casual: '캐주얼 반말 톤 (친구끼리 말하듯)',
+  polite: '존댓말 톤 (정중하게)',
+  meme:   '요즘 밈/급식체 (ㅋㅋ, 인정, 레전드, ~각 등)',
+  poetic: '짧고 시적인 톤 (감성 캡션)'
+};
+
+/* ============================================================
+ * STATE
+ * ============================================================ */
+const state = {
+  apiKey: '',
+  charImage: null,       // base64 (no prefix)
+  charDesc: '',
+  concept: '',
+  topic: '',
+  cutCount: 3,
+  moodMode: 'same',      // 'same' | 'arc'
+  moodSame: '',
+  moodArc: { start: '', middle: '', end: '' },
+  arcSlotActive: 'start',
+  style: 'pixar',
+  subPos: 'bottom-bar',
+  subTone: 'casual',
+  script: [],            // [{mood, dialogue, gesture}]
+  prevContext: '',
+};
+
+/* ============================================================
+ * UTIL
+ * ============================================================ */
+const $  = (s, p=document) => p.querySelector(s);
+const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+
+function toast(msg, ms=1800) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), ms);
+}
+function copyText(txt, label='복사 완료!') {
+  navigator.clipboard.writeText(txt).then(()=>toast(`📋 ${label}`));
+}
+function setBtnLoading(btn, loading, label) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.orig = btn.innerHTML;
+    btn.innerHTML = `<span class="spinner"></span>${label || '처리중...'}`;
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn.dataset.orig || label || '완료';
+    btn.disabled = false;
+  }
+}
+
+/* ============================================================
+ * THEME + API KEY
+ * ============================================================ */
+(function initTheme() {
+  const saved = localStorage.getItem(LS_THEME);
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    $('#themeBtn').textContent = '☀️';
+  }
+})();
+$('#themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  if (cur === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+    $('#themeBtn').textContent = '🌙';
+    localStorage.setItem(LS_THEME, 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    $('#themeBtn').textContent = '☀️';
+    localStorage.setItem(LS_THEME, 'light');
+  }
+});
+
+(function initKey() {
+  const saved = localStorage.getItem(LS_KEY);
+  if (saved) { $('#apiKey').value = saved; state.apiKey = saved; }
+})();
+$('#saveKey').addEventListener('click', () => {
+  const k = $('#apiKey').value.trim();
+  if (!k) { toast('키를 입력해'); return; }
+  localStorage.setItem(LS_KEY, k); state.apiKey = k; toast('저장 완료 ✅');
+});
+$('#clearKey').addEventListener('click', () => {
+  localStorage.removeItem(LS_KEY); $('#apiKey').value = ''; state.apiKey = ''; toast('삭제됨');
+});
+$('#apiKey').addEventListener('input', e => { state.apiKey = e.target.value.trim(); });
+
+/* ============================================================
+ * API CALLS
+ * ============================================================ */
+async function callChat({ system, user, image, max_tokens=900, temperature=0.8 }) {
+  if (!state.apiKey) throw new Error('API 키를 입력해야 합니다.');
+  const payload = { apiKey: state.apiKey, system, user, max_tokens, temperature };
+  if (image) { payload.image = image; payload.vision = true; payload.model = 'gpt-4o'; }
+  const res = await fetch(`${PROXY_URL}/openai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`API 호출 실패 (${res.status}): ${txt.slice(0,200)}`);
+  }
+  const data = await res.json();
+  // proxy는 보통 { content: "..." } 혹은 OpenAI raw 반환. 둘 다 대응.
+  if (data.content) return data.content;
+  if (data.choices && data.choices[0]) return data.choices[0].message.content;
+  if (typeof data === 'string') return data;
+  return JSON.stringify(data);
+}
+
+function extractJSON(str) {
+  if (!str) return null;
+  // ```json ... ``` 제거
+  const cleaned = str.replace(/```json|```/g, '').trim();
+  // 첫 { 부터 마지막 } 까지 잘라서 파싱 시도
+  const s = cleaned.indexOf('{');
+  const e = cleaned.lastIndexOf('}');
+  if (s === -1 || e === -1) return null;
+  try { return JSON.parse(cleaned.slice(s, e+1)); } catch(_) { return null; }
+}
+
+/* ============================================================
+ * STEP 1: Upload + Analyze
+ * ============================================================ */
+const fileInput = $('#fileInput');
+const uploadBox = $('#uploadBox');
+const charDescEl = $('#charDesc');
+const analyzeBtn = $('#analyzeBtn');
+const styleSuggest = $('#styleSuggest');
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    state.charImage = dataUrl.split(',')[1]; // base64 only
+    uploadBox.innerHTML = `<img src="${dataUrl}" alt="캐릭터" />`;
+    uploadBox.classList.add('has-image');
+    analyzeBtn.disabled = false;
+    toast('이미지 업로드 완료 · 🔍 AI 분석 버튼 눌러');
+  };
+  reader.readAsDataURL(file);
+});
+
+$('#removeImage').addEventListener('click', () => {
+  state.charImage = null;
+  uploadBox.classList.remove('has-image');
+  uploadBox.innerHTML = `
+    <span class="hint-big">📷</span>
+    <span class="hint">클릭해서 캐릭터 이미지 업로드<br/>(기존 사물 캐릭터)</span>
+    <input type="file" id="fileInput" accept="image/*" />
+  `;
+  // 이벤트 재바인딩
+  $('#fileInput').addEventListener('change', fileInput.onchange);
+  analyzeBtn.disabled = true;
+});
+
+$('#clearDesc').addEventListener('click', () => { charDescEl.value = ''; state.charDesc = ''; });
+
+charDescEl.addEventListener('input', e => { state.charDesc = e.target.value.trim(); });
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!state.charImage) { toast('이미지 먼저 업로드'); return; }
+  if (!state.apiKey) { toast('API 키 먼저 입력'); return; }
+  setBtnLoading(analyzeBtn, true, '분석중');
+  try {
+    const system = `You are an expert image analyst for Instagram cartoon (인스타툰) character consistency.
+Describe the MAIN character in the uploaded image in precise English.
+Also describe the background scene briefly, and identify the style.
+Output STRICT JSON only (no markdown), with keys:
+{
+  "character": "<detailed character description: shape, colors, facial features/expression, arms/limbs if any, posture, distinctive details>",
+  "scene": "<brief background scene description: location, props, lighting, mood>",
+  "style": "<one of: pixar | webtoon | sketch | bmeme | realistic>"
+}`;
+    const userPrompt = 'Analyze this character image for consistency reference.';
+    const raw = await callChat({ system, user: userPrompt, image: state.charImage, max_tokens: 600, temperature: 0.4 });
+    const parsed = extractJSON(raw);
+    if (!parsed) throw new Error('JSON 파싱 실패: ' + raw.slice(0,120));
+    const desc = `CHARACTER: ${parsed.character}\n\nSCENE: ${parsed.scene}`;
+    charDescEl.value = desc;
+    state.charDesc = desc;
+    // 스타일 추천
+    if (parsed.style && STYLES[parsed.style]) {
+      $$('.style-chip').forEach(c => c.classList.toggle('active', c.dataset.style === parsed.style));
+      state.style = parsed.style;
+      styleSuggest.style.display = 'inline-block';
+      styleSuggest.textContent = `🤖 추천 스타일: ${parsed.style}`;
+    }
+    toast('분석 완료 ✅');
+  } catch (err) {
+    toast('❌ ' + err.message);
+    console.error(err);
+  } finally {
+    setBtnLoading(analyzeBtn, false);
+  }
+});
+
+/* ============================================================
+ * STEP 2: Concept
+ * ============================================================ */
+$$('.concept-card').forEach(card => {
+  card.addEventListener('click', () => {
+    $$('.concept-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    state.concept = card.dataset.concept;
+  });
+});
+
+/* ============================================================
+ * STEP 3: Topic + AI suggest
+ * ============================================================ */
+$('#topicInput').addEventListener('input', e => { state.topic = e.target.value.trim(); });
+
+$('#aiTopicBtn').addEventListener('click', async () => {
+  if (!state.apiKey) { toast('API 키 먼저'); return; }
+  if (!state.concept) { toast('컨셉 먼저 선택해'); return; }
+  const btn = $('#aiTopicBtn');
+  setBtnLoading(btn, true, '생성중');
+  try {
+    const system = '너는 한국 인스타툰 주제 기획자다. 사물 캐릭터가 주인공인 짧고 공감가는 에피소드 주제 1개만 20자 이내로 제안해라. 따옴표나 번호 붙이지 말고 주제 문장만 출력.';
+    const user = `컨셉: ${CONCEPT_LABELS[state.concept]}\n캐릭터: ${state.charDesc || '(미지정 사물)'}\n하나만 추천.`;
+    const raw = await callChat({ system, user, max_tokens: 80, temperature: 1.0 });
+    const clean = raw.replace(/^["'\d.\s-]+|["'\s]+$/g, '').split('\n')[0].trim();
+    $('#topicInput').value = clean;
+    state.topic = clean;
+    toast('주제 생성 ✨');
+  } catch (err) { toast('❌ ' + err.message); }
+  finally { setBtnLoading(btn, false); }
+});
+
+/* ============================================================
+ * STEP 4: Cut count
+ * ============================================================ */
+$$('.cut-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $$('.cut-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    if (chip.dataset.cuts === 'custom') {
+      $('#customCut').style.display = 'inline-block';
+      state.cutCount = parseInt($('#customCut').value) || 3;
+    } else {
+      $('#customCut').style.display = 'none';
+      state.cutCount = parseInt(chip.dataset.cuts);
+    }
+    updateMoodArcVisibility();
+  });
+});
+$('#customCut').addEventListener('input', e => {
+  let v = parseInt(e.target.value);
+  if (isNaN(v)) v = 3;
+  if (v < 2) v = 2;
+  if (v > 10) v = 10;
+  state.cutCount = v;
+});
+
+/* ============================================================
+ * STEP 5: Mood
+ * ============================================================ */
+const moodChipRow = $('#moodChipRow');
+Object.entries(MOODS).forEach(([key, m]) => {
+  const chip = document.createElement('div');
+  chip.className = 'chip mood-chip';
+  chip.dataset.mood = key;
+  chip.textContent = `${m.emoji} ${m.label}`;
+  moodChipRow.appendChild(chip);
+});
+
+function refreshMoodChipActive() {
+  $$('.mood-chip').forEach(c => {
+    if (state.moodMode === 'same') {
+      c.classList.toggle('active', c.dataset.mood === state.moodSame);
+    } else {
+      const usedMoods = [state.moodArc.start, state.moodArc.middle, state.moodArc.end];
+      c.classList.toggle('active', usedMoods.includes(c.dataset.mood));
+    }
+  });
+}
+function updateMoodArcVisibility() {
+  // 감정 아크는 1컷일땐 의미없음 자동 same
+  if (state.cutCount === 1 && state.moodMode === 'arc') {
+    state.moodMode = 'same';
+    $$('.mood-mode-chip').forEach(c => c.classList.toggle('active', c.dataset.mode === 'same'));
+    $('#moodArcRow').style.display = 'none';
+  }
+}
+function updateArcDisplay() {
+  $('#arcStart').textContent  = state.moodArc.start  ? `${MOODS[state.moodArc.start].emoji} ${MOODS[state.moodArc.start].label}` : '-';
+  $('#arcMiddle').textContent = state.moodArc.middle ? `${MOODS[state.moodArc.middle].emoji} ${MOODS[state.moodArc.middle].label}` : '-';
+  $('#arcEnd').textContent    = state.moodArc.end    ? `${MOODS[state.moodArc.end].emoji} ${MOODS[state.moodArc.end].label}` : '-';
+  if (state.cutCount <= 2) {
+    $('#moodArcRow').querySelector('[data-slot="middle"]').style.display = 'none';
+  } else {
+    $('#moodArcRow').querySelector('[data-slot="middle"]').style.display = '';
+  }
+}
+
+$$('.mood-mode-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $$('.mood-mode-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.moodMode = chip.dataset.mode;
+    if (state.moodMode === 'same') {
+      $('#moodArcRow').style.display = 'none';
+      $('#moodHelp').textContent = '감정 하나를 선택하세요. 모든 컷에 동일 적용.';
+    } else {
+      $('#moodArcRow').style.display = 'grid';
+      state.arcSlotActive = 'start';
+      $$('.arc-slot').forEach(s => s.classList.toggle('highlight', s.dataset.slot === 'start'));
+      $('#moodHelp').textContent = '상단 슬롯(시작→중간→끝)을 클릭한 뒤 아래 감정을 선택하세요.';
+      updateArcDisplay();
+    }
+    refreshMoodChipActive();
+  });
+});
+
+$$('.arc-slot').forEach(slot => {
+  slot.addEventListener('click', () => {
+    if (state.moodMode !== 'arc') return;
+    state.arcSlotActive = slot.dataset.slot;
+    $$('.arc-slot').forEach(s => s.classList.toggle('highlight', s.dataset.slot === state.arcSlotActive));
+  });
+});
+
+moodChipRow.addEventListener('click', e => {
+  const chip = e.target.closest('.mood-chip');
+  if (!chip) return;
+  const mood = chip.dataset.mood;
+  if (state.moodMode === 'same') {
+    state.moodSame = mood;
+  } else {
+    state.moodArc[state.arcSlotActive] = mood;
+    updateArcDisplay();
+    // 자동으로 다음 슬롯 이동
+    const order = ['start','middle','end'];
+    const idx = order.indexOf(state.arcSlotActive);
+    if (idx < order.length - 1) {
+      state.arcSlotActive = order[idx + 1];
+      $$('.arc-slot').forEach(s => s.classList.toggle('highlight', s.dataset.slot === state.arcSlotActive));
+    }
+  }
+  refreshMoodChipActive();
+});
+
+/* ============================================================
+ * STEP 6: Style
+ * ============================================================ */
+$$('.style-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $$('.style-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.style = chip.dataset.style;
+  });
+});
+
+/* ============================================================
+ * STEP 7: Subtitle
+ * ============================================================ */
+$$('.sub-pos-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $$('.sub-pos-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.subPos = chip.dataset.pos;
+  });
+});
+$$('.sub-tone-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $$('.sub-tone-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.subTone = chip.dataset.tone;
+  });
+});
+
+/* ============================================================
+ * STEP 8: Script Generation
+ * ============================================================ */
+function buildMoodArcForCuts() {
+  const n = state.cutCount;
+  if (state.moodMode === 'same') {
+    const m = state.moodSame || 'calm';
+    return Array(n).fill(m);
+  }
+  // arc mode
+  const s = state.moodArc.start  || 'calm';
+  const m = state.moodArc.middle || s;
+  const e = state.moodArc.end    || m;
+  if (n === 1) return [s];
+  if (n === 2) return [s, e];
+  if (n === 3) return [s, m, e];
+  // n >= 4: linear interpolation between start->middle and middle->end
+  const arr = [];
+  const half = Math.floor(n / 2);
+  for (let i = 0; i < n; i++) {
+    if (i === 0) arr.push(s);
+    else if (i === n - 1) arr.push(e);
+    else if (i < half) arr.push(i % 2 === 0 ? s : m);
+    else arr.push(i % 2 === 0 ? m : e);
+  }
+  return arr;
+}
+
+function renderScriptEditor() {
+  const editor = $('#scriptEditor');
+  if (!state.script.length) {
+    editor.innerHTML = '<div class="collapsed-info">컷별 대사가 여기에 생성됩니다. 수정 가능.</div>';
+    return;
+  }
+  editor.innerHTML = '';
+  state.script.forEach((cut, i) => {
+    const moodInfo = MOODS[cut.mood] || MOODS.calm;
+    const row = document.createElement('div');
+    row.className = 'cut-row';
+    row.innerHTML = `
+      <div class="cut-idx">컷 ${i+1}</div>
+      <div class="cut-body">
+        <div class="cut-mood">${moodInfo.emoji} ${moodInfo.label}</div>
+        <textarea data-idx="${i}" data-field="dialogue" placeholder="대사">${cut.dialogue || ''}</textarea>
+        <input class="gesture" data-idx="${i}" data-field="gesture" placeholder="제스처 (영문, 예: arm raised in warning)" value="${cut.gesture || ''}" />
+      </div>
+    `;
+    editor.appendChild(row);
+  });
+  // bind edits
+  editor.querySelectorAll('[data-idx]').forEach(el => {
+    el.addEventListener('input', e => {
+      const i = parseInt(e.target.dataset.idx);
+      const f = e.target.dataset.field;
+      state.script[i][f] = e.target.value;
+    });
+  });
+}
+
+async function generateScript() {
+  if (!state.apiKey) { toast('API 키 먼저'); return; }
+  if (!state.concept) { toast('컨셉 선택 먼저'); return; }
+  if (!state.topic) { toast('주제 입력 먼저'); return; }
+  const btn = $('#genScriptBtn');
+  setBtnLoading(btn, true, '생성중');
+  try {
+    const moodArc = buildMoodArcForCuts();
+    const moodArcDesc = moodArc.map((m,i)=>`컷${i+1}: ${MOODS[m].label}(${m})`).join(', ');
+    const system = `너는 한국 인스타툰 작가다. 사물 캐릭터가 주인공인 ${state.cutCount}컷 만화의 대사와 제스처를 작성한다.
+- 자막 톤: ${SUB_TONES[state.subTone]}
+- 컨셉: ${CONCEPT_LABELS[state.concept]}
+- 각 컷은 짧은 대사 1개 (20자 이내 권장). 자연스럽게 기승전결.
+- 제스처는 영문 짧은 구문 (예: "arm raised in warning", "leaning forward nervously").
+- 출력은 STRICT JSON 만. 마크다운/주석/설명 금지.
+형식:
+{"cuts":[{"mood":"annoyed","dialogue":"...","gesture":"..."}, ...]}`;
+    const user = `캐릭터 설명: ${state.charDesc || '(미지정)'}
+주제: ${state.topic}
+컷 수: ${state.cutCount}
+감정 아크: ${moodArcDesc}
+${state.prevContext ? `\n이전 화 컨텍스트 (이어지는 스토리로):\n${state.prevContext}` : ''}`;
+    const raw = await callChat({ system, user, max_tokens: 900, temperature: 0.9 });
+    const parsed = extractJSON(raw);
+    if (!parsed || !parsed.cuts) throw new Error('JSON 파싱 실패');
+    // mood 키 보정: AI가 한글 label 줬을 경우 역매핑
+    const moodKeyByLabel = {};
+    Object.entries(MOODS).forEach(([k,v]) => { moodKeyByLabel[v.label] = k; });
+    state.script = parsed.cuts.slice(0, state.cutCount).map((c, i) => {
+      let moodKey = c.mood;
+      if (!MOODS[moodKey] && moodKeyByLabel[moodKey]) moodKey = moodKeyByLabel[moodKey];
+      if (!MOODS[moodKey]) moodKey = moodArc[i] || 'calm';
+      return { mood: moodKey, dialogue: c.dialogue || '', gesture: c.gesture || '' };
+    });
+    // 부족할 경우 패딩
+    while (state.script.length < state.cutCount) {
+      state.script.push({ mood: moodArc[state.script.length] || 'calm', dialogue: '', gesture: '' });
+    }
+    renderScriptEditor();
+    toast('대본 생성 ✨');
+  } catch (err) { toast('❌ ' + err.message); console.error(err); }
+  finally { setBtnLoading(btn, false); }
+}
+$('#genScriptBtn').addEventListener('click', generateScript);
+$('#regenScriptBtn').addEventListener('click', generateScript);
+
+/* STEP 9: prev context */
+$('#prevContext').addEventListener('input', e => { state.prevContext = e.target.value.trim(); });
+
+/* ============================================================
+ * FINAL: Prompt Assembly
+ * ============================================================ */
+function assembleCutPrompt(cutIdx) {
+  const total = state.cutCount;
+  const cut = state.script[cutIdx] || { mood: 'calm', dialogue: '', gesture: '' };
+  const moodInfo = MOODS[cut.mood] || MOODS.calm;
+  const styleDesc = STYLES[state.style] || STYLES.pixar;
+  const subPosEn = SUB_POS[state.subPos].en;
+  const subPart = state.subPos === 'none'
+    ? 'No subtitle.'
+    : `${subPosEn}. Korean subtitle text: "${cut.dialogue}".`;
+  const charPart = (state.charDesc || '(character description here)').replace(/^CHARACTER:\s*/i, '').split(/\n\s*SCENE:/i)[0].trim();
+  const scenePart = (state.charDesc.match(/SCENE:\s*([\s\S]*)/i) || [,''])[1].trim();
+
+  return `[CUT ${cutIdx+1} / ${total}]
+
+A ${charPart}, showing ${moodInfo.face}, with ${cut.gesture || 'appropriate gesture'}, in the same scene as the uploaded reference${scenePart ? ` (${scenePart})` : ''}.
+
+${subPart}
+
+Style: ${styleDesc}.
+Vertical 4:5 Instagram composition. CRITICAL: preserve exact character consistency with the uploaded reference image — same shape, colors, facial features, and background scene. Only expression and gesture change across cuts.`;
+}
+
+function assembleScriptText() {
+  return state.script.map((c, i) => {
+    const m = MOODS[c.mood] || MOODS.calm;
+    return `[컷 ${i+1}] ${m.emoji} ${m.label}\n대사: ${c.dialogue}\n제스처: ${c.gesture}`;
+  }).join('\n\n');
+}
+
+/* ============================================================
+ * RESULT RENDER
+ * ============================================================ */
+function renderResult() {
+  const resultCard = $('#resultCard');
+  const tabsEl = $('#resultTabs');
+  const panelsEl = $('#resultPanels');
+  resultCard.style.display = 'block';
+
+  // tabs
+  tabsEl.innerHTML = '';
+  const scriptTab = document.createElement('div');
+  scriptTab.className = 'tab active';
+  scriptTab.dataset.tab = 'script';
+  scriptTab.textContent = '📖 대본';
+  tabsEl.appendChild(scriptTab);
+  for (let i = 0; i < state.cutCount; i++) {
+    const t = document.createElement('div');
+    t.className = 'tab';
+    t.dataset.tab = `cut-${i}`;
+    t.textContent = `컷 ${i+1}`;
+    tabsEl.appendChild(t);
+  }
+
+  // panels
+  panelsEl.innerHTML = '';
+  // script panel
+  const scriptPanel = document.createElement('div');
+  scriptPanel.className = 'tab-panel active';
+  scriptPanel.dataset.panel = 'script';
+  const scriptText = assembleScriptText();
+  scriptPanel.innerHTML = `
+    <div class="output-header">
+      <span class="output-label">전체 대본 (컷별)</span>
+      <button class="btn small copy-btn" data-copy="script">📋 복사</button>
+    </div>
+    <div class="output-box" id="scriptOutput">${escapeHtml(scriptText)}</div>
+  `;
+  panelsEl.appendChild(scriptPanel);
+
+  for (let i = 0; i < state.cutCount; i++) {
+    const p = document.createElement('div');
+    p.className = 'tab-panel';
+    p.dataset.panel = `cut-${i}`;
+    const prompt = assembleCutPrompt(i);
+    p.innerHTML = `
+      <div class="output-header">
+        <span class="output-label">컷 ${i+1} 이미지 프롬프트 (EN)</span>
+        <button class="btn small copy-btn" data-copy="cut-${i}">📋 복사</button>
+      </div>
+      <div class="output-box" id="cutOutput${i}">${escapeHtml(prompt)}</div>
+    `;
+    panelsEl.appendChild(p);
+  }
+
+  // tab events
+  tabsEl.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      panelsEl.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const target = panelsEl.querySelector(`[data-panel="${t.dataset.tab}"]`);
+      if (target) target.classList.add('active');
+    });
+  });
+
+  // copy events
+  panelsEl.querySelectorAll('.copy-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const key = b.dataset.copy;
+      if (key === 'script') copyText(scriptText, '대본 복사 완료');
+      else {
+        const idx = parseInt(key.replace('cut-', ''));
+        copyText(assembleCutPrompt(idx), `컷 ${idx+1} 복사 완료`);
+      }
+    });
+  });
+
+  // scroll
+  resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+ * COPY ALL
+ * ============================================================ */
+$('#copyAllBtn').addEventListener('click', () => {
+  const parts = [];
+  parts.push('=== 대본 ===\n' + assembleScriptText());
+  for (let i = 0; i < state.cutCount; i++) {
+    parts.push(`\n=== ${assembleCutPrompt(i).split('\n')[0]} ===\n` + assembleCutPrompt(i));
+  }
+  copyText(parts.join('\n\n'), '전체 복사 완료');
+});
+
+/* ============================================================
+ * GENERATE
+ * ============================================================ */
+$('#generateBtn').addEventListener('click', async () => {
+  // 검증
+  if (!state.charDesc) { toast('❌ 캐릭터 설명 먼저 (1단계)'); return; }
+  if (!state.concept)  { toast('❌ 컨셉 선택 먼저 (2단계)'); return; }
+  if (!state.topic)    { toast('❌ 주제 입력 먼저 (3단계)'); return; }
+  if (state.moodMode === 'same' && !state.moodSame) { toast('❌ 감정 선택 먼저'); return; }
+  if (state.moodMode === 'arc' && !state.moodArc.start) { toast('❌ 시작 감정 선택 먼저'); return; }
+
+  // 대본 없으면 자동 생성
+  if (!state.script.length) {
+    await generateScript();
+    if (!state.script.length) return; // 실패시 중단
+  }
+
+  renderResult();
+});
+
+</script>
+</body>
+</html>

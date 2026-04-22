@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>캐릭터 애니메이션 프롬프트 생성기 — by 제일라</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0e0e11; --card: #1a1a1f; --card-2: #22222a; --border: #2a2a30;
+    --accent: #f59e0b; --accent-2: #fbbf24; --text: #e8e8ec; --muted: #9a9aa5;
+    --danger: #ef4444; --ok: #22c55e; --radius: 14px;
+  }
+  [data-theme="light"] {
+    --bg: #fafafa; --card: #ffffff; --card-2: #f3f4f6; --border: #e5e5e5;
+    --text: #1a1a1f; --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', system-ui, sans-serif; }
+  body { min-height: 100vh; padding: 20px 16px 80px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .title { font-weight: 900; font-size: 24px; letter-spacing: -0.5px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .theme-btn { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 16px; }
+  .theme-btn:hover { background: var(--card-2); }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; }
+  .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .step-num { background: var(--accent); color: #111; font-weight: 900; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+  .step-title { font-weight: 700; font-size: 15px; }
+  .step-actions { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .apikey-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .apikey-row input { flex: 1; min-width: 220px; background: var(--card-2); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 13px; font-family: monospace; }
+  .btn { background: var(--card-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; cursor: pointer; font-size: 13px; font-weight: 700; transition: all .15s; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #111; border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-2); }
+  .btn.ghost { background: transparent; }
+  .btn.small { padding: 6px 10px; font-size: 12px; }
+  .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { background: var(--card-2); border: 1px solid var(--border); color: var(--text); border-radius: 999px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 700; transition: all .15s; user-select: none; }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: #111; border-color: var(--accent); }
+
+  /* subsection label */
+  .sublabel { font-size: 11px; color: var(--muted); font-weight: 700; margin: 10px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sublabel:first-child { margin-top: 0; }
+
+  /* Mode toggle (직접/이미지) */
+  .mode-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+  .mode-toggle .chip { flex: 1; text-align: center; }
+
+  /* Upload */
+  .upload-area { display: flex; gap: 16px; align-items: stretch; flex-wrap: wrap; }
+  .upload-box { flex: 0 0 160px; height: 160px; border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; background: var(--card-2); text-align: center; padding: 10px; transition: all .15s; position: relative; overflow: hidden; }
+  .upload-box:hover { border-color: var(--accent); }
+  .upload-box.has-image { border-style: solid; padding: 0; }
+  .upload-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .upload-box .hint { color: var(--muted); font-size: 12px; }
+  .upload-box .hint-big { font-size: 26px; margin-bottom: 4px; }
+  .upload-box input[type="file"] { display: none; }
+  .upload-info { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 8px; }
+  .upload-info textarea { width: 100%; min-height: 110px; background: var(--card-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-family: 'Noto Sans KR', monospace; font-size: 12px; line-height: 1.6; resize: vertical; }
+
+  /* Input */
+  .text-input { width: 100%; background: var(--card-2); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; font-size: 14px; font-family: inherit; }
+  textarea.text-input { min-height: 60px; resize: vertical; }
+  .input-row { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; }
+  .input-row .text-input { flex: 1; min-width: 200px; }
+
+  /* Preset bar */
+  .preset-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; padding: 8px; background: var(--card-2); border-radius: 10px; border: 1px dashed var(--border); }
+  .preset-bar select { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 12px; min-width: 150px; font-family: inherit; }
+
+  /* Activity library tabs */
+  .activity-tabs { display: flex; gap: 4px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .activity-tab { background: var(--card-2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .activity-tab.active { background: var(--accent); color: #111; border-color: var(--accent); }
+
+  /* Result Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 8px; overflow-x: auto; }
+  .tab { background: var(--card-2); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px 10px 0 0; cursor: pointer; font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .tab.active { background: var(--accent); color: #111; border-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .output-label { font-weight: 700; font-size: 13px; color: var(--muted); }
+  .output-box { background: var(--card-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 13px; white-space: pre-wrap; word-break: break-word; font-family: 'Noto Sans KR', monospace; line-height: 1.6; }
+
+  /* Scene editor */
+  .scene-row { background: var(--card-2); padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
+  .scene-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .scene-idx { background: var(--accent); color: #111; font-weight: 900; padding: 4px 10px; border-radius: 8px; font-size: 12px; }
+  .scene-loc { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .scene-row textarea, .scene-row input { width: 100%; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-family: inherit; font-size: 13px; resize: vertical; margin-bottom: 6px; }
+  .scene-row label { display: block; font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 3px; }
+
+  .generate-wrap { text-align: center; margin: 20px 0; }
+  .generate-btn { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #111; border: none; padding: 14px 32px; border-radius: 14px; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(245,158,11,0.3); transition: all .15s; }
+  .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #111; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 1000; }
+  .toast.show { opacity: 1; }
+
+  .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+  .collapsed-info { font-size: 12px; color: var(--muted); padding: 8px 10px; background: var(--card-2); border-radius: 8px; border: 1px dashed var(--border); }
+
+  @media (max-width: 560px) {
+    .title { font-size: 20px; }
+    .upload-box { flex: 0 0 130px; height: 130px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <div class="title">🎬 캐릭터 애니메이션 프롬프트</div>
+      <div class="subtitle">픽사 3D 스타일 사람 캐릭터 쇼츠 · by 제일라</div>
+    </div>
+    <button class="theme-btn" id="themeBtn" title="테마 전환">🌙</button>
+  </div>
+
+  <!-- API KEY -->
+  <div class="card">
+    <div class="step-head">
+      <span style="font-size:18px;">🔑</span>
+      <span class="step-title">API KEY</span>
+      <div class="step-actions">
+        <button class="btn small" id="saveKey">저장</button>
+        <button class="btn small danger" id="clearKey">삭제</button>
+      </div>
+    </div>
+    <div class="apikey-row">
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+    </div>
+    <div class="note">OpenAI API 키를 입력하면 AI 대본 생성 / 캐릭터 분석이 활성화됩니다.</div>
+  </div>
+
+  <!-- STEP 1: Character -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">1</span>
+      <span class="step-title">👤 캐릭터 설정</span>
+    </div>
+
+    <!-- Preset bar -->
+    <div class="preset-bar">
+      <span style="font-size:12px; font-weight:700; color:var(--muted);">📦 프리셋:</span>
+      <select id="presetSelect">
+        <option value="">— 저장된 캐릭터 불러오기 —</option>
+      </select>
+      <button class="btn small" id="loadPresetBtn">불러오기</button>
+      <button class="btn small" id="savePresetBtn">💾 현재 저장</button>
+      <button class="btn small ghost danger" id="delPresetBtn">🗑️ 삭제</button>
+    </div>
+
+    <div class="mode-toggle">
+      <div class="chip mode-chip active" data-mode="manual">⚙️ 직접 설정</div>
+      <div class="chip mode-chip" data-mode="image">📷 이미지 업로드</div>
+    </div>
+
+    <!-- Manual -->
+    <div id="manualBlock">
+      <div class="sublabel">성별</div>
+      <div class="chip-row" id="genderRow">
+        <div class="chip g-chip" data-v="male">👨 남성</div>
+        <div class="chip g-chip" data-v="female">👩 여성</div>
+        <div class="chip g-chip" data-v="neutral">🧑 미정</div>
+      </div>
+
+      <div class="sublabel">연령대</div>
+      <div class="chip-row" id="ageRow">
+        <div class="chip a-chip" data-v="baby">👶 아기</div>
+        <div class="chip a-chip" data-v="kid">🧒 아이</div>
+        <div class="chip a-chip" data-v="teen">🧑 10대</div>
+        <div class="chip a-chip" data-v="20s">🧑‍💼 20대</div>
+        <div class="chip a-chip" data-v="30-40s">👨‍💼 30-40대</div>
+        <div class="chip a-chip" data-v="50-60s">👵 50-60대</div>
+        <div class="chip a-chip" data-v="70+">👴 70+</div>
+      </div>
+
+      <div class="sublabel">체형 / 외모</div>
+      <div class="chip-row" id="bodyRow">
+        <div class="chip b-chip" data-v="slim">마른</div>
+        <div class="chip b-chip" data-v="average">보통</div>
+        <div class="chip b-chip" data-v="chubby">통통</div>
+        <div class="chip b-chip" data-v="tall">키큰</div>
+        <div class="chip b-chip" data-v="short">작은</div>
+      </div>
+
+      <div class="sublabel">직업 / 역할</div>
+      <div class="chip-row" id="jobRow"></div>
+      <input type="text" class="text-input" id="jobCustom" placeholder="직접 입력 (예: 프리랜서 개발자)" style="margin-top:8px; display:none;" />
+
+      <div class="sublabel">성격 / 스타일</div>
+      <div class="chip-row" id="personalityRow"></div>
+    </div>
+
+    <!-- Image mode -->
+    <div id="imageBlock" style="display:none;">
+      <div class="upload-area">
+        <label class="upload-box" id="uploadBox" for="fileInput">
+          <span class="hint-big">📷</span>
+          <span class="hint">클릭해서 캐릭터 이미지 업로드</span>
+          <input type="file" id="fileInput" accept="image/*" />
+        </label>
+        <div class="upload-info">
+          <textarea id="charImageDesc" placeholder="AI 분석 결과가 여기 들어옵니다. (수정 가능)"></textarea>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn small" id="analyzeBtn" disabled>🔍 AI 분석</button>
+            <button class="btn small ghost" id="removeImage">🗑️ 제거</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Background -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">2</span>
+      <span class="step-title">🏢 배경 / 장소</span>
+      <div class="step-actions">
+        <button class="btn small" id="aiLocBtn">🎲 AI 구체화</button>
+      </div>
+    </div>
+    <div class="sublabel">카테고리</div>
+    <div class="chip-row" id="bgCatRow"></div>
+
+    <div class="sublabel" id="bgSpecLabel" style="display:none;">구체적 위치</div>
+    <div class="chip-row" id="bgSpecRow"></div>
+
+    <input type="text" class="text-input" id="bgCustom" placeholder="직접 입력 (예: 3층 회의실 창가 자리)" style="margin-top:10px;" />
+  </div>
+
+  <!-- STEP 3: Activity -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">3</span>
+      <span class="step-title">🎭 활동 / 상황</span>
+      <div class="step-actions">
+        <button class="btn small" id="aiActBtn">🎲 AI 생성</button>
+      </div>
+    </div>
+    <div class="activity-tabs" id="activityTabs"></div>
+    <div class="chip-row" id="activityRow"></div>
+    <input type="text" class="text-input" id="actCustom" placeholder="직접 입력 또는 AI 생성 결과" style="margin-top:10px;" />
+  </div>
+
+  <!-- STEP 4: Emotion -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">4</span>
+      <span class="step-title">😤 감정</span>
+    </div>
+    <div class="chip-row" id="moodRow"></div>
+  </div>
+
+  <!-- STEP 5: Style -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">5</span>
+      <span class="step-title">🎨 스타일</span>
+    </div>
+    <div class="chip-row" id="styleRow">
+      <div class="chip style-chip active" data-v="pixar">🎬 픽사 3D</div>
+      <div class="chip style-chip" data-v="dreamworks">🎨 드림웍스 3D</div>
+      <div class="chip style-chip" data-v="ghibli">🌸 지브리/신카이</div>
+      <div class="chip style-chip" data-v="webtoon3d">📺 웹툰 3D</div>
+      <div class="chip style-chip" data-v="arthur">💎 아서 스타일</div>
+    </div>
+  </div>
+
+  <!-- STEP 6: Scene + Script -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">6</span>
+      <span class="step-title">🎬 씬 구성 + 대본</span>
+      <div class="step-actions">
+        <button class="btn small" id="genScriptBtn">✨ AI 대본 생성</button>
+        <button class="btn small ghost" id="regenScriptBtn">🔄 다시 생성</button>
+      </div>
+    </div>
+    <div class="chip-row" id="sceneCountRow" style="margin-bottom:12px;">
+      <div class="chip sc-chip active" data-v="1">⚡ 1씬 (10초)</div>
+      <div class="chip sc-chip" data-v="3">🎬 2-3씬 (30초)</div>
+      <div class="chip sc-chip" data-v="5">📺 에피소드 (5씬)</div>
+    </div>
+
+    <textarea class="text-input" id="prevContext" placeholder="시리즈 이어쓰기 — 이전 화 줄거리를 여기 붙여넣으면 이어지는 스토리로 생성 (비워두면 신규)" style="margin-bottom:10px;"></textarea>
+
+    <div id="scriptEditor">
+      <div class="collapsed-info">씬별 대본이 여기에 생성됩니다. AI 대본 생성 버튼을 누르거나 직접 편집 가능.</div>
+    </div>
+  </div>
+
+  <!-- STEP 7: Motion intensity -->
+  <div class="card">
+    <div class="step-head">
+      <span class="step-num">7</span>
+      <span class="step-title">💪 움직임 강도</span>
+    </div>
+    <div class="chip-row" id="motionRow">
+      <div class="chip mt-chip" data-v="static">🐢 정적</div>
+      <div class="chip mt-chip active" data-v="normal">🚶 일상적</div>
+      <div class="chip mt-chip" data-v="active">🏃 활동적</div>
+    </div>
+    <div class="note">씬별로 움직임 강도를 자동 반영. 감정과 조합돼서 제스처가 생성돼.</div>
+  </div>
+
+  <!-- Generate -->
+  <div class="generate-wrap">
+    <button class="generate-btn" id="generateBtn">🔥 프롬프트 생성하기</button>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="resultCard" style="display:none;">
+    <div class="step-head">
+      <span style="font-size:18px;">🎉</span>
+      <span class="step-title">결과</span>
+      <div class="step-actions">
+        <button class="btn small ghost" id="copyAllBtn">📋 전체 복사</button>
+      </div>
+    </div>
+    <div class="tabs" id="resultTabs"></div>
+    <div id="resultPanels"></div>
+  </div>
+
+  <div class="footer">캐릭터 애니메이션 프롬프트 · by 제일라</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+ * CONFIG
+ * ============================================================ */
+const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+const LS_KEY = 'charanim_api_key';
+const LS_THEME = 'charanim_theme';
+const LS_PRESETS = 'charanim_presets';
+
+/* ============================================================
+ * DATA
+ * ============================================================ */
+const JOBS = [
+  { v:'office',   l:'💼 직장인' },
+  { v:'student',  l:'🏫 학생' },
+  { v:'solo',     l:'🏠 자취생' },
+  { v:'mom',      l:'👩‍🍳 주부' },
+  { v:'delivery', l:'🚚 배달기사' },
+  { v:'cu',       l:'🏪 편의점 알바' },
+  { v:'chef',     l:'👨‍🍳 요리사/자영업' },
+  { v:'jobseek',  l:'🎓 취준생' },
+  { v:'elder',    l:'👵 어르신' },
+  { v:'custom',   l:'✏️ 직접 입력' },
+];
+const JOB_EN = {
+  office:'Korean office worker in business casual attire',
+  student:'Korean student in casual outfit',
+  solo:'Korean young adult living alone in a small apartment',
+  mom:'Korean housewife/mother in comfortable home clothes',
+  delivery:'Korean delivery rider in uniform with helmet',
+  cu:'Korean convenience store part-timer in vest uniform',
+  chef:'Korean cook/small business owner with apron',
+  jobseek:'Korean job seeker in interview suit',
+  elder:'Korean elderly person in traditional or casual clothing',
+};
+
+const PERSONALITIES = [
+  { v:'calm_p',       l:'😌 차분한' },
+  { v:'hothead',      l:'🤬 다혈질' },
+  { v:'bright',       l:'😂 유쾌한' },
+  { v:'shy',          l:'😔 소심한' },
+  { v:'passionate',   l:'💪 열정적' },
+  { v:'picky',        l:'🧐 까칠한' },
+  { v:'lazy',         l:'😴 무기력한' },
+  { v:'dual',         l:'🎭 이중적/복잡한' },
+];
+const PERSONALITY_EN = {
+  calm_p:'calm, composed demeanor',
+  hothead:'short-tempered, quick to anger',
+  bright:'cheerful, jovial energy',
+  shy:'shy, introverted body language',
+  passionate:'passionate, high-energy',
+  picky:'picky, critical expression',
+  lazy:'lethargic, low-energy posture',
+  dual:'complex, dual-natured expression',
+};
+
+const BG_CATEGORIES = [
+  { v:'work',    l:'🏢 직장',       specs:['사무실 책상','회의실','탕비실','엘리베이터','화장실','복도'] },
+  { v:'home',    l:'🏠 집',         specs:['거실','주방','침실','화장실','현관','베란다'] },
+  { v:'school',  l:'🏫 학교/학원',   specs:['교실','도서관','기숙사','강의실','복도','운동장'] },
+  { v:'food',    l:'🍜 식당/카페',   specs:['분식집','프랜차이즈 카페','술집','고기집','편의점 테이블','백반집'] },
+  { v:'transit', l:'🚇 대중교통',    specs:['지하철 안','버스 안','택시','플랫폼','정류장'] },
+  { v:'shop',    l:'🏪 상점/시장',   specs:['편의점','마트','전통시장','옷가게','약국'] },
+  { v:'street',  l:'🛣️ 길거리',     specs:['아파트 단지','골목길','횡단보도','공원','상가 거리'] },
+  { v:'car',     l:'🚗 차 안',      specs:['운전석','뒷자석','주차장','세차장'] },
+  { v:'service', l:'🏥 병원/은행',   specs:['병원 대기실','진료실','은행 창구','관공서 창구','약국'] },
+];
+
+const ACTIVITIES = {
+  talk: { l:'💬 대화/소통', items:[
+    '동료와 잡담','상사에게 보고','전화통화','화상회의','싸움/말다툼','짝사랑 고백','엄마한테 잔소리 듣기','친구와 수다'
+  ]},
+  work: { l:'💼 일/업무', items:[
+    '컴퓨터 타이핑','서류 작성','회의 진행','발표하기','전화 응대','물건 나르기','청소하기','배달하기'
+  ]},
+  home: { l:'🍳 생활/집안일', items:[
+    '요리하기','설거지','빨래 널기','청소기 돌리기','샤워하기','양치하기','잠자기','일어나기'
+  ]},
+  move: { l:'🚶 이동/외출', items:[
+    '출근길 걸어가기','지하철 타기','버스 기다리기','운전하기','장보기','택배 받기'
+  ]},
+  emo: { l:'🎭 감정 액션', items:[
+    '울기','웃기','화내기','한숨 쉬기','멍때리기','좌절하기','기쁨 폭발'
+  ]},
+  eat: { l:'🍔 먹기/마시기', items:[
+    '라면 먹기','커피 마시기','술 마시기','간식 먹기','치킨 뜯기'
+  ]},
+};
+
+const MOODS = {
+  // 기존 12개
+  annoyed:    { emoji:'😒', label:'짜증',    face:'annoyed with side-eye and tight lips',          body:'slumped shoulders, arms crossed' },
+  angry:      { emoji:'😤', label:'화남',    face:'angry with furrowed brow',                       body:'clenched fists, tense posture' },
+  furious:    { emoji:'🤬', label:'격분',    face:'furious, wide open mouth',                       body:'stomping, arms flailing' },
+  lecture:    { emoji:'☝️', label:'훈계',    face:'stern lecturing, finger raised',                 body:'pointing finger, upright posture' },
+  disappoint: { emoji:'😞', label:'실망',    face:'disappointed, eyes down',                        body:'drooping head, sagging shoulders' },
+  shock:      { emoji:'😨', label:'충격',    face:'shocked, wide eyes, open mouth',                 body:'frozen, hands up defensively' },
+  smug:       { emoji:'😏', label:'잘난척',  face:'smug with raised eyebrow',                       body:'arms crossed, chin up' },
+  tired:      { emoji:'😩', label:'지친',    face:'exhausted, closed eyes',                         body:'slouched, heavy steps' },
+  worried:    { emoji:'😟', label:'걱정',    face:'worried, downturned mouth',                      body:'fidgeting hands, hunched' },
+  cute:       { emoji:'💅', label:'새침',    face:'prim and proper',                                body:'hand on hip, delicate posture' },
+  cry:        { emoji:'😭', label:'울분',    face:'crying with tears',                              body:'hands covering face, trembling' },
+  explode:    { emoji:'👹', label:'폭발직전',face:'about-to-explode, red face',                     body:'veins showing, shaking fists' },
+  // 사람 전용 8개
+  happy:      { emoji:'🥰', label:'행복',    face:'blissful loving smile',                          body:'relaxed open arms, swaying' },
+  content:    { emoji:'😊', label:'만족',    face:'content gentle smile',                           body:'relaxed, natural posture' },
+  sleepy:     { emoji:'😴', label:'졸린',    face:'drowsy half-closed eyes',                        body:'slow movements, leaning' },
+  excited:    { emoji:'🤩', label:'신난',    face:'excited sparkling eyes, wide grin',              body:'bouncing, arms up' },
+  peaceful:   { emoji:'😇', label:'평온',    face:'peaceful serene expression',                     body:'still, balanced stance' },
+  thinking:   { emoji:'🤔', label:'고민',    face:'thoughtful, pursed lips',                        body:'hand on chin, leaning posture' },
+  confident:  { emoji:'😎', label:'자신감',  face:'confident smirk, steady gaze',                   body:'chest out, strong stance' },
+  pleading:   { emoji:'🥺', label:'애원',    face:'pleading big eyes, quivering lip',               body:'hands clasped, leaning forward' },
+};
+
+const STYLES = {
+  pixar:      'Pixar-style 3D animation, soft cinematic lighting, vibrant colors, highly expressive character features, detailed subsurface skin shading',
+  dreamworks: 'DreamWorks-style 3D animation (Shrek / Kung Fu Panda vibe), slightly exaggerated proportions, bold lighting, stylized textures',
+  ghibli:     'Studio Ghibli / Makoto Shinkai anime style, hand-painted backgrounds, soft watercolor shading, warm natural lighting',
+  webtoon3d:  'Korean webtoon-inspired 3D animation, clean flat cel-shading, vivid palette, manga-like expressions',
+  arthur:     'Arthur Christmas / Aardman hybrid style, charming stylized 3D, storybook lighting, slightly chunky proportions',
+};
+
+const MOTION_DESC = {
+  static: 'minimal movement, mostly seated or still with subtle gestures only',
+  normal: 'natural everyday movement, walking, turning, natural gestures',
+  active: 'energetic full-body motion, dynamic actions, expressive whole-body performance',
+};
+
+/* ============================================================
+ * STATE
+ * ============================================================ */
+const state = {
+  apiKey: '',
+  charMode: 'manual',        // 'manual' | 'image'
+  gender: '',
+  age: '',
+  body: '',
+  job: '',
+  jobCustom: '',
+  personality: '',
+  charImage: null,
+  charImageDesc: '',
+
+  bgCat: '',
+  bgSpec: '',
+  bgCustom: '',
+
+  activityCat: 'talk',
+  activity: '',
+  actCustom: '',
+
+  mood: '',
+  style: 'pixar',
+
+  sceneCount: 1,
+  prevContext: '',
+  scenes: [],                // [{scene_num, location, action, dialogue, emotion, camera}]
+
+  motion: 'normal',
+};
+
+/* ============================================================
+ * UTIL
+ * ============================================================ */
+const $  = (s, p=document) => p.querySelector(s);
+const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+
+function toast(msg, ms=1800) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), ms);
+}
+function copyText(txt, label='복사 완료!') {
+  navigator.clipboard.writeText(txt).then(()=>toast(`📋 ${label}`));
+}
+function setBtnLoading(btn, loading, label) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.orig = btn.innerHTML;
+    btn.innerHTML = `<span class="spinner"></span>${label || '처리중...'}`;
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn.dataset.orig || label || '완료';
+    btn.disabled = false;
+  }
+}
+function escapeHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function extractJSON(str) {
+  if (!str) return null;
+  const cleaned = str.replace(/```json|```/g, '').trim();
+  const s = cleaned.indexOf('{');
+  const e = cleaned.lastIndexOf('}');
+  if (s === -1 || e === -1) return null;
+  try { return JSON.parse(cleaned.slice(s, e+1)); } catch(_) { return null; }
+}
+
+/* ============================================================
+ * THEME + API KEY
+ * ============================================================ */
+(function initTheme() {
+  const saved = localStorage.getItem(LS_THEME);
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    $('#themeBtn').textContent = '☀️';
+  }
+})();
+$('#themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  if (cur === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+    $('#themeBtn').textContent = '🌙';
+    localStorage.setItem(LS_THEME, 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    $('#themeBtn').textContent = '☀️';
+    localStorage.setItem(LS_THEME, 'light');
+  }
+});
+(function initKey() {
+  const saved = localStorage.getItem(LS_KEY);
+  if (saved) { $('#apiKey').value = saved; state.apiKey = saved; }
+})();
+$('#saveKey').addEventListener('click', () => {
+  const k = $('#apiKey').value.trim();
+  if (!k) { toast('키를 입력해'); return; }
+  localStorage.setItem(LS_KEY, k); state.apiKey = k; toast('저장 완료 ✅');
+});
+$('#clearKey').addEventListener('click', () => {
+  localStorage.removeItem(LS_KEY); $('#apiKey').value = ''; state.apiKey = ''; toast('삭제됨');
+});
+$('#apiKey').addEventListener('input', e => { state.apiKey = e.target.value.trim(); });
+
+/* ============================================================
+ * API
+ * ============================================================ */
+async function callChat({ system, user, image, max_tokens=900, temperature=0.8 }) {
+  if (!state.apiKey) throw new Error('API 키를 입력해야 합니다.');
+  const payload = { apiKey: state.apiKey, system, user, max_tokens, temperature };
+  if (image) { payload.image = image; payload.vision = true; payload.model = 'gpt-4o'; }
+  const res = await fetch(`${PROXY_URL}/openai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`API 실패 (${res.status}): ${txt.slice(0,200)}`);
+  }
+  const data = await res.json();
+  if (data.content) return data.content;
+  if (data.choices && data.choices[0]) return data.choices[0].message.content;
+  return JSON.stringify(data);
+}
+
+/* ============================================================
+ * STEP 1: Character — inject chips
+ * ============================================================ */
+function renderJobRow() {
+  const row = $('#jobRow');
+  row.innerHTML = '';
+  JOBS.forEach(j => {
+    const chip = document.createElement('div');
+    chip.className = 'chip j-chip';
+    chip.dataset.v = j.v;
+    chip.textContent = j.l;
+    row.appendChild(chip);
+  });
+}
+function renderPersonalityRow() {
+  const row = $('#personalityRow');
+  row.innerHTML = '';
+  PERSONALITIES.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'chip p-chip';
+    chip.dataset.v = p.v;
+    chip.textContent = p.l;
+    row.appendChild(chip);
+  });
+}
+renderJobRow(); renderPersonalityRow();
+
+/* single-select chip factory */
+function bindSingleSelect(rowSel, chipCls, stateKey, onChange) {
+  $$(`${rowSel} ${chipCls}`).forEach(c => {
+    c.addEventListener('click', () => {
+      $$(`${rowSel} ${chipCls}`).forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      state[stateKey] = c.dataset.v;
+      if (onChange) onChange(c.dataset.v);
+    });
+  });
+}
+bindSingleSelect('#genderRow', '.g-chip', 'gender');
+bindSingleSelect('#ageRow', '.a-chip', 'age');
+bindSingleSelect('#bodyRow', '.b-chip', 'body');
+bindSingleSelect('#jobRow', '.j-chip', 'job', v => {
+  $('#jobCustom').style.display = v === 'custom' ? 'block' : 'none';
+});
+bindSingleSelect('#personalityRow', '.p-chip', 'personality');
+$('#jobCustom').addEventListener('input', e => { state.jobCustom = e.target.value.trim(); });
+
+/* mode toggle */
+$$('.mode-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    $$('.mode-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.charMode = c.dataset.mode;
+    $('#manualBlock').style.display = state.charMode === 'manual' ? 'block' : 'none';
+    $('#imageBlock').style.display = state.charMode === 'image' ? 'block' : 'none';
+  });
+});
+
+/* upload */
+const fileInput = $('#fileInput');
+const uploadBox = $('#uploadBox');
+const charImgDescEl = $('#charImageDesc');
+const analyzeBtn = $('#analyzeBtn');
+
+function bindFileInput() {
+  const fi = $('#fileInput');
+  fi.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target.result;
+      state.charImage = dataUrl.split(',')[1];
+      uploadBox.innerHTML = `<img src="${dataUrl}" alt="캐릭터" />`;
+      uploadBox.classList.add('has-image');
+      analyzeBtn.disabled = false;
+      toast('업로드 완료 · 🔍 AI 분석 눌러');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+bindFileInput();
+
+$('#removeImage').addEventListener('click', () => {
+  state.charImage = null;
+  uploadBox.classList.remove('has-image');
+  uploadBox.innerHTML = `<span class="hint-big">📷</span><span class="hint">클릭해서 캐릭터 이미지 업로드</span><input type="file" id="fileInput" accept="image/*" />`;
+  bindFileInput();
+  analyzeBtn.disabled = true;
+});
+
+charImgDescEl.addEventListener('input', e => { state.charImageDesc = e.target.value.trim(); });
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!state.charImage) { toast('이미지 먼저'); return; }
+  if (!state.apiKey) { toast('API 키 먼저'); return; }
+  setBtnLoading(analyzeBtn, true, '분석중');
+  try {
+    const system = `You are an expert character analyst for a Pixar-style 3D animation series. Describe the MAIN human character from the uploaded image in precise English.
+Output STRICT JSON only:
+{
+  "character": "<detailed: age estimate, gender, body type, hair, clothing style, distinctive features>",
+  "personality_hint": "<visual personality cue>",
+  "outfit": "<clothing summary>"
+}`;
+    const raw = await callChat({ system, user: 'Analyze this character.', image: state.charImage, max_tokens: 500, temperature: 0.4 });
+    const parsed = extractJSON(raw);
+    if (!parsed) throw new Error('파싱 실패');
+    const desc = `CHARACTER: ${parsed.character}\nOUTFIT: ${parsed.outfit || ''}\nPERSONALITY HINT: ${parsed.personality_hint || ''}`;
+    charImgDescEl.value = desc;
+    state.charImageDesc = desc;
+    toast('분석 완료 ✅');
+  } catch (err) { toast('❌ ' + err.message); }
+  finally { setBtnLoading(analyzeBtn, false); }
+});
+
+/* ============================================================
+ * PRESETS
+ * ============================================================ */
+function loadPresets() {
+  try { return JSON.parse(localStorage.getItem(LS_PRESETS) || '{}'); } catch(_) { return {}; }
+}
+function savePresetsObj(obj) {
+  localStorage.setItem(LS_PRESETS, JSON.stringify(obj));
+}
+function refreshPresetSelect() {
+  const sel = $('#presetSelect');
+  const presets = loadPresets();
+  sel.innerHTML = '<option value="">— 저장된 캐릭터 불러오기 —</option>';
+  Object.keys(presets).forEach(name => {
+    const o = document.createElement('option');
+    o.value = name; o.textContent = name;
+    sel.appendChild(o);
+  });
+}
+refreshPresetSelect();
+
+$('#savePresetBtn').addEventListener('click', () => {
+  const name = prompt('프리셋 이름 (예: 김대리)');
+  if (!name) return;
+  const presets = loadPresets();
+  presets[name] = {
+    charMode: state.charMode,
+    gender: state.gender, age: state.age, body: state.body,
+    job: state.job, jobCustom: state.jobCustom, personality: state.personality,
+    charImageDesc: state.charImageDesc,
+  };
+  savePresetsObj(presets);
+  refreshPresetSelect();
+  toast(`💾 "${name}" 저장`);
+});
+
+$('#loadPresetBtn').addEventListener('click', () => {
+  const name = $('#presetSelect').value;
+  if (!name) { toast('프리셋 선택'); return; }
+  const p = loadPresets()[name];
+  if (!p) return;
+  // apply
+  state.charMode = p.charMode || 'manual';
+  $$('.mode-chip').forEach(x => x.classList.toggle('active', x.dataset.mode === state.charMode));
+  $('#manualBlock').style.display = state.charMode === 'manual' ? 'block' : 'none';
+  $('#imageBlock').style.display = state.charMode === 'image' ? 'block' : 'none';
+  state.gender = p.gender || ''; state.age = p.age || ''; state.body = p.body || '';
+  state.job = p.job || ''; state.jobCustom = p.jobCustom || ''; state.personality = p.personality || '';
+  state.charImageDesc = p.charImageDesc || '';
+  $$('#genderRow .g-chip').forEach(x => x.classList.toggle('active', x.dataset.v === state.gender));
+  $$('#ageRow .a-chip').forEach(x => x.classList.toggle('active', x.dataset.v === state.age));
+  $$('#bodyRow .b-chip').forEach(x => x.classList.toggle('active', x.dataset.v === state.body));
+  $$('#jobRow .j-chip').forEach(x => x.classList.toggle('active', x.dataset.v === state.job));
+  $$('#personalityRow .p-chip').forEach(x => x.classList.toggle('active', x.dataset.v === state.personality));
+  $('#jobCustom').style.display = state.job === 'custom' ? 'block' : 'none';
+  $('#jobCustom').value = state.jobCustom;
+  charImgDescEl.value = state.charImageDesc;
+  toast(`📂 "${name}" 불러옴`);
+});
+
+$('#delPresetBtn').addEventListener('click', () => {
+  const name = $('#presetSelect').value;
+  if (!name) { toast('프리셋 선택'); return; }
+  if (!confirm(`"${name}" 삭제할까?`)) return;
+  const presets = loadPresets();
+  delete presets[name];
+  savePresetsObj(presets);
+  refreshPresetSelect();
+  toast('🗑️ 삭제됨');
+});
+
+/* ============================================================
+ * STEP 2: Background
+ * ============================================================ */
+function renderBgCat() {
+  const row = $('#bgCatRow');
+  row.innerHTML = '';
+  BG_CATEGORIES.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'chip bc-chip';
+    chip.dataset.v = c.v;
+    chip.textContent = c.l;
+    row.appendChild(chip);
+  });
+  $$('.bc-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      $$('.bc-chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      state.bgCat = c.dataset.v;
+      state.bgSpec = '';
+      renderBgSpec();
+    });
+  });
+}
+function renderBgSpec() {
+  const cat = BG_CATEGORIES.find(c => c.v === state.bgCat);
+  const row = $('#bgSpecRow');
+  const label = $('#bgSpecLabel');
+  row.innerHTML = '';
+  if (!cat) { label.style.display = 'none'; return; }
+  label.style.display = 'block';
+  cat.specs.forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'chip bs-chip';
+    chip.dataset.v = s;
+    chip.textContent = s;
+    row.appendChild(chip);
+  });
+  $$('.bs-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      $$('.bs-chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      state.bgSpec = c.dataset.v;
+    });
+  });
+}
+renderBgCat();
+
+$('#bgCustom').addEventListener('input', e => { state.bgCustom = e.target.value.trim(); });
+
+$('#aiLocBtn').addEventListener('click', async () => {
+  if (!state.apiKey) { toast('API 키 먼저'); return; }
+  if (!state.bgCat) { toast('카테고리 먼저'); return; }
+  const btn = $('#aiLocBtn');
+  setBtnLoading(btn, true, '생성중');
+  try {
+    const cat = BG_CATEGORIES.find(c => c.v === state.bgCat);
+    const system = '너는 한국 쇼츠 배경 디자이너다. 카테고리에 맞는 구체적이고 시각적으로 리치한 장소를 1개만 한국어로 제안. 설명 없이 장소명만 15자 이내.';
+    const user = `카테고리: ${cat.l}\n기존 옵션: ${cat.specs.join(', ')}\n새로운 디테일한 장소 1개만.`;
+    const raw = await callChat({ system, user, max_tokens: 60, temperature: 1.0 });
+    const clean = raw.replace(/^["'\d.\s-]+|["'\s]+$/g, '').split('\n')[0].trim();
+    $('#bgCustom').value = clean;
+    state.bgCustom = clean;
+    toast('장소 생성 ✨');
+  } catch (err) { toast('❌ ' + err.message); }
+  finally { setBtnLoading(btn, false); }
+});
+
+/* ============================================================
+ * STEP 3: Activity
+ * ============================================================ */
+function renderActivityTabs() {
+  const tabs = $('#activityTabs');
+  tabs.innerHTML = '';
+  Object.entries(ACTIVITIES).forEach(([k, v]) => {
+    const t = document.createElement('div');
+    t.className = 'activity-tab' + (k === state.activityCat ? ' active' : '');
+    t.dataset.v = k;
+    t.textContent = v.l;
+    tabs.appendChild(t);
+  });
+  $$('.activity-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      $$('.activity-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      state.activityCat = t.dataset.v;
+      renderActivityRow();
+    });
+  });
+}
+function renderActivityRow() {
+  const row = $('#activityRow');
+  row.innerHTML = '';
+  (ACTIVITIES[state.activityCat]?.items || []).forEach(item => {
+    const chip = document.createElement('div');
+    chip.className = 'chip ac-chip';
+    chip.dataset.v = item;
+    chip.textContent = item;
+    row.appendChild(chip);
+  });
+  $$('.ac-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      $$('.ac-chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      state.activity = c.dataset.v;
+      state.actCustom = '';
+      $('#actCustom').value = '';
+    });
+  });
+}
+renderActivityTabs(); renderActivityRow();
+
+$('#actCustom').addEventListener('input', e => {
+  state.actCustom = e.target.value.trim();
+  if (state.actCustom) {
+    $$('.ac-chip').forEach(x => x.classList.remove('active'));
+    state.activity = '';
+  }
+});
+
+$('#aiActBtn').addEventListener('click', async () => {
+  if (!state.apiKey) { toast('API 키 먼저'); return; }
+  const btn = $('#aiActBtn');
+  setBtnLoading(btn, true, '생성중');
+  try {
+    const charBrief = buildCharacterBrief();
+    const bgBrief = state.bgCustom || state.bgSpec || (BG_CATEGORIES.find(c=>c.v===state.bgCat)?.l || '');
+    const system = '너는 한국 쇼츠 상황 기획자다. 캐릭터와 배경에 어울리는 공감가는 한국 일상 상황 1개만 25자 이내 한국어로 제안. 설명 X, 상황 문장만.';
+    const user = `캐릭터: ${charBrief || '(미지정)'}\n배경: ${bgBrief || '(미지정)'}\n상황 1개만.`;
+    const raw = await callChat({ system, user, max_tokens: 80, temperature: 1.0 });
+    const clean = raw.replace(/^["'\d.\s-]+|["'\s]+$/g, '').split('\n')[0].trim();
+    $('#actCustom').value = clean;
+    state.actCustom = clean;
+    $$('.ac-chip').forEach(x => x.classList.remove('active'));
+    state.activity = '';
+    toast('상황 생성 ✨');
+  } catch (err) { toast('❌ ' + err.message); }
+  finally { setBtnLoading(btn, false); }
+});
+
+/* ============================================================
+ * STEP 4: Mood
+ * ============================================================ */
+function renderMoodRow() {
+  const row = $('#moodRow');
+  row.innerHTML = '';
+  Object.entries(MOODS).forEach(([k, m]) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip m-chip';
+    chip.dataset.v = k;
+    chip.textContent = `${m.emoji} ${m.label}`;
+    row.appendChild(chip);
+  });
+  $$('.m-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      $$('.m-chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      state.mood = c.dataset.v;
+    });
+  });
+}
+renderMoodRow();
+
+/* ============================================================
+ * STEP 5: Style
+ * ============================================================ */
+$$('.style-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    $$('.style-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.style = c.dataset.v;
+  });
+});
+
+/* ============================================================
+ * STEP 6: Scene count + script
+ * ============================================================ */
+$$('.sc-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    $$('.sc-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.sceneCount = parseInt(c.dataset.v);
+  });
+});
+$('#prevContext').addEventListener('input', e => { state.prevContext = e.target.value.trim(); });
+
+/* STEP 7: Motion */
+$$('.mt-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    $$('.mt-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.motion = c.dataset.v;
+  });
+});
+
+/* ============================================================
+ * Build character brief (공용)
+ * ============================================================ */
+function buildCharacterBrief() {
+  if (state.charMode === 'image' && state.charImageDesc) {
+    return state.charImageDesc;
+  }
+  const parts = [];
+  if (state.age) parts.push(state.age);
+  if (state.gender) parts.push(state.gender);
+  if (state.body) parts.push(state.body);
+  const jobLabel = state.job === 'custom' ? state.jobCustom : (JOBS.find(j=>j.v===state.job)?.l || '');
+  if (jobLabel) parts.push(jobLabel);
+  const persLabel = PERSONALITIES.find(p=>p.v===state.personality)?.l || '';
+  if (persLabel) parts.push(persLabel);
+  return parts.join(' · ');
+}
+
+function buildCharacterEn() {
+  if (state.charMode === 'image' && state.charImageDesc) {
+    return state.charImageDesc.replace(/^CHARACTER:\s*/i, '').split(/\n/)[0].trim();
+  }
+  const ageMap = { baby:'infant', kid:'child aged 6-10', teen:'teenager', '20s':'person in their 20s', '30-40s':'person in their 30s-40s', '50-60s':'person in their 50s-60s', '70+':'elderly person in their 70s+' };
+  const genderMap = { male:'Korean male', female:'Korean female', neutral:'Korean person' };
+  const bodyMap = { slim:'slim build', average:'average build', chubby:'chubby build', tall:'tall stature', short:'short stature' };
+  const base = [];
+  if (state.age) base.push(ageMap[state.age] || state.age);
+  base.push(genderMap[state.gender] || 'Korean person');
+  if (state.body) base.push(bodyMap[state.body] || '');
+  const jobEn = state.job === 'custom' ? (state.jobCustom || '') : (JOB_EN[state.job] || '');
+  if (jobEn) base.push(jobEn);
+  const persEn = PERSONALITY_EN[state.personality] || '';
+  if (persEn) base.push(persEn);
+  return base.filter(Boolean).join(', ');
+}
+
+function buildLocationEn() {
+  const loc = state.bgCustom || state.bgSpec || '';
+  const cat = BG_CATEGORIES.find(c => c.v === state.bgCat)?.l || '';
+  return loc ? `${loc} (${cat})` : cat;
+}
+
+function buildActivityText() {
+  return state.actCustom || state.activity || '';
+}
+
+/* ============================================================
+ * Script generation
+ * ============================================================ */
+function renderScriptEditor() {
+  const editor = $('#scriptEditor');
+  if (!state.scenes.length) {
+    editor.innerHTML = '<div class="collapsed-info">씬별 대본이 여기에 생성됩니다. AI 대본 생성 버튼을 누르거나 직접 편집 가능.</div>';
+    return;
+  }
+  editor.innerHTML = '';
+  state.scenes.forEach((sc, i) => {
+    const moodInfo = MOODS[sc.emotion] || MOODS[state.mood] || Object.values(MOODS)[0];
+    const row = document.createElement('div');
+    row.className = 'scene-row';
+    row.innerHTML = `
+      <div class="scene-head">
+        <span class="scene-idx">씬 ${i+1}</span>
+        <span class="scene-loc">📍 ${escapeHtml(sc.location || '')} · ${moodInfo.emoji} ${moodInfo.label}</span>
+      </div>
+      <label>장소</label>
+      <input data-i="${i}" data-f="location" value="${escapeHtml(sc.location||'')}" placeholder="회의실" />
+      <label>액션 (영문 묘사)</label>
+      <textarea data-i="${i}" data-f="action" rows="2" placeholder="Character is ...">${escapeHtml(sc.action||'')}</textarea>
+      <label>대사 (한국어)</label>
+      <textarea data-i="${i}" data-f="dialogue" rows="2" placeholder='"..."'>${escapeHtml(sc.dialogue||'')}</textarea>
+      <label>카메라</label>
+      <input data-i="${i}" data-f="camera" value="${escapeHtml(sc.camera||'')}" placeholder="medium shot, eye level" />
+    `;
+    editor.appendChild(row);
+  });
+  editor.querySelectorAll('[data-i]').forEach(el => {
+    el.addEventListener('input', e => {
+      const i = parseInt(e.target.dataset.i);
+      const f = e.target.dataset.f;
+      state.scenes[i][f] = e.target.value;
+    });
+  });
+}
+
+async function generateScript() {
+  if (!state.apiKey) { toast('API 키 먼저'); return; }
+  if (!buildCharacterBrief()) { toast('❌ 캐릭터 설정 먼저'); return; }
+  const act = buildActivityText();
+  if (!act) { toast('❌ 활동 선택/입력 먼저'); return; }
+  if (!state.mood) { toast('❌ 감정 선택 먼저'); return; }
+
+  const btn = $('#genScriptBtn');
+  setBtnLoading(btn, true, '생성중');
+  try {
+    const moodInfo = MOODS[state.mood];
+    const system = `너는 한국 유튜브 쇼츠 애니메이션 작가다. 캐릭터/배경/활동/감정을 바탕으로 ${state.sceneCount}개 씬의 짧은 스토리를 만든다.
+- 대사는 한국어 자연스러운 구어체 (15-30자 권장)
+- action은 영어 짧은 묘사 (카메라/AI 영상 생성용)
+- 여러 씬일 경우 기승전결/공감 펀치 구조
+- STRICT JSON만 출력, 마크다운 금지.
+형식:
+{"scenes":[{"scene_num":1,"location":"회의실","action":"...","dialogue":"...","emotion":"${state.mood}","camera":"medium shot"}, ...]}`;
+    const user = `캐릭터: ${buildCharacterBrief()}
+배경: ${buildLocationEn() || '(미지정)'}
+활동/상황: ${act}
+감정: ${moodInfo.label} (${state.mood})
+씬 수: ${state.sceneCount}
+스타일: ${state.style}
+${state.prevContext ? `\n이전 화 컨텍스트 (이어지는 스토리):\n${state.prevContext}` : ''}`;
+    const raw = await callChat({ system, user, max_tokens: 1200, temperature: 0.9 });
+    const parsed = extractJSON(raw);
+    if (!parsed || !parsed.scenes) throw new Error('JSON 파싱 실패');
+    state.scenes = parsed.scenes.slice(0, state.sceneCount).map((s, i) => ({
+      scene_num: i + 1,
+      location: s.location || '',
+      action: s.action || '',
+      dialogue: s.dialogue || '',
+      emotion: MOODS[s.emotion] ? s.emotion : state.mood,
+      camera: s.camera || 'medium shot, eye level',
+    }));
+    renderScriptEditor();
+    toast('대본 생성 ✨');
+  } catch (err) { toast('❌ ' + err.message); console.error(err); }
+  finally { setBtnLoading(btn, false); }
+}
+$('#genScriptBtn').addEventListener('click', generateScript);
+$('#regenScriptBtn').addEventListener('click', generateScript);
+
+/* ============================================================
+ * Assemble final prompt per scene
+ * ============================================================ */
+function assembleScenePrompt(i) {
+  const sc = state.scenes[i];
+  const total = state.scenes.length;
+  const moodInfo = MOODS[sc.emotion] || MOODS[state.mood] || Object.values(MOODS)[0];
+  const styleDesc = STYLES[state.style] || STYLES.pixar;
+  const charEn = buildCharacterEn();
+  const motionEn = MOTION_DESC[state.motion] || MOTION_DESC.normal;
+
+  return `🎬 SCENE ${i+1} / ${total} — ${sc.location || buildLocationEn()}
+
+[CHARACTER]
+A ${charEn}.
+
+[SCENE SETTING]
+Setting: ${sc.location || buildLocationEn() || 'Korean everyday environment'}. Detailed, lived-in Korean environment with natural props and lighting that match the location.
+
+[ACTION]
+${sc.action || '(action description)'}
+Movement intensity: ${motionEn}.
+
+[DIALOGUE — Korean, verbatim]
+"${sc.dialogue || ''}"
+
+[PERFORMANCE]
+- Facial expression: ${moodInfo.face}
+- Body language: ${moodInfo.body}
+- Emotion: ${moodInfo.label} (${sc.emotion})
+
+[CAMERA]
+${sc.camera || 'medium shot, eye level'}
+
+[STYLE]
+${styleDesc}. Cinematic composition, rich environmental detail, subtle background motion for life (e.g. fluorescent flicker, window light, steam, people passing).
+
+[OUTPUT]
+Duration: ${total === 1 ? '10s' : '8-10s per scene'}, 9:16 vertical, no on-screen text overlays (dialogue is spoken/subtitled separately).`;
+}
+
+function assembleScriptText() {
+  return state.scenes.map((sc, i) => {
+    const m = MOODS[sc.emotion] || MOODS[state.mood] || Object.values(MOODS)[0];
+    return `[씬 ${i+1}] 📍 ${sc.location} · ${m.emoji} ${m.label}
+액션: ${sc.action}
+대사: ${sc.dialogue}
+카메라: ${sc.camera}`;
+  }).join('\n\n');
+}
+
+/* ============================================================
+ * Render result
+ * ============================================================ */
+function renderResult() {
+  const card = $('#resultCard');
+  const tabsEl = $('#resultTabs');
+  const panelsEl = $('#resultPanels');
+  card.style.display = 'block';
+
+  tabsEl.innerHTML = '';
+  const st = document.createElement('div');
+  st.className = 'tab active'; st.dataset.tab = 'script'; st.textContent = '📖 대본';
+  tabsEl.appendChild(st);
+  state.scenes.forEach((_, i) => {
+    const t = document.createElement('div');
+    t.className = 'tab'; t.dataset.tab = `scene-${i}`; t.textContent = `씬 ${i+1}`;
+    tabsEl.appendChild(t);
+  });
+
+  panelsEl.innerHTML = '';
+  const sPanel = document.createElement('div');
+  sPanel.className = 'tab-panel active'; sPanel.dataset.panel = 'script';
+  const scriptText = assembleScriptText();
+  sPanel.innerHTML = `
+    <div class="output-header">
+      <span class="output-label">씬별 대본 요약 (한국어)</span>
+      <button class="btn small copy-btn" data-copy="script">📋 복사</button>
+    </div>
+    <div class="output-box">${escapeHtml(scriptText)}</div>
+  `;
+  panelsEl.appendChild(sPanel);
+
+  state.scenes.forEach((_, i) => {
+    const p = document.createElement('div');
+    p.className = 'tab-panel'; p.dataset.panel = `scene-${i}`;
+    const prompt = assembleScenePrompt(i);
+    p.innerHTML = `
+      <div class="output-header">
+        <span class="output-label">씬 ${i+1} 영상 프롬프트 (EN)</span>
+        <button class="btn small copy-btn" data-copy="scene-${i}">📋 복사</button>
+      </div>
+      <div class="output-box">${escapeHtml(prompt)}</div>
+    `;
+    panelsEl.appendChild(p);
+  });
+
+  tabsEl.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      panelsEl.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const target = panelsEl.querySelector(`[data-panel="${t.dataset.tab}"]`);
+      if (target) target.classList.add('active');
+    });
+  });
+  panelsEl.querySelectorAll('.copy-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const key = b.dataset.copy;
+      if (key === 'script') copyText(scriptText, '대본 복사');
+      else {
+        const idx = parseInt(key.replace('scene-', ''));
+        copyText(assembleScenePrompt(idx), `씬 ${idx+1} 복사`);
+      }
+    });
+  });
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+$('#copyAllBtn').addEventListener('click', () => {
+  const parts = [];
+  parts.push('=== 대본 ===\n' + assembleScriptText());
+  state.scenes.forEach((_, i) => {
+    parts.push('\n=== ' + assembleScenePrompt(i).split('\n')[0] + ' ===\n' + assembleScenePrompt(i));
+  });
+  copyText(parts.join('\n\n'), '전체 복사');
+});
+
+/* ============================================================
+ * GENERATE
+ * ============================================================ */
+$('#generateBtn').addEventListener('click', async () => {
+  // 검증
+  if (!buildCharacterBrief()) { toast('❌ 캐릭터 설정 먼저 (1단계)'); return; }
+  if (!state.bgCat && !state.bgCustom) { toast('❌ 배경 설정 먼저 (2단계)'); return; }
+  if (!buildActivityText()) { toast('❌ 활동 선택 먼저 (3단계)'); return; }
+  if (!state.mood) { toast('❌ 감정 선택 먼저 (4단계)'); return; }
+
+  if (!state.scenes.length) {
+    await generateScript();
+    if (!state.scenes.length) return;
+  }
+  renderResult();
+});
+</script>
+</body>
+</html>
