@@ -403,6 +403,99 @@ function getAngryFunctionMotion(objKr){
   return '';
 }
 
+// ═══ 감정별 시연 스타일 (앵그리 무드 전용) ═══
+const ANGRY_EMOTION_REVEAL_STYLE = {
+  angry: 'forcefully slamming it open — aggressively showing off',
+  furious: 'violently ripping it open — raging hard',
+  annoyed: 'with an irritated flick — swiftly and impatiently',
+  scolding: 'deliberately opening it while pointing inside — lecture mode',
+  threatening: 'ominously opening it with slow menace — controlled danger',
+  crying_angry: 'opening it while tearing up from rage — emotional reveal',
+  suppressed: 'slowly opening it with tightly controlled rage — barely holding it together',
+  disappointed: 'slowly and wearily opening it — resigned sigh',
+  cold_rage: 'coldly opening it with chilling calm — flat unblinking focus',
+  breaking_point: 'yanking it open as patience snaps — on the edge',
+  righteous: 'confidently opening it with moral authority — "look at this!"',
+  chibi_rage: 'violently yanking it open — chibi cartoon rage explosion',
+  spark_eye: 'snapping it open with electric intensity — sparks crackling',
+  dramatic_wind: 'dramatically opening it with wind blowing backward — cinematic unveiling',
+  cute_angry: 'cutely but firmly opening it with puffed cheeks — adorable fury'
+};
+
+// ═══ 사물별 "기능 시연" — 캐릭터가 자기 기능을 직접 보여줌 ═══
+const FUNCTION_REVEAL = {
+  '🧊 냉장고': {
+    action: 'opens ONLY the lower refrigerator door (the one WITHOUT the face) with one cartoon arm, keeping the upper freezer door with the face completely still and closed',
+    reveal: 'revealing the interior of the lower fridge compartment — shelves stacked with kimchi containers, plastic water bottles, leftover takeout boxes, a half-empty milk carton, cold white interior light spilling out from below. The face on the upper part stays locked in place'
+  },
+  '🌀 세탁기': {
+    action: 'starts the drum spinning behind its transparent glass door (the door itself stays closed — the spinning happens visibly THROUGH the glass; the face on the main body stays fixed in place)',
+    reveal: 'through the clear glass door we see the drum rotating with tumbling laundry inside, water suds sloshing, soap bubbles pressing against the glass from inside. The face remains locked on its original position'
+  },
+  '🍚 전기밥솥': {
+    action: 'releases a massive burst of steam from the steam vent on top (the lid itself stays closed — NO lid opening; the face on the front body stays completely fixed)',
+    reveal: 'powerful steam billowing upward from the top vent, pressure valve hissing loudly, condensation droplets forming around the lid edge'
+  },
+  '🧹 청소기': {
+    action: 'activates its own suction',
+    reveal: 'the intake pulling in visible dust particles, crumbs, hair, small debris from the floor, bristle roller spinning fast at the base, LED power indicator glowing'
+  },
+  '🗑️ 쓰레기통': {
+    action: 'flips its own lid open wide (if the face is on the lid, it rotates upward naturally along with the lid as it tilts back; if the face is on the body, the face stays still and only the lid flips)',
+    reveal: 'the contents inside become visible — crumpled plastic bags, coffee cups, food wrappers piled up, a tiny fly buzzing out'
+  },
+  '☕ 커피잔': {
+    action: 'tilts itself slightly to show its content',
+    reveal: 'thick aromatic steam rising in curls, rich dark coffee with tiny ripples on the surface'
+  },
+  '🍜 컵라면': {
+    action: 'opens its own lid halfway',
+    reveal: 'thick noodle steam billowing out, yellow noodles tangled in broth visible inside'
+  },
+  '📺 TV': {
+    action: 'turns its own screen on',
+    reveal: 'the screen lighting up with actual playing content, screen glow casting flickering light on the walls'
+  },
+  '💼 노트북': {
+    action: 'flips its screen open to the viewer',
+    reveal: 'the display showing a cluttered desktop with open tabs, notification popups'
+  },
+  '🚰 싱크대': {
+    action: 'turns on its faucet',
+    reveal: 'water actively streaming from the tap, dirty dishes piling up with soap suds'
+  },
+  'default': null
+};
+
+function getFunctionReveal(objKr, mood){
+  if(!objKr) return '';
+  let reveal = null;
+  for(const key of Object.keys(FUNCTION_REVEAL)){
+    if(key === 'default') continue;
+    if(objKr.includes(key.replace(/^[^\s]+\s*/, '')) || objKr === key){
+      reveal = FUNCTION_REVEAL[key];
+      break;
+    }
+  }
+  if(!reveal){
+    // 키워드 매칭
+    const k = objKr;
+    if(k.includes('냉장고')) reveal = FUNCTION_REVEAL['🧊 냉장고'];
+    else if(k.includes('세탁기')) reveal = FUNCTION_REVEAL['🌀 세탁기'];
+    else if(k.includes('밥솥')) reveal = FUNCTION_REVEAL['🍚 전기밥솥'];
+    else if(k.includes('청소기')) reveal = FUNCTION_REVEAL['🧹 청소기'];
+    else if(k.includes('쓰레기통')) reveal = FUNCTION_REVEAL['🗑️ 쓰레기통'];
+    else if(k.includes('커피')) reveal = FUNCTION_REVEAL['☕ 커피잔'];
+    else if(k.includes('라면')) reveal = FUNCTION_REVEAL['🍜 컵라면'];
+    else if(k.includes('TV')||k.includes('티비')) reveal = FUNCTION_REVEAL['📺 TV'];
+    else if(k.includes('노트북')) reveal = FUNCTION_REVEAL['💼 노트북'];
+    else if(k.includes('싱크대')) reveal = FUNCTION_REVEAL['🚰 싱크대'];
+  }
+  if(!reveal) return '';
+  const emotionStyle = ANGRY_EMOTION_REVEAL_STYLE[mood] || ANGRY_EMOTION_REVEAL_STYLE.angry;
+  return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
+}
+
 // 카테고리별 주변 ambient motion (너무 잡스럽지 않게 1-2 포인트)
 const AMBIENT_BY_CAT = {
   food:'steam rising from nearby food, condensation droplets slowly forming on cold drinks, a napkin corner barely fluttering',
@@ -1017,6 +1110,8 @@ async function generate(){
     ambientLine + ' ' +
     'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text, no subtitles, no captions, no watermarks, no logos anywhere in the frame.';
 
+  const functionReveal = getFunctionReveal(S.obj, S.mood);
+
   const videoPrompt =
     'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
     'Animate this character with angry upper-body movement.\n' +
@@ -1033,9 +1128,16 @@ async function generate(){
     'The character stays grounded — no floating or jumping.\n' +
     'Camera mostly static with a slight zoom-in.\n' +
     'Exaggerated, Pixar-style animation.\n' +
+    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' +
+      '🚫 CRITICAL FACE PRESERVATION RULES (반드시 지켜야 함):\n' +
+      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. NEVER duplicate, clone, or re-generate the face anywhere else during the animation. NO second face appearing next to or above the opening part.\n' +
+      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): determine which section the face is attached to in the reference image, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
+      '3. If the face-bearing part MUST move or open, then the face moves naturally WITH that part — NEVER jumps to a new location, NEVER splits, NEVER duplicates. If the rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
+      '4. No character should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face.\n' : '') +
     (fnMotion ? 'Surrounding ambient details add a sense of life: '+fnMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
     'Audio: angry adult Korean voice with scolding tone.\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
+    'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
     'No roaring, no monster sounds, no creature sounds.\n' +
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
