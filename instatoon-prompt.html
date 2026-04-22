@@ -495,6 +495,24 @@ const LS_KEY = 'instatoon_api_key';
 const LS_THEME = 'instatoon_theme';
 
 /* ============================================================
+ * TRACKING (anonymous, IP-based)
+ * ============================================================ */
+const APP_ID = 'instatoon';
+const APP_NAME = '인스타툰 생성기';
+function track(action) {
+  try {
+    fetch(`${PROXY_URL}/track/${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appId: APP_ID, name: APP_NAME }),
+      keepalive: true,
+    }).catch(()=>{});
+  } catch(_) {}
+}
+// 페이지 진입 시 1회
+track('visit');
+
+/* ============================================================
  * MOODS (기존 MOODS 재활용 + 인스타툰 특화 추가)
  * ============================================================ */
 const MOODS = {
@@ -1171,6 +1189,7 @@ $('#generateBtn').addEventListener('click', async () => {
     if (!state.script.length) return; // 실패시 중단
   }
 
+  track('generate');
   renderResult();
 });
 
