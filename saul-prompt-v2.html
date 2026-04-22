@@ -844,9 +844,10 @@ function getSizeHint(objKey){
 
 // ═══ 사물의 자연 작동 모션 (세탁기는 돌아가고, 전자레인지는 턴테이블 돌고 등) ═══
 const FUNCTION_MOTION = {
+  // ─── 가전 (작동 모션) ───
   '🌀 세탁기': 'the drum visibly spinning behind the glass door with tumbling laundry inside — actual washing cycle in progress with water suds visible, the machine body gently vibrating from the spin',
-  '🧊 냉장고': 'interior fridge light pulsing faintly when face moves, condensation droplets slowly forming on the door handle, ice cubes occasionally clinking faintly inside',
-  '❄️ 에어컨': 'the front louvers/fins gently oscillating up and down, visible cool mist or air puffing out from the vent, fan blades faintly spinning behind the grill',
+  '🧊 냉장고': 'interior fridge light pulsing faintly when the door cracks open, condensation droplets slowly forming on the door handle, ice cubes occasionally clinking faintly inside',
+  '❄️ 에어컨': 'the front louvers/fins gently oscillating up and down, visible cool mist or air puffing out from the vent, fan blades faintly spinning behind the grill, nearby curtains drifting from the airflow',
   '🚿 샤워기': 'water actively streaming out in a continuous spray, steam rising visibly, water droplets bouncing off the tiled wall',
   '🍚 전기밥솥': 'active steam billowing continuously from the top vent, pressure valve gently rocking, condensation forming on the lid edge',
   '⏰ 알람시계': 'digital numbers faintly flickering/ticking second by second, LED colon blinking, hour hand visibly crawling if analog',
@@ -854,17 +855,89 @@ const FUNCTION_MOTION = {
   '💼 노트북': 'screen content subtly changing/refreshing, notification dot blinking, keyboard backlight pulsing, charging indicator LED breathing',
   '⌨️ 키보드': 'keyboard backlight pulsing in wave pattern, one key occasionally pressing down as if typing by itself',
   '🖥️ 모니터': 'screen content animating naturally (cursor blinking, notifications popping), power LED pulsing, subtle screen flicker',
-  '🧹 청소기': 'bristle roller spinning visibly at the base, dust particles being pulled into the intake, LED power indicator glowing',
+  '🧹 청소기': 'the suction inlet actively pulling in dust particles and small debris from the floor, bristle roller spinning visibly, motor housing vibrating slightly, LED power indicator glowing bright',
   '📠 팩스기': 'paper slowly feeding through with indicator LED blinking, fax receiving light pulsing',
   '🥤 자판기': 'interior LED lights cycling through colors, displayed items occasionally glowing as if highlighted, coin slot LED blinking',
-  '☕ 커피잔': 'steam actively rising and curling upward, tiny ripples in the coffee surface',
+  '🖨️ 프린터': 'paper slowly sliding out with the printer head moving back and forth, indicator LEDs blinking, a faint paper-feed motion ongoing',
+  '📺 TV': 'screen content shifting and animating naturally, screen glow casting flickering colored light onto nearby walls',
+  '📱 스마트폰': 'screen notifications popping up, app icons subtly glowing, status bar updating',
+  '🔌 충전기': 'charging indicator LED pulsing slowly like breathing, faint electrical glow at the connector',
+
+  // ─── 음식·음료 (김/거품/액체) ───
+  '☕ 커피잔': 'thick steam actively rising and curling upward from the coffee, tiny ripples on the coffee surface',
   '🍜 컵라면': 'thick steam rising continuously from the top, noodles occasionally bobbing in the broth',
   '🍱 편의점 도시락': 'visible condensation inside the plastic lid, food steam escaping through the opening',
+  '🍗 치킨': 'visible heat shimmer rising off the crispy fried surface, thin steam wafting upward, oil droplets glistening',
+  '🍕 피자': 'cheese steam rising, melted cheese strings glistening',
+  '🍺 맥주캔': 'condensation droplets sliding slowly down the cold can, tiny bubbles fizzing visible if open',
+  '🥤 아이스아메리카노': 'ice cubes slowly shifting and clinking inside the cup, condensation rolling down the outside',
+  '🍙 삼각김밥': 'plastic wrapper rustling slightly, sesame seeds glistening',
+
+  // ─── 욕실 ───
+  '🚽 변기': 'water in the bowl gently rippling, flush handle quietly twitching, toilet paper roll edge fluttering',
+  '🧼 비누': 'tiny soap bubbles forming and drifting upward, foam slowly building at the base',
+  '🦷 칫솔': 'toothpaste foam bubbling up at the bristle tip, tiny water droplets sliding down',
+  '🧻 화장지 롤': 'roll slowly unspooling slightly, the loose end gently fluttering',
+
+  // ─── 자연·식물·동물 ───
+  '🌵 선인장': 'a tiny butterfly fluttering nearby, dust particles drifting in sunbeams, water droplets glistening on the spines',
+  '🪴 화분': 'leaves gently swaying as if in a soft breeze, tiny insects (bees or butterflies) occasionally fluttering by, dust particles drifting in sunlight, water droplets on leaves',
+  '🌸 벚꽃나무': 'cherry blossom petals slowly drifting down through the air, butterflies and bees flitting between branches, leaves rustling softly',
+  '🌷 꽃': 'butterflies fluttering around the petals, bees hovering and visiting the flower, pollen drifting, petals gently swaying',
+  '🌳 나무': 'leaves rustling in the breeze, birds occasionally fluttering by, sunlight filtering through the canopy creating dappled patterns',
+  '☀️ 태양': 'heat shimmer rising from the ground below, light rays gently shifting, dust motes floating',
+  '🌙 달': 'soft moonlight slowly shifting, distant stars twinkling, faint clouds drifting across slowly',
+  '☁️ 구름': 'cloud edges slowly billowing and shifting shape, sunlight rays piercing through occasionally',
+
+  '🐕 강아지': 'tail wagging visibly, ears twitching, nearby dust particles in sunbeams',
+  '🐈 고양이': 'tail tip twitching, whiskers shifting subtly, eyes occasionally blinking',
+  '🐟 금붕어': 'water in the bowl gently rippling, bubbles slowly rising to the surface, fins fluttering',
+
+  // ─── 주방용품 ───
+  '🍳 프라이팬': 'oil sizzling and bubbling, steam rising, tiny pops and crackle visible from the cooking surface',
+  '🔪 칼': 'the blade edge catching and reflecting light subtly as light shifts',
+
+  // ─── 사무 ───
   '📧 이메일 받은편지함': 'new email notifications popping up on the screen one by one, unread count number incrementing, icons flashing',
+  '🛗 엘리베이터': 'floor number display ticking up or down, button LEDs pulsing, doors gently shifting',
+  '🚦 신호등': 'lights cycling between red, yellow, and green at intervals, glow softly pulsing',
+
+  // ─── 탈것 ───
+  '🚗 자동차': 'exhaust steam puffing in cold air, slight engine vibration, headlight LED softly glowing, tire treads catching light',
+  '🚲 자전거': 'wheel spokes catching light, bell jiggling slightly from breeze, chain glistening',
+  '🛴 킥보드': 'wheels catching reflective glints, handle ribbon fluttering if any',
+
   'default': ''
 };
 function getFunctionMotion(objKey){
-  return FUNCTION_MOTION[objKey] || FUNCTION_MOTION['default'] || '';
+  if(FUNCTION_MOTION[objKey]) return FUNCTION_MOTION[objKey];
+  // 부분 매칭: 키워드 기반 fallback
+  if(!objKey) return '';
+  const k = objKey;
+  if(k.includes('꽃')) return FUNCTION_MOTION['🌷 꽃'];
+  if(k.includes('나무')) return FUNCTION_MOTION['🌳 나무'];
+  if(k.includes('식물')||k.includes('화분')) return FUNCTION_MOTION['🪴 화분'];
+  if(k.includes('세탁기')) return FUNCTION_MOTION['🌀 세탁기'];
+  if(k.includes('냉장고')) return FUNCTION_MOTION['🧊 냉장고'];
+  if(k.includes('에어컨')) return FUNCTION_MOTION['❄️ 에어컨'];
+  if(k.includes('샤워')) return FUNCTION_MOTION['🚿 샤워기'];
+  if(k.includes('밥솥')) return FUNCTION_MOTION['🍚 전기밥솥'];
+  if(k.includes('청소기')) return FUNCTION_MOTION['🧹 청소기'];
+  if(k.includes('TV')||k.includes('티비')) return FUNCTION_MOTION['📺 TV'];
+  if(k.includes('컴퓨터')||k.includes('노트북')) return FUNCTION_MOTION['💼 노트북'];
+  if(k.includes('커피')) return FUNCTION_MOTION['☕ 커피잔'];
+  if(k.includes('라면')) return FUNCTION_MOTION['🍜 컵라면'];
+  if(k.includes('치킨')) return FUNCTION_MOTION['🍗 치킨'];
+  if(k.includes('맥주')) return FUNCTION_MOTION['🍺 맥주캔'];
+  if(k.includes('변기')) return FUNCTION_MOTION['🚽 변기'];
+  if(k.includes('비누')) return FUNCTION_MOTION['🧼 비누'];
+  if(k.includes('칫솔')) return FUNCTION_MOTION['🦷 칫솔'];
+  if(k.includes('강아지')||k.includes('개')) return FUNCTION_MOTION['🐕 강아지'];
+  if(k.includes('고양이')) return FUNCTION_MOTION['🐈 고양이'];
+  if(k.includes('자동차')||k.includes('차')) return FUNCTION_MOTION['🚗 자동차'];
+  if(k.includes('자전거')) return FUNCTION_MOTION['🚲 자전거'];
+  if(k.includes('알람')||k.includes('시계')) return FUNCTION_MOTION['⏰ 알람시계'];
+  return '';
 }
 
 const SCENE_PROPS = {
@@ -1572,24 +1645,32 @@ async function generate(){
   const objEn=S.objEn||S.obj;
   const sizeHint = getSizeHint(S.obj);
 
-  // 사물의 작동 모션 (역동성)
-  const fnMotion = getFunctionMotion(S.obj);
+  // 사물의 작동/주변 모션 자동 생성 — 3단계 폴백
+  // 1단계: 하드코딩된 FUNCTION_MOTION 매핑 (빠르고 검증됨)
+  // 2단계: getScene() 결과에 포함된 motion (Railway scene API가 함께 생성)
+  // 3단계: 그래도 없으면 getMotionAI()로 별도 AI 호출
+  let fnMotion = getFunctionMotion(S.obj);
+  if(!fnMotion && scene && scene.motion){
+    fnMotion = scene.motion;
+  }
+  if(!fnMotion){
+    try {
+      const aiMotion = await getMotionAI(S.objEn||S.obj);
+      if(aiMotion) fnMotion = aiMotion;
+    } catch(e){ console.warn('motion AI failed:', e); }
+  }
+  const ambientLine = fnMotion
+    ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+scene.ambient+'.'
+    : ' Surrounding ambient details add a sense of life: '+scene.ambient+'.';
 
-  const expressionDesc = (S.concept==='tip')
-    ? 'a knowing human-like expression — furrowed brow, slightly pursed lips, eyes that look straight at the viewer'
-    : 'an annoyed human-like expression — sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes';
-
-  const oneArm = (S.concept==='tip') ? 'gesturing upward as if explaining a point' : 'pointed forcefully toward the viewer';
-  const otherArm = (S.concept==='tip') ? 'resting or mid-motion' : 'lifted as if scolding';
-
-  const imagePrompt = 'A '+objEn+' featuring '+expressionDesc+'. ' +
+  const imagePrompt = 'A '+objEn+' featuring an '+(S.concept==='tip'?'expressive instructive':'angry')+' human-like expression — '+(S.concept==='tip'?'arched eyebrows, slightly pursed lips, focused eyes that look straight at the viewer':'sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes')+'. ' +
     'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
-    'One arm is '+oneArm+', while the other is '+otherArm+'. ' +
+    'One arm is '+(S.concept==='tip'?'raised mid-gesture as if explaining a key point':'pointed forcefully toward the viewer')+', while the other is '+(S.concept==='tip'?'open palm raised as if presenting':'lifted as if scolding')+'. ' +
     'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
-    'The '+objEn+' retains its natural texture with fine surface details — the face is drawn directly onto the object surface, do NOT replace or morph it into a real human face. ' +
-    'Scene: '+scene.loc+' — depicted in a realistic setting with natural lighting, '+scene.props+'. ' +
-    (fnMotion ? 'Background liveliness: '+fnMotion+', plus '+scene.ambient+'. ' : 'Background liveliness: '+scene.ambient+'. ') +
-    'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text overlays, no subtitles, no captions, no watermarks.';
+    'The '+objEn+' retains a realistic texture with fine surface details. ' +
+    'Scene: '+scene.loc+' — depicted in a realistic setting with natural lighting, '+scene.props+'.' +
+    ambientLine + ' ' +
+    'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text, no subtitles, no captions, no watermarks, no logos anywhere in the frame.';
 
   // ═ 영상 프롬프트 ═
   const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
@@ -1597,32 +1678,35 @@ async function generate(){
   const scriptForGuide = scriptEN||script;
   const isTip=S.concept==='tip';
 
-  const functionMotion = getFunctionMotion(S.obj);
-  const moveAdjective = isTip ? 'measured, instructive' : 'angry';
+  // 영상 프롬프트도 위에서 구한 fnMotion 재사용 (중복 호출 방지)
+  const functionMotion = fnMotion;
+  const moveAdjective = isTip ? 'expressive instructive' : 'angry';
   const verbingEn = isTip ? 'speaking' : 'yelling';
 
   const videoPrompt =
+    'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
     'Animate this character with '+moveAdjective+' upper-body movement.\n' +
-    'The character is '+verbingEn+' in natural Korean: "'+scriptOriginal+'"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase, do not add or remove words.\n' +
+    'The character is '+verbingEn+': "'+scriptOriginal+'"\n' +
+    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
     'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
     'Gestures naturally match the tone and flow of the dialogue:\n' +
-    'pointing one finger directly at the camera when '+(isTip?'emphasizing a key point':'accusing')+',\n' +
+    'pointing one finger directly at the camera when '+(isTip?'emphasizing':'accusing')+',\n' +
     'raising both open palms in a "'+(isTip?'listen up':'why would you do that')+'" gesture\n' +
-    'when expressing '+(isTip?'a warning or important advice':'frustration or disbelief')+'.\n' +
+    'when expressing '+(isTip?'an important point':'frustration or disbelief')+'.\n' +
     'Gestures should feel reactive and conversational, not mechanical or repetitive.\n' +
     'Mouth opens and closes as if speaking '+(isTip?'firmly':'angrily')+'.\n' +
-    'Eyebrows '+(isTip?'arch with concern, eyes lock onto the viewer':'furrow deeply, eyes bulge with rage')+'.\n' +
+    'Eyebrows '+(isTip?'arch with focus, eyes lock onto the viewer':'furrow deeply, eyes bulge with rage')+'.\n' +
     'The character stays grounded — no floating or jumping.\n' +
     'Camera mostly static with a slight zoom-in.\n' +
     'Exaggerated, Pixar-style animation.\n' +
-    (functionMotion ? 'Background liveliness: '+functionMotion+'. This makes the scene feel alive without distracting from the talking character.\n' : '') +
+    (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
     'Audio: '+(isTip?'calm but firm Korean adult voice':'angry adult Korean voice with scolding tone')+'.\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
     'No roaring, no monster sounds, no creature sounds.\n' +
-    'No text, no subtitles, no captions appearing in the video.\n' +
+    'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
-    'do NOT replace or morph into a real human face';
+    'do NOT replace or morph into a real human face.\n' +
+    'Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -1828,11 +1912,37 @@ async function getScene(object, country){
     return {
       loc: d.loc || '',
       props: d.props || '',
-      ambient: d.ambient || ''
+      ambient: d.ambient || '',
+      motion: d.motion || ''
     };
   } catch(e){
     console.error('[getScene] error:', e);
     return null;
+  }
+}
+
+// 사물별 작동/주변 모션 전용 AI 호출 (FUNCTION_MOTION 매칭 없을 때 fallback)
+async function getMotionAI(object){
+  const apiKey = getApiKey();
+  if(!apiKey) return '';
+  try {
+    const res = await fetch(PROXY_URL + '/openai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: apiKey,
+        system: 'You are a visual motion designer for short-form video. Given any object, describe in ONE English sentence the most visually-satisfying motion that would happen around or from this specific object to make a scene feel alive. If it is a device, describe its functional working motion (e.g. washing machine drum spinning with laundry tumbling, vacuum sucking dust into intake, coffee maker steam rising). If it is a plant or flower, describe butterflies/bees/pollen/leaves motion. If it is food, describe steam/sizzle/condensation. If it is an animal, describe natural movement. If it is decor, describe ambient surrounding life. Be concrete and specific. Output ONLY the motion sentence, no preamble, no quotation marks.',
+        user: 'Object: ' + object + '\n\nWhat is its visually-interesting motion?',
+        max_tokens: 150,
+        temperature: 0.7
+      })
+    });
+    if(!res.ok) return '';
+    const d = await res.json();
+    return (d.text || '').trim().replace(/^["']|["']$/g, '');
+  } catch(e){
+    console.error('[getMotionAI] error:', e);
+    return '';
   }
 }
 
