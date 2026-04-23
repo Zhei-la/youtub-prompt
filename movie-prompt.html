@@ -149,8 +149,8 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
     <div class="step-num">2</div>
     <div class="step-title">영화 주제</div>
     <div class="step-actions">
-      <button class="btn-sm" onclick="genTopics()">✨ AI 생성</button>
-      <button class="btn-sm" onclick="genTopics(true)">🔄 재생성</button>
+      <button class="btn-sm" onclick="genTopics()">✨ AI 더 생성</button>
+      <button class="btn-sm" onclick="genTopics(true)">🔄 전체 재생성</button>
     </div>
   </div>
   <div class="chips" id="topicChips">
@@ -225,6 +225,190 @@ const GENRES = [
   {val:'kdrama', label:'🇰🇷 K-드라마'},{val:'wuxia', label:'🗡️ 무협'},{val:'disaster', label:'🌪️ 재난'}
 ];
 
+// 장르별 프리셋 주제 (장르 선택하면 바로 표시)
+const PRESET_TOPICS = {
+  sf: [
+    {title:'우주 대모험', desc:'미지의 은하를 탐험하는 우주 탐사선'},
+    {title:'AI 반란', desc:'인공지능이 인류를 위협하는 디스토피아'},
+    {title:'화성 식민지', desc:'화성 이주민들의 생존 이야기'},
+    {title:'기억을 파는 상점', desc:'기억을 거래하는 미래 도시'},
+    {title:'외계인 최초 접촉', desc:'지구에 나타난 외계 생명체'},
+    {title:'시간 순찰대', desc:'시간 흐름을 지키는 요원'},
+    {title:'복제인간의 진실', desc:'내가 진짜인지 복제인지 모르는 남자'},
+    {title:'로봇 형사', desc:'인간 감정을 학습한 수사 안드로이드'},
+  ],
+  fantasy: [
+    {title:'마법사의 귀환', desc:'천년 봉인에서 깨어난 대마법사'},
+    {title:'드래곤 라이더', desc:'마지막 드래곤과 인간 소녀의 동행'},
+    {title:'잃어버린 왕국', desc:'전설 속 왕국을 찾아나선 용사'},
+    {title:'엘프 사냥꾼', desc:'숲의 비밀을 지키는 엘프 전사'},
+    {title:'저주받은 검', desc:'영혼을 먹는 검의 주인이 된 소년'},
+    {title:'신들의 게임', desc:'신들의 체스판이 된 인간 세계'},
+    {title:'얼음의 여왕', desc:'왕국에 영원한 겨울을 내린 여왕'},
+    {title:'마녀 재판', desc:'마녀로 몰린 소녀의 진짜 정체'},
+  ],
+  thriller: [
+    {title:'지하실의 비밀', desc:'옆집 지하실에서 들리는 이상한 소리'},
+    {title:'새벽 3시의 전화', desc:'매일 같은 시간 걸려오는 모르는 번호'},
+    {title:'사라진 아내', desc:'아내가 흔적도 없이 사라진 날'},
+    {title:'층간소음의 진실', desc:'위층 소음이 사람 소리가 아니었다'},
+    {title:'낯선 택배', desc:'내가 주문하지 않은 이상한 소포'},
+    {title:'CCTV의 이상한 그림자', desc:'무인 편의점 영상에 찍힌 것'},
+    {title:'택시의 마지막 손님', desc:'심야 택시에 탄 이상한 승객'},
+    {title:'사진 속 낯선 사람', desc:'가족 사진에 찍힌 모르는 얼굴'},
+  ],
+  romance: [
+    {title:'편지의 주인공', desc:'50년 전 누군가가 쓴 러브레터'},
+    {title:'첫사랑의 아들', desc:'짝사랑했던 사람의 아이를 가르치게 됨'},
+    {title:'비 오는 날의 우산', desc:'매번 같은 시간 같은 자리 그 남자'},
+    {title:'카페 단골 손님', desc:'매일 오는 손님의 비밀스러운 일기'},
+    {title:'기억을 잃은 남편', desc:'사고 후 나를 기억하지 못하는 남편'},
+    {title:'유학생의 연애편지', desc:'이역만리 편지로 시작된 사랑'},
+    {title:'웨딩 플래너의 딜레마', desc:'결혼식 준비 중인 신부의 옛 연인'},
+    {title:'마지막 환자', desc:'시한부 환자와 의사의 사랑'},
+  ],
+  action: [
+    {title:'은퇴한 요원', desc:'평범한 삶을 깨는 과거의 그림자'},
+    {title:'딸의 납치', desc:'사라진 딸을 찾는 전직 특수부대 아빠'},
+    {title:'마지막 경호원', desc:'대통령을 노리는 암살범'},
+    {title:'총알의 복수', desc:'아내를 잃은 남자의 끝없는 추적'},
+    {title:'지하세계의 왕', desc:'조직에서 배신당한 전직 보스'},
+    {title:'빌딩 점거 사건', desc:'고층 빌딩에 갇힌 생존자들'},
+    {title:'24시간', desc:'하루 안에 폭탄을 해체해야 한다'},
+    {title:'검은 정부', desc:'비밀 요원의 목숨을 건 추격전'},
+  ],
+  horror: [
+    {title:'폐가의 밤', desc:'유튜버가 들어간 흉가에서 생긴 일'},
+    {title:'거울 속의 나', desc:'거울 속 내가 나를 따라하지 않는다'},
+    {title:'인형의 눈', desc:'할머니가 물려준 오래된 인형'},
+    {title:'엘리베이터의 13층', desc:'있어서는 안 되는 층'},
+    {title:'새벽 미사', desc:'아무도 없는 성당의 찬송가'},
+    {title:'할머니의 유언', desc:'절대 열어보지 말라는 상자'},
+    {title:'병원 302호', desc:'환자가 없는데 벨이 울린다'},
+    {title:'아이의 친구', desc:'딸이 보이지 않는 친구와 논다'},
+  ],
+  mystery: [
+    {title:'밀실 살인', desc:'들어갈 수 없는 방에서 일어난 살인'},
+    {title:'사라진 마을', desc:'지도에서 없어진 마을의 진실'},
+    {title:'살인 예고장', desc:'매일 도착하는 손편지의 주인'},
+    {title:'탐정의 마지막 사건', desc:'은퇴 직전 받은 의뢰'},
+    {title:'7명의 용의자', desc:'저택에 갇힌 7명 중 범인은?'},
+    {title:'쌍둥이의 비밀', desc:'죽은 줄 알았던 동생의 흔적'},
+    {title:'오래된 일기장', desc:'50년 전 실종 사건의 단서'},
+    {title:'가면의 남자', desc:'정체를 숨긴 채 나타나는 이상한 손님'},
+  ],
+  drama: [
+    {title:'마지막 편지', desc:'죽은 어머니가 남긴 한 통의 편지'},
+    {title:'돌아온 아들', desc:'20년 만에 집에 온 아들의 비밀'},
+    {title:'시한부의 버킷리스트', desc:'남은 100일, 하고 싶은 것들'},
+    {title:'어느 택시기사의 하루', desc:'평범한 하루가 특별해지는 순간'},
+    {title:'재회', desc:'헤어진 지 10년 만에 만난 두 사람'},
+    {title:'아버지의 노트', desc:'아버지가 남긴 낡은 수첩의 기록'},
+    {title:'마지막 수업', desc:'퇴임을 앞둔 선생님의 마지막 시간'},
+    {title:'엄마의 청춘', desc:'엄마의 젊은 시절 사랑 이야기'},
+  ],
+  crime: [
+    {title:'검사의 선택', desc:'아버지가 피의자가 된 사건'},
+    {title:'위장 잠입', desc:'조직에 잠입한 경찰의 이중생활'},
+    {title:'마약 카르텔', desc:'거대 조직과 맞서는 형사'},
+    {title:'부패한 도시', desc:'정의로운 형사의 외로운 싸움'},
+    {title:'연쇄살인 프로파일러', desc:'범인의 심리를 읽는 수사관'},
+    {title:'증거 조작', desc:'누명을 쓴 남자의 진실 추적'},
+    {title:'경찰 내부자', desc:'조직에 배신자가 있다'},
+    {title:'마지막 한 건', desc:'은퇴 전 받은 최악의 사건'},
+  ],
+  historical: [
+    {title:'왕의 그림자', desc:'왕위를 노리는 세자의 비밀'},
+    {title:'궁녀의 일기', desc:'조선 왕실의 숨겨진 진실'},
+    {title:'무명 의병', desc:'나라를 위해 싸운 이름 없는 영웅'},
+    {title:'사도세자의 최후', desc:'뒤주에 갇힌 비운의 세자'},
+    {title:'실록에 없는 사건', desc:'역사에 기록되지 못한 밤'},
+    {title:'마지막 환관', desc:'조선의 끝자락을 본 환관'},
+    {title:'기생의 사랑', desc:'양반과 기생의 금지된 연애'},
+    {title:'임금의 암살자', desc:'왕을 노리는 자객의 정체'},
+  ],
+  apocalypse: [
+    {title:'마지막 인류', desc:'지구에 남은 단 한 명의 사람'},
+    {title:'좀비 학교', desc:'폐쇄된 학교에서 살아남기'},
+    {title:'방주', desc:'홍수 속 생존자들의 선택'},
+    {title:'침묵의 도시', desc:'소리를 내면 죽는 세상'},
+    {title:'감염자의 딸', desc:'변해가는 딸을 지키는 아빠'},
+    {title:'최후의 정원', desc:'멸망한 세계의 마지막 씨앗'},
+    {title:'지하벙커 Day 365', desc:'지하에 갇힌 지 1년'},
+    {title:'빛이 사라진 날', desc:'태양이 꺼진 후의 3일'},
+  ],
+  cyberpunk: [
+    {title:'해커의 반란', desc:'거대 기업을 무너뜨리려는 천재 해커'},
+    {title:'기억을 파는 여자', desc:'타인의 기억을 거래하는 브로커'},
+    {title:'네온시티의 탐정', desc:'미래 도시의 사이버 범죄'},
+    {title:'안드로이드의 꿈', desc:'사랑을 느끼는 AI의 이야기'},
+    {title:'데이터 사냥꾼', desc:'잃어버린 기억 데이터를 찾아서'},
+    {title:'사이보그 경찰', desc:'절반은 기계, 절반은 인간'},
+    {title:'VR 중독자', desc:'가상세계에 갇혀버린 사람'},
+    {title:'코드의 노예', desc:'기업에 소유된 프로그래머'},
+  ],
+  timetravel: [
+    {title:'과거로 간 편지', desc:'어제의 나에게 편지를 보낸다면'},
+    {title:'타임리프 1999', desc:'중학생으로 돌아간 40대 남자'},
+    {title:'같은 날의 반복', desc:'매일 같은 하루를 다시 사는 여자'},
+    {title:'미래의 나를 만났다', desc:'10년 후 내가 경고하러 왔다'},
+    {title:'시간을 파는 가게', desc:'1시간을 거래하는 이상한 상점'},
+    {title:'잃어버린 30분', desc:'기억나지 않는 30분의 비밀'},
+    {title:'과거의 선택', desc:'되돌릴 수 있다면 무엇을 바꿀까'},
+    {title:'시계탑의 비밀', desc:'멈춘 시계가 움직이기 시작했다'},
+  ],
+  superhero: [
+    {title:'평범한 히어로', desc:'능력을 숨기고 사는 회사원'},
+    {title:'빌런의 아들', desc:'악당의 자식이 영웅이 되다'},
+    {title:'초능력 각성', desc:'평범한 고등학생의 갑작스런 힘'},
+    {title:'은퇴한 영웅', desc:'15년 전 은퇴한 영웅의 복귀'},
+    {title:'마지막 히어로', desc:'전멸한 동료들 사이 홀로 남은 자'},
+    {title:'히어로 아카데미', desc:'재능 없는 소년의 영웅 수업'},
+    {title:'능력을 잃은 날', desc:'초능력이 사라진 영웅의 삶'},
+    {title:'영웅의 이중생활', desc:'낮에는 평범, 밤에는 히어로'},
+  ],
+  magical: [
+    {title:'마법 학교의 전학생', desc:'평범한 소녀가 마법 학교에 가다'},
+    {title:'이세계 소환사', desc:'다른 세계로 빨려 들어간 청년'},
+    {title:'계약 마법사', desc:'악마와 계약한 마법사의 대가'},
+    {title:'잃어버린 마법서', desc:'금지된 주문이 적힌 책'},
+    {title:'요정의 선물', desc:'소원을 이뤄주는 요정의 조건'},
+    {title:'마녀의 후예', desc:'마녀의 피가 흐르는 소녀'},
+    {title:'고양이 마법사', desc:'고양이가 된 전직 마법사'},
+    {title:'마법 상점', desc:'마법 물품을 파는 수상한 상점'},
+  ],
+  kdrama: [
+    {title:'재벌가의 며느리', desc:'평범한 여자가 재벌가에 시집간다'},
+    {title:'회장님의 비밀', desc:'비서가 된 여자가 본 회장의 이중생활'},
+    {title:'아빠의 재혼', desc:'새엄마의 수상한 과거'},
+    {title:'의대생의 연애', desc:'응급실에서 시작된 로맨스'},
+    {title:'출생의 비밀', desc:'뒤바뀐 운명의 두 사람'},
+    {title:'복수의 여왕', desc:'10년 전 상처받은 여자의 귀환'},
+    {title:'청와대 행정관', desc:'정치판에 뛰어든 젊은 엘리트'},
+    {title:'이혼 변호사', desc:'이혼 전문 변호사의 사연 있는 사건'},
+  ],
+  wuxia: [
+    {title:'무림 맹주의 딸', desc:'납치된 맹주의 외동딸을 찾아서'},
+    {title:'잃어버린 비급', desc:'전설의 무공이 적힌 책을 둘러싼 혈투'},
+    {title:'암살단의 후예', desc:'대대로 암살자인 집안의 소녀'},
+    {title:'독문파의 복수', desc:'멸문당한 문파의 마지막 제자'},
+    {title:'무당파의 비밀', desc:'금지된 무공을 익힌 제자'},
+    {title:'화산의 검', desc:'천하제일검을 노리는 자들'},
+    {title:'마교의 부활', desc:'봉인된 마교 교주가 깨어나다'},
+    {title:'낭인의 길', desc:'정파도 사파도 아닌 방랑 검객'},
+  ],
+  disaster: [
+    {title:'대지진 발생', desc:'도심을 덮친 강진 속 생존자들'},
+    {title:'빌딩 화재', desc:'고층 빌딩에 갇힌 사람들'},
+    {title:'해일', desc:'해안 도시를 삼킨 거대 파도'},
+    {title:'비행기 추락', desc:'무인도에 추락한 승객들의 생존'},
+    {title:'지하철 붕괴', desc:'지하 터널에 갇힌 승객들'},
+    {title:'화산 폭발', desc:'잠든 화산이 깨어난 날'},
+    {title:'바이러스 유출', desc:'연구소에서 새어나온 치명적 병원체'},
+    {title:'태풍의 눈', desc:'초강력 태풍 속 마을 사수'},
+  ],
+};
+
 const S = {
   genre:null, genreVal:null, topic:null, topicDesc:'',
   mood:null, moodLabel:'',
@@ -262,6 +446,47 @@ async function callAI(system, user, maxTokens){
   return d.text||'';
 }
 
+// 강력한 JSON 파서 (GPT의 변덕 대응)
+function robustParseJSON(text){
+  if(!text)throw new Error('빈 응답');
+
+  // 1차: 기본 정제
+  let cleaned=text.replace(/```json|```/g,'').trim();
+
+  // 코드블록 마커 앞뒤 제거
+  const jsonMatch=cleaned.match(/\{[\s\S]*\}/);
+  if(jsonMatch)cleaned=jsonMatch[0];
+
+  // 시도 1: 그대로 파싱
+  try{return JSON.parse(cleaned)}catch(e1){}
+
+  // 시도 2: 트레일링 콤마 제거 (},} 같은 패턴)
+  let fixed=cleaned.replace(/,(\s*[}\]])/g,'$1');
+  try{return JSON.parse(fixed)}catch(e2){}
+
+  // 시도 3: 문자열 내부 줄바꿈을 \n으로 변환 (GPT가 종종 실제 개행을 넣음)
+  fixed=cleaned.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g,(match)=>{
+    return match.replace(/[\n\r\t]/g,(c)=>({'\n':'\\n','\r':'\\r','\t':'\\t'})[c]);
+  });
+  fixed=fixed.replace(/,(\s*[}\]])/g,'$1');
+  try{return JSON.parse(fixed)}catch(e3){}
+
+  // 시도 4: 스마트 따옴표 → 일반 따옴표
+  fixed=cleaned.replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'");
+  fixed=fixed.replace(/,(\s*[}\]])/g,'$1');
+  try{return JSON.parse(fixed)}catch(e4){}
+
+  // 시도 5: 홑따옴표를 쌍따옴표로 (JSON에선 쌍따옴표만 유효)
+  // 키: 'key': → "key":
+  fixed=cleaned.replace(/'([^']*)'(\s*:)/g,'"$1"$2');
+  fixed=fixed.replace(/,(\s*[}\]])/g,'$1');
+  try{return JSON.parse(fixed)}catch(e5){}
+
+  // 모든 시도 실패 — 원본 텍스트 일부 보여주며 에러
+  const preview=cleaned.substring(0,300);
+  throw new Error('JSON 파싱 실패 (AI 응답이 잘못된 형식). 다시 시도해주세요.\n\n응답 미리보기: '+preview);
+}
+
 function toggleDark(){
   document.body.classList.toggle('dark');
   const isDark=document.body.classList.contains('dark');
@@ -272,9 +497,10 @@ function act(id){const e=document.getElementById(id);if(e){e.classList.add('acti
 function done(id){const e=document.getElementById(id);if(e)e.classList.add('active','done')}
 function showErr(msg){
   const e=document.getElementById('errMsg');
-  e.textContent='❌ '+msg;e.style.display='block';
+  e.innerHTML='❌ '+msg.replace(/\n/g,'<br>');
+  e.style.display='block';
   window.scrollTo({top:0,behavior:'smooth'});
-  setTimeout(()=>e.style.display='none',8000);
+  setTimeout(()=>e.style.display='none',10000);
 }
 
 function showLoading(text,sub){
@@ -300,7 +526,26 @@ function selGenre(el){
   document.querySelectorAll('#genreChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   S.genre=el.dataset.label;S.genreVal=el.dataset.val;S.topic=null;
-  document.getElementById('topicChips').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">✨ AI 생성 누르거나 직접 입력하세요.</div>';
+
+  // 프리셋 주제 자동 표시
+  const preset=PRESET_TOPICS[S.genreVal]||[];
+  const wrap=document.getElementById('topicChips');
+  wrap.innerHTML='';
+  if(preset.length>0){
+    const hdr=document.createElement('div');
+    hdr.style.cssText='width:100%;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px;';
+    hdr.innerHTML='🎯 추천 주제 '+preset.length+'개 — 클릭해서 선택 or ✨AI 생성으로 더 보기';
+    wrap.appendChild(hdr);
+    preset.forEach(t=>{
+      const c=document.createElement('div');
+      c.className='chip';c.textContent=t.title;c.title=t.desc;
+      c.onclick=()=>selTopic(c,t.title,t.desc);
+      wrap.appendChild(c);
+    });
+  }else{
+    wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">✨ AI 생성 누르거나 직접 입력하세요.</div>';
+  }
+
   done('s1');act('s2');updateSummary();
 }
 function randomGenre(){
@@ -312,16 +557,32 @@ async function genTopics(regen){
   if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
   if(!S.genre){showErr('먼저 장르 선택');return}
   const wrap=document.getElementById('topicChips');
-  wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;"><span class="spinner"></span> AI가 주제 생성 중...</div>';
-  showLoading('✨ 주제 생성 중...','AI가 '+S.genre+' 장르 주제 8개를 만들고 있어요.');
-  try{
-    const sys='너는 영화 시나리오 기획자다. 장르에 맞는 흥미롭고 독창적인 영화 주제 8개를 JSON으로 생성. 클리셰 피하고 후킹 강하게.\n포맷: {"topics":[{"title":"주제(15자 내)","desc":"한 줄 요약"}]}\nJSON만.';
-    const user='장르: '+S.genre+'\n\n흥미로운 주제 8개. '+(regen?'이전과 완전 다른 방향으로.':'');
-    const r=await callAI(sys,user,1200);
-    let cleaned=r.replace(/```json|```/g,'').trim();
-    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
-    const d=JSON.parse(cleaned);
+
+  if(regen){
     wrap.innerHTML='';
+  }
+  const loadingDiv=document.createElement('div');
+  loadingDiv.id='topicLoading';
+  loadingDiv.style.cssText='width:100%;font-size:12px;color:var(--muted);padding:8px;';
+  loadingDiv.innerHTML='<span class="spinner"></span> AI가 주제 '+(regen?'재생성':'추가 생성')+' 중...';
+  wrap.appendChild(loadingDiv);
+
+  showLoading('✨ 주제 '+(regen?'재':'추가')+'생성 중...','AI가 '+S.genre+' 장르에 맞는 새로운 주제 10개를 만들고 있어요.');
+  try{
+    const existingTitles=Array.from(wrap.querySelectorAll('.chip')).map(c=>c.textContent.replace(/^✏️ /,''));
+    const sys='너는 영화 시나리오 기획자다. 장르에 맞는 흥미롭고 독창적인 영화 주제 10개를 JSON으로 생성. 클리셰 피하고 후킹 강하게. 기존 주제와 절대 중복되지 않게.\n포맷: {"topics":[{"title":"주제(15자 내)","desc":"한 줄 요약"}]}\nJSON만.';
+    const user='장르: '+S.genre+'\n\n'+(existingTitles.length>0?'[이미 있는 주제 - 절대 중복 금지]\n'+existingTitles.join(', ')+'\n\n':'')+'위와 다른 새롭고 흥미로운 주제 10개 생성.'+(regen?' 완전히 다른 방향으로.':'');
+    const r=await callAI(sys,user,1500);
+    const d=robustParseJSON(r);
+
+    const lo=document.getElementById('topicLoading');
+    if(lo)lo.remove();
+
+    const hdr=document.createElement('div');
+    hdr.style.cssText='width:100%;font-size:11px;color:var(--accent);font-weight:700;margin:8px 0 4px;';
+    hdr.innerHTML='✨ AI '+(regen?'재':'추가 ')+'생성 주제';
+    wrap.appendChild(hdr);
+
     d.topics.forEach(t=>{
       const c=document.createElement('div');
       c.className='chip';c.textContent=t.title;c.title=t.desc;
@@ -329,7 +590,12 @@ async function genTopics(regen){
       wrap.appendChild(c);
     });
   }catch(e){
-    wrap.innerHTML='<div style="font-size:12px;color:#c33;padding:8px;">❌ '+e.message+'</div>';
+    const lo=document.getElementById('topicLoading');
+    if(lo)lo.remove();
+    const err=document.createElement('div');
+    err.style.cssText='width:100%;font-size:12px;color:#c33;padding:8px;';
+    err.textContent='❌ '+e.message;
+    wrap.appendChild(err);
   }finally{
     hideLoading();
   }
@@ -414,6 +680,15 @@ async function genScript(){
 - 시간 흐름 자연스럽게 (Scene 1 → 2 → ... → 6)
 - 배경/분위기/조명 일관성 유지
 
+⚠️ JSON 출력 엄격 규칙 (반드시 지켜야 함):
+1. 반드시 valid JSON만 출력 (앞뒤 설명, 코드블록 마커 금지)
+2. 모든 문자열은 쌍따옴표("...")로 감쌀 것, 홑따옴표 금지
+3. 문자열 안에 쌍따옴표가 들어갈 땐 반드시 \\" 로 이스케이프
+4. 문자열 안에 줄바꿈 넣지 말 것 (필요하면 \\n 사용)
+5. 마지막 요소 뒤 쉼표(trailing comma) 금지
+6. 모든 키에 콜론(:) 빠뜨리지 말 것
+7. 대사는 반드시 한 줄로 작성 (실제 엔터 사용 금지)
+
 📦 출력 JSON ONLY:
 {
   "title": "영화 제목 (한국어)",
@@ -450,9 +725,7 @@ ${S.topicDesc?'주제 설명: '+S.topicDesc:''}
 1분 (6 Scene × 10초) 대본 생성. JSON만.`;
 
     const r=await callAI(sys,user,5000);
-    let cleaned=r.replace(/```json|```/g,'').trim();
-    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
-    const d=JSON.parse(cleaned);
+    const d=robustParseJSON(r);
 
     S.movieMeta={
       title:d.title, subtitle:d.subtitle, theme:d.theme,
@@ -467,8 +740,8 @@ ${S.topicDesc?'주제 설명: '+S.topicDesc:''}
     document.getElementById('scenesWrap').scrollIntoView({behavior:'smooth',block:'start'});
     updateSummary();
   }catch(e){
-    showErr('대본 생성 실패: '+e.message);
-    console.error(e);
+    showErr('대본 생성 실패: '+e.message+'\n\n한번 더 시도해주세요. 같은 에러 반복되면 주제를 다른 것으로 바꿔보세요.');
+    console.error('대본 생성 에러:',e);
   }finally{
     btn.disabled=false;
     btn.classList.remove('loading');
@@ -524,7 +797,14 @@ async function continueScript(){
   ]
 }
 
-Scene num은 ${S.scenes.length+1}부터 ${S.scenes.length+6}까지.`;
+Scene num은 ${S.scenes.length+1}부터 ${S.scenes.length+6}까지.
+
+⚠️ JSON 출력 엄격 규칙:
+1. valid JSON만 출력 (앞뒤 설명, 코드블록 마커 금지)
+2. 쌍따옴표("...")만 사용, 홑따옴표 금지
+3. 문자열 안 쌍따옴표는 \\" 로 이스케이프
+4. 문자열 안 줄바꿈 금지 (\\n 사용)
+5. trailing comma 금지`;
 
     const user=`[영화 메타]
 제목: ${S.movieMeta.title}
@@ -544,9 +824,7 @@ ${recentScenes}
 ⬇️ 위에서 자연스럽게 이어지는 Scene ${S.scenes.length+1}~${S.scenes.length+6} 생성. JSON만.`;
 
     const r=await callAI(sys,user,4500);
-    let cleaned=r.replace(/```json|```/g,'').trim();
-    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
-    const d=JSON.parse(cleaned);
+    const d=robustParseJSON(r);
 
     (d.scenes||[]).forEach(s=>{
       S.scenes.push({...s,prompts:null});
@@ -638,7 +916,14 @@ async function openScene(idx){
   "prompt_runway": "...",
   "prompt_kling": "...",
   "prompt_flow": "..."
-}`;
+}
+
+⚠️ JSON 엄격 규칙:
+1. valid JSON만 (앞뒤 설명/코드블록 마커 금지)
+2. 쌍따옴표("...")만, 홑따옴표 금지
+3. 프롬프트 내부 쌍따옴표는 \\" 로 이스케이프
+4. 문자열 안 실제 줄바꿈 금지 (\\n 사용)
+5. trailing comma 금지`;
 
     const user=`[영화 컨텍스트]
 제목: ${S.movieMeta?.title||''}
@@ -658,9 +943,7 @@ ${s.narration?'내레이션: '+s.narration:''}
 ⬆️ 위 Scene을 4종 플랫폼용 10초 영상 프롬프트로 변환. JSON만.`;
 
     const r=await callAI(sys,user,2500);
-    let cleaned=r.replace(/```json|```/g,'').trim();
-    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
-    const d=JSON.parse(cleaned);
+    const d=robustParseJSON(r);
     s.prompts=d;
     s._generating=false;
     hideLoading();
@@ -835,3 +1118,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
