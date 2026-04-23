@@ -182,6 +182,23 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
   </div>
 </div>
 
+<div class="step" id="s4">
+  <div class="step-hd">
+    <div class="step-num">4</div>
+    <div class="step-title">비주얼 스타일</div>
+  </div>
+  <div class="chips" id="visualChips">
+    <div class="chip active" data-val="cinematic" data-label="📸 실사 영화" onclick="selVisual(this)">📸 실사 영화</div>
+    <div class="chip" data-val="anime" data-label="🌸 애니메이션" onclick="selVisual(this)">🌸 애니메이션</div>
+    <div class="chip" data-val="pixar" data-label="🎬 픽사 3D" onclick="selVisual(this)">🎬 픽사 3D</div>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6;">
+    💡 <b>📸 실사 영화</b>: 한국 배우 프로필 스타일, 자연스러운 인물 촬영<br>
+    💡 <b>🌸 애니메이션</b>: 고퀄리티 판타지 일러스트 (타이탄클래스/일본 라노벨 스타일)<br>
+    💡 <b>🎬 픽사 3D</b>: Disney/Pixar 3D 애니, 둥근 얼굴 · 큰 눈 · 귀여운 비율
+  </div>
+</div>
+
 <button class="big-btn" id="genScriptBtn" onclick="genScript()">✨ 1분 대본 생성 (6 Scene × 10초)</button>
 
 <div class="summary-box" id="summaryBox"></div>
@@ -412,6 +429,7 @@ const PRESET_TOPICS = {
 const S = {
   genre:null, genreVal:null, topic:null, topicDesc:'',
   mood:null, moodLabel:'',
+  visual:'cinematic', visualLabel:'📸 실사 영화',
   movieMeta:null,  scenes:[],  scriptId:null,
 };
 
@@ -672,17 +690,24 @@ function selMood(el){
   document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   S.mood=el.dataset.val;S.moodLabel=el.dataset.label;
-  done('s3');updateSummary();
+  done('s3');act('s4');updateSummary();
 }
 function randomMood(){
   const chips=document.querySelectorAll('#moodChips .chip');
   selMood(chips[Math.floor(Math.random()*chips.length)]);
+}
+function selVisual(el){
+  document.querySelectorAll('#visualChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.visual=el.dataset.val;S.visualLabel=el.dataset.label;
+  done('s4');updateSummary();
 }
 function updateSummary(){
   const p=[];
   if(S.genre)p.push('장르: <b>'+S.genre+'</b>');
   if(S.topic)p.push('주제: <b>'+S.topic+'</b>');
   if(S.moodLabel)p.push('분위기: <b>'+S.moodLabel+'</b>');
+  if(S.visualLabel)p.push('비주얼: <b>'+S.visualLabel+'</b>');
   if(S.scenes&&S.scenes.length>0)p.push('Scene: <b>'+S.scenes.length+'개 ('+(S.scenes.length*10)+'초)</b>');
   document.getElementById('summaryBox').innerHTML=p.length?p.join(' · '):'선택한 옵션이 여기에 표시됩니다.';
 }
@@ -710,6 +735,24 @@ async function genScript(){
       hopeful:'희망찬 따뜻한',mystery:'미스터리 음산',action:'액션 긴박감',
       romantic:'로맨틱 설렘',surreal:'초현실 몽환',comedy:'코미디 유쾌',thriller:'스릴러 긴장'
     };
+
+    const visualStyleMap = {
+      cinematic: `REALISTIC LIVE-ACTION KOREAN FILM STYLE.
+Visual keywords: "photorealistic cinematic film, Korean drama/movie aesthetic, real actors with natural Korean facial features, professional DSLR cinematography, 35mm film grain, natural lighting, shallow depth of field, authentic human skin texture, realistic hair and fabrics, documentary-quality realism, like Parasite or Squid Game visual style".
+CHARACTERS: Must look like real Korean actors/actresses (ref. actor profile photos).
+NEVER: anime, 3D cartoon, Pixar, illustrated, drawn.`,
+
+      anime: `HIGH-QUALITY ANIME/FANTASY ILLUSTRATION STYLE (Korean webtoon/Japanese LN aesthetic).
+Visual keywords: "detailed anime illustration, semi-realistic painted anime style, dramatic fantasy character art, intricate costume details, glowing magical effects, cinematic lighting with rim light, sharp anime facial features with large expressive eyes, flowing detailed hair, elegant fantasy outfits (like '타이탄클래스' or Korean light novel illustrations), painterly shading, vibrant but deep color palette, dynamic composition".
+CHARACTERS: Look like fantasy game/light novel character artwork — intricate armor/clothing, dramatic poses, beautiful detailed faces.
+NEVER: photorealistic photo, 3D render, Pixar cartoon, simple flat anime.`,
+
+      pixar: `DISNEY/PIXAR 3D ANIMATION STYLE.
+Visual keywords: "Pixar-quality 3D animated film, stylized 3D character with oversized round head, large expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, vibrant saturated colors, smooth 3D surfaces, Disney/Pixar movie aesthetic like Inside Out/Encanto/Zootopia, adorable character design with simplified cartoon features, high-quality CGI rendering".
+CHARACTERS: Super cute 3D cartoon style — big heads, tiny bodies, huge eyes, soft rounded features.
+NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.`
+    };
+    const currentStyle=visualStyleMap[S.visual]||visualStyleMap.cinematic;
 
     const sys=`너는 영화 시나리오 작가다. 1분짜리 영화 도입부를 작성한다.
 
@@ -764,9 +807,11 @@ async function genScript(){
 
 🎯 품질:
 - 분위기: ${moodMap[S.mood]}
-- 비주얼: cinematic live-action realistic film, 35mm film grain
+- 비주얼 스타일 (필수 준수): ${S.visualLabel}
+${currentStyle}
 - 클리셰 피하고 후킹 강하게
-- 캐릭터 외형/의상 영어로 구체적 묘사 (후속 Scene에서 일관성 유지용)`;
+- 캐릭터 외형/의상 영어로 구체적 묘사 (후속 Scene에서 일관성 유지용)
+- visual_style 필드에는 위 스타일 가이드의 MANDATORY 키워드를 그대로 반영`;
 
     const user=`장르: ${S.genre}
 주제: ${S.topic}
@@ -781,7 +826,8 @@ ${S.topicDesc?'주제 설명: '+S.topicDesc:''}
     S.movieMeta={
       title:d.title, subtitle:d.subtitle, theme:d.theme,
       world:d.world, protagonist:d.protagonist,
-      supporting:d.supporting||[], visual_style:d.visual_style
+      supporting:d.supporting||[], visual_style:d.visual_style,
+      visual:S.visual, visualLabel:S.visualLabel
     };
     S.scenes=d.scenes.map(s=>({...s,prompts:null}));
     S.scriptId=null;
@@ -862,7 +908,7 @@ Scene num은 ${S.scenes.length+1}부터 ${S.scenes.length+6}까지.
 세계관: ${S.movieMeta.world}
 주인공: ${S.movieMeta.protagonist.name} — ${S.movieMeta.protagonist.desc}
 ${S.movieMeta.supporting.length>0?'조연: '+S.movieMeta.supporting.map(s=>s.name+' ('+s.desc+')').join(', '):''}
-비주얼: ${S.movieMeta.visual_style}
+비주얼 스타일 (반드시 유지): ${S.movieMeta.visualLabel||''} — ${S.movieMeta.visual_style}
 
 [최근 3 Scene 요약]
 ${recentScenes}
@@ -949,15 +995,31 @@ async function openScene(idx){
   overlay.classList.add('show');
 
   try{
+    // 비주얼 스타일 가이드
+    const visualStyleMap={
+      cinematic:`REALISTIC LIVE-ACTION KOREAN FILM. MANDATORY: "photorealistic cinematic, Korean drama aesthetic, real actors, 35mm film, natural lighting, DSLR quality". NEVER: anime, cartoon, 3D render, illustrated.`,
+      anime:`HIGH-QUALITY ANIME FANTASY ILLUSTRATION. MANDATORY: "detailed anime illustration, semi-realistic painted anime style, fantasy character art, intricate costumes, dramatic lighting, rim light, large expressive anime eyes, flowing hair, Korean webtoon/Japanese LN aesthetic like '타이탄클래스', vibrant deep colors". NEVER: photo, photorealistic, 3D CGI, Pixar.`,
+      pixar:`PIXAR 3D ANIMATION. MANDATORY: "Pixar-quality 3D animated film, oversized round head, huge expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, Disney/Pixar aesthetic like Inside Out/Encanto, adorable 3D cartoon". NEVER: photorealistic, anime 2D, realistic human proportions.`
+    };
+    const visualStyleKey=S.movieMeta?.visual||S.visual||'cinematic';
+    const styleGuide=visualStyleMap[visualStyleKey];
+
     const sys=`너는 AI 영상 프롬프트 엔지니어다. 주어진 Scene을 Sora2/Runway Gen-4/Kling/Flow·Veo 4개 플랫폼 각각의 포맷에 맞춰 10초 영상 프롬프트로 변환한다.
 
-⏱️ 모든 프롬프트는 정확히 10초 분량으로 작성.
-🎨 비주얼 스타일: ${S.movieMeta?.visual_style||'cinematic live-action realistic film, 35mm film grain'}
+⏱️ 모든 프롬프트는 정확히 10초 분량.
+🎨 비주얼 스타일 (절대 준수 — 모든 프롬프트에 강제 적용):
+${styleGuide}
 👤 캐릭터 외형 유지: 모든 프롬프트에 주인공 외형 묘사 포함 (일관성 위해)
+🎬 추가 설정: ${S.movieMeta?.visual_style||''}
+
+⚠️ 스타일 준수 절대 규칙:
+1. 4개 프롬프트 모두 위 MANDATORY 키워드를 첫 부분과 끝 부분에 두 번 반복
+2. NEVER 키워드는 절대 사용 금지
+3. 각 프롬프트 맨 마지막에 "Style: [${visualStyleKey.toUpperCase()}] ONLY. Do NOT render in any other style." 명시
 
 각 플랫폼 포맷:
-**[Sora2]** 자연스러운 영어 cinematic 묘사 — 카메라 움직임, 조명, 캐릭터 디테일 풍부하게. 10초 분량. 끝에 "Duration: 10 seconds."
-**[Runway Gen-4]** "[movement]: [scene]. [details]" 형식, 500자 이내, 10초 분량. 끝에 "Duration: 10 seconds, cinematic realistic, 16:9."
+**[Sora2]** 자연스러운 영어 cinematic 묘사 — 카메라 움직임, 조명, 캐릭터 디테일 풍부하게. 10초. 끝에 "Duration: 10 seconds."
+**[Runway Gen-4]** "[movement]: [scene]. [details]" 형식, 500자 이내, 10초. 끝에 "Duration: 10 seconds, 16:9."
 **[Kling]** 영어, 캐릭터 동작 + 카메라 + 분위기 + 16:9 — 명료하게, 10초
 **[Flow/Veo]** Subject: ... / Action: ... / Scene: ... / Style: ... / Camera: ... / Audio: ... 구조화, 10초
 
@@ -1089,26 +1151,41 @@ function saveScript(){
   const list=getSavedScripts();
   const id=S.scriptId||('script_'+Date.now());
   const title=S.movieMeta.title||'무제';
+  // 시리즈 이름 = 제목 (이어쓰기 연속성)
+  const seriesName=S.seriesName||title;
   const record={
-    id, title, savedAt:new Date().toISOString(),
+    id, title, seriesName,
+    savedAt:new Date().toISOString(),
     genre:S.genre, topic:S.topic, mood:S.moodLabel,
+    visual:S.visual, visualLabel:S.visualLabel,
     movieMeta:S.movieMeta, scenes:S.scenes
   };
   const existingIdx=list.findIndex(x=>x.id===id);
   if(existingIdx>=0){list[existingIdx]=record}
   else{list.unshift(record)}
-  if(list.length>20)list.length=20;
+  if(list.length>30)list.length=30;
   saveSavedScripts(list);
   S.scriptId=id;
+  S.seriesName=seriesName;
   renderSavedList();
-  alert('✅ 대본 저장 완료!\n\n"'+title+'" ('+S.scenes.length+' Scene)');
+  alert('✅ 저장 완료!\n\n📽️ "'+title+'"\n🎞️ '+S.scenes.length+' Scene ('+(S.scenes.length*10)+'초)\n🎨 '+(S.visualLabel||''));
 }
 function loadScript(id){
   const list=getSavedScripts();
   const r=list.find(x=>x.id===id);
   if(!r){alert('대본을 찾을 수 없습니다.');return}
   S.genre=r.genre;S.topic=r.topic;S.moodLabel=r.mood;
+  S.visual=r.visual||r.movieMeta?.visual||'cinematic';
+  S.visualLabel=r.visualLabel||r.movieMeta?.visualLabel||'📸 실사 영화';
   S.movieMeta=r.movieMeta;S.scenes=r.scenes||[];S.scriptId=r.id;
+  S.seriesName=r.seriesName||r.title;
+
+  // UI 칩도 복원
+  document.querySelectorAll('#visualChips .chip').forEach(c=>{
+    c.classList.toggle('active',c.dataset.val===S.visual);
+  });
+  done('s4');
+
   renderScenes();
   document.getElementById('scenesWrap').style.display='block';
   updateSummary();
@@ -1129,18 +1206,44 @@ function renderSavedList(){
     wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">저장된 대본이 아직 없습니다.</div>';
     return;
   }
-  wrap.innerHTML=list.map(r=>{
-    const date=new Date(r.savedAt).toLocaleString('ko-KR',{year:'2-digit',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    return `<div class="saved-item">
-      <div style="flex:1;min-width:150px;">
-        <div class="saved-title">🎬 ${escapeHtml(r.title)}</div>
-        <div class="saved-meta">${escapeHtml(r.genre||'')} · ${(r.scenes||[]).length} Scene · ${date}</div>
-      </div>
-      <button class="btn-load" onclick="loadScript('${r.id}')">📂 불러오기</button>
-      <button class="btn-continue" onclick="loadAndContinue('${r.id}')">➕ 이어쓰기</button>
-      <button class="btn-delete" onclick="deleteScript('${r.id}')">🗑️</button>
-    </div>`;
-  }).join('');
+
+  // 시리즈별 그루핑
+  const series={};
+  list.forEach(r=>{
+    const key=r.seriesName||r.title||'무제';
+    if(!series[key])series[key]=[];
+    series[key].push(r);
+  });
+
+  let html='';
+  Object.keys(series).forEach(seriesName=>{
+    const items=series[seriesName];
+    // 시리즈 총 Scene 수
+    const totalScenes=items.reduce((s,r)=>s+(r.scenes?.length||0),0);
+    html+=`<div style="background:var(--card-soft);border-radius:10px;padding:8px 10px;margin-bottom:8px;">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;">
+        📚 <b>${escapeHtml(seriesName)}</b>
+        <span style="font-weight:400;color:var(--muted);margin-left:4px;">
+          · ${items.length}화 · 총 ${totalScenes} Scene (${totalScenes*10}초)
+        </span>
+      </div>`;
+    items.forEach((r,idx)=>{
+      const date=new Date(r.savedAt).toLocaleString('ko-KR',{year:'2-digit',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const visualBadge=r.visualLabel?`<span style="background:var(--accent-soft);color:var(--accent);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px;">${escapeHtml(r.visualLabel)}</span>`:'';
+      html+=`<div class="saved-item" style="margin-bottom:4px;">
+        <div style="flex:1;min-width:150px;">
+          <div class="saved-title">🎬 ${escapeHtml(r.title)}${visualBadge}</div>
+          <div class="saved-meta">${escapeHtml(r.genre||'')} · ${(r.scenes||[]).length} Scene · ${date}</div>
+        </div>
+        <button class="btn-load" onclick="loadScript('${r.id}')">📂 불러오기</button>
+        <button class="btn-continue" onclick="loadAndContinue('${r.id}')">➕ 이어쓰기</button>
+        <button class="btn-delete" onclick="deleteScript('${r.id}')">🗑️</button>
+      </div>`;
+    });
+    html+='</div>';
+  });
+
+  wrap.innerHTML=html;
 }
 async function loadAndContinue(id){
   loadScript(id);
@@ -1169,4 +1272,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
