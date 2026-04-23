@@ -419,16 +419,30 @@ const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
 
 function getApiKey(){try{return localStorage.getItem('movie_api_key')||''}catch(e){return ''}}
 function saveApiKey(){
-  const v=document.getElementById('apiKeyInput').value.trim();
+  const input=document.getElementById('apiKeyInput');
+  const v=input.value.trim();
+
+  // 이미 마스킹된 상태면 무시
+  if(v.includes('•')){
+    alert('이미 저장된 키입니다. 변경하려면 🗑️ 버튼으로 먼저 삭제하세요.');
+    return;
+  }
   if(!v||!v.startsWith('sk-')){alert('올바른 sk-키 입력');return}
-  try{localStorage.setItem('movie_api_key',v);
-    document.getElementById('apiKeyInput').value='sk-••••••••••••••••';
-    document.getElementById('apiKeyStatus').textContent='✅ API 키 저장 완료';
+
+  try{
+    localStorage.setItem('movie_api_key',v);
+    // 마스킹하되 실제 값은 유지
+    input.dataset.realKey=v;
+    input.value='sk-••••••'+v.slice(-6);  // 끝 6자리 보이게
+    document.getElementById('apiKeyStatus').innerHTML='✅ API 키 저장 완료 (끝: ...'+v.slice(-6)+')';
   }catch(e){alert('저장 실패')}
 }
 function clearApiKey(){
-  try{localStorage.removeItem('movie_api_key');
-    document.getElementById('apiKeyInput').value='';
+  try{
+    localStorage.removeItem('movie_api_key');
+    const input=document.getElementById('apiKeyInput');
+    input.value='';
+    delete input.dataset.realKey;
     document.getElementById('apiKeyStatus').textContent='API 키를 먼저 저장해주세요.';
   }catch(e){}
 }
@@ -436,14 +450,51 @@ function clearApiKey(){
 async function callAI(system, user, maxTokens){
   const apiKey=getApiKey();
   if(!apiKey)throw new Error('API 키가 없습니다.');
-  const res=await fetch(PROXY_URL+'/openai/chat',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({apiKey,system,user,max_tokens:maxTokens||4000,temperature:0.95})
-  });
-  if(!res.ok){const t=await res.text();throw new Error('API 오류: '+t.substring(0,200))}
-  const d=await res.json();
-  return d.text||'';
+
+  // 키에 마스킹 문자(•)가 섞여있는지 체크 — 저장 안됐거나 잘못된 키
+  if(apiKey.includes('•')||apiKey.includes('●')){
+    throw new Error('API 키가 올바르게 저장되지 않았습니다. 🔑 키를 다시 입력하고 저장 버튼을 눌러주세요.');
+  }
+  if(!apiKey.startsWith('sk-')){
+    throw new Error('API 키 형식이 올바르지 않습니다. sk-로 시작해야 합니다.');
+  }
+
+  // OpenAI API 직접 호출 (프록시 우회)
+  try{
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+apiKey
+      },
+      body:JSON.stringify({
+        model:'gpt-4o',
+        messages:[
+          {role:'system',content:system},
+          {role:'user',content:user}
+        ],
+        max_tokens:maxTokens||4000,
+        temperature:0.95
+      })
+    });
+    if(!res.ok){
+      const t=await res.text();
+      throw new Error('OpenAI API 오류: '+t.substring(0,300));
+    }
+    const d=await res.json();
+    return d.choices?.[0]?.message?.content||'';
+  }catch(e){
+    // Direct 호출 실패 시 프록시로 폴백
+    console.warn('Direct 호출 실패, 프록시 시도:',e.message);
+    const res=await fetch(PROXY_URL+'/openai/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({apiKey,system,user,max_tokens:maxTokens||4000,temperature:0.95})
+    });
+    if(!res.ok){const t=await res.text();throw new Error('API 오류: '+t.substring(0,200))}
+    const d=await res.json();
+    return d.text||'';
+  }
 }
 
 // 강력한 JSON 파서 (GPT의 변덕 대응)
@@ -1110,8 +1161,8 @@ window.addEventListener('load',()=>{
   }catch(e){}
   const saved=getApiKey();
   if(saved){
-    document.getElementById('apiKeyInput').value='sk-••••••••••••••••';
-    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키 있음';
+    document.getElementById('apiKeyInput').value='sk-••••••'+saved.slice(-6);
+    document.getElementById('apiKeyStatus').innerHTML='✅ 저장된 API 키 있음 (끝: ...'+saved.slice(-6)+')';
   }
   updateSummary();
 });
