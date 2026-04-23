@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Sora2/Runway/Kling/Flow 4종 프롬프트</div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 생성</div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -1000,6 +1000,8 @@ function renderScenes(){
     const timeStart=idx*10;
     const timeEnd=(idx+1)*10;
     const firstDialog=(s.dialogue&&s.dialogue.length>0)?s.dialogue[0]:null;
+    const dSpeaker=firstDialog?(firstDialog.speaker||firstDialog.name||''):'';
+    const dLine=firstDialog?(firstDialog.line||firstDialog.text||firstDialog.dialogue||''):'';
     card.innerHTML=
       '<div class="scene-card-hd">'+
         '<span class="scene-badge">Scene '+s.num+'</span>'+
@@ -1007,8 +1009,8 @@ function renderScenes(){
         '<span class="scene-location">📍 '+escapeHtml(s.location||'')+'</span>'+
       '</div>'+
       '<div class="scene-event">'+escapeHtml(s.event||'')+'</div>'+
-      (firstDialog?'<div class="scene-dialog-preview"><b>'+escapeHtml(firstDialog.speaker)+':</b> "'+escapeHtml(firstDialog.line)+'"</div>':'')+
-      '<div class="scene-cta">'+(s.prompts?'✅ 프롬프트 생성됨 — 클릭해서 보기':'🎥 클릭해서 4종 영상 프롬프트 생성')+'</div>';
+      (firstDialog?'<div class="scene-dialog-preview"><b>'+escapeHtml(dSpeaker)+':</b> "'+escapeHtml(dLine)+'"</div>':'')+
+      '<div class="scene-cta">'+(s.prompts?'✅ 프롬프트 생성됨 — 클릭해서 보기':'🎥 클릭해서 프롬프트 생성')+'</div>';
     card.onclick=()=>openScene(idx);
     grid.appendChild(card);
   });
@@ -1062,9 +1064,12 @@ function showSceneEditModal(idx){
   const dialogues=s.dialogue||[];
   html+='<div id="dialoguesEdit_'+idx+'">';
   dialogues.forEach((d,di)=>{
+    if(!d)return;
+    const sp=d.speaker||d.name||'';
+    const ln=d.line||d.text||d.dialogue||'';
     html+='<div style="display:flex;gap:4px;margin-bottom:6px;" data-di="'+di+'">';
-    html+='<input type="text" value="'+escapeHtmlAttr(d.speaker||'')+'" placeholder="이름" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_speaker">';
-    html+='<input type="text" value="'+escapeHtmlAttr(d.line||'')+'" placeholder="대사" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_line">';
+    html+='<input type="text" value="'+escapeHtmlAttr(sp)+'" placeholder="이름" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_speaker">';
+    html+='<input type="text" value="'+escapeHtmlAttr(ln)+'" placeholder="대사" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_line">';
     html+='<button onclick="this.parentElement.remove()" style="padding:4px 8px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;">✕</button>';
     html+='</div>';
   });
@@ -1083,7 +1088,7 @@ function showSceneEditModal(idx){
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">';
   html+='<button onclick="regenSceneContent('+idx+')" style="padding:10px 14px;background:var(--warn,#f59e0b);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔄 Scene 재생성</button>';
   html+='<button onclick="saveSceneEdits('+idx+')" style="padding:10px 14px;background:var(--ok,#10b981);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">💾 수정 저장</button>';
-  html+='<button onclick="saveSceneEdits('+idx+',true)" style="padding:10px 14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border:none;border-radius:8px;font-size:13px;font-weight:900;cursor:pointer;flex:1;min-width:200px;">🎥 저장 후 4종 프롬프트 생성</button>';
+  html+='<button onclick="saveSceneEdits('+idx+',true)" style="padding:10px 14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border:none;border-radius:8px;font-size:13px;font-weight:900;cursor:pointer;flex:1;min-width:200px;">🎥 저장 후 프롬프트 생성</button>';
   html+='<button onclick="closeModal()" style="padding:10px 14px;background:var(--card-soft);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">닫기</button>';
   html+='</div>';
 
@@ -1092,7 +1097,9 @@ function showSceneEditModal(idx){
 }
 
 function escapeHtmlAttr(s){
-  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if(s===null||s===undefined)return '';
+  if(typeof s!=='string')s=String(s);
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function addDialogueRow(idx){
@@ -1382,7 +1389,10 @@ function showSceneModal(s,idx){
   if((s.dialogue||[]).length){
     html+='<div style="background:var(--card-soft);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"><b>💬 대사:</b><br>';
     s.dialogue.forEach(d=>{
-      html+='<span style="font-style:italic;">'+escapeHtml(d.speaker)+': "'+escapeHtml(d.line)+'"</span><br>';
+      if(!d)return;
+      const sp=d.speaker||d.name||'';
+      const ln=d.line||d.text||d.dialogue||'';
+      html+='<span style="font-style:italic;">'+escapeHtml(sp)+': "'+escapeHtml(ln)+'"</span><br>';
     });
     html+='</div>';
   }
@@ -1424,7 +1434,9 @@ function copyText(btn,id){
   });
 }
 function escapeHtml(s){
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  if(s===null||s===undefined)return '';
+  if(typeof s!=='string')s=String(s);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function getSavedScripts(){
