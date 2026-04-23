@@ -317,6 +317,15 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       </div>
       <div class="result-text" id="vidOut"></div>
     </div>
+    <div class="result-card" id="srtCard" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;margin-top:12px;">
+      <div class="result-top">
+        <span class="result-label" style="color:#78350f;">📝 자막 SRT · 캡컷/프리미어 자동 인식</span>
+        <button class="copy-btn" id="copySrtBtn" onclick="doCopy('srtOut','copySrtBtn')">📋 복사</button>
+        <button class="copy-btn" style="right:70px;background:#10b981;color:white;" onclick="downloadSRTFile()">📄 다운로드</button>
+      </div>
+      <div class="result-text" id="srtOut" style="background:#fffbeb;color:#78350f;"></div>
+      <div style="font-size:10px;color:#78350f;padding:4px 0;">💡 .srt 파일 → 캡컷/프리미어/다빈치에 가져오기 → 시간 자동 매칭!</div>
+    </div>
   </div>
 </div>
 
@@ -1141,12 +1150,31 @@ async function generate(){
     'The character stays grounded — no floating or jumping.\n' +
     'Camera mostly static with a slight zoom-in.\n' +
     'Exaggerated, Pixar-style animation.\n' +
-    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' +
-      '🚫 CRITICAL FACE PRESERVATION RULES (반드시 지켜야 함):\n' +
-      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. NEVER duplicate, clone, or re-generate the face anywhere else during the animation. NO second face appearing next to or above the opening part.\n' +
-      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): determine which section the face is attached to in the reference image, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
-      '3. If the face-bearing part MUST move or open, then the face moves naturally WITH that part — NEVER jumps to a new location, NEVER splits, NEVER duplicates. If the rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
-      '4. No character should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face.\n' : '') +
+    (functionReveal ? '🚫🚫🚫 CRITICAL: ONE FACE ONLY — NO FACE DUPLICATION 🚫🚫🚫\n' +
+      'The uploaded reference image shows ONE character with ONE single face in ONE specific location. Throughout the entire animation, there must be ONLY THIS ONE FACE — the exact same face in the exact same location as in the reference image.\n' +
+      '\n' +
+      '❌ FORBIDDEN (these are CRITICAL errors that ruin the video):\n' +
+      '   - Do NOT generate a second face anywhere else (not on the wall, not on the door, not on the side, not popping out, not floating)\n' +
+      '   - Do NOT create a duplicate face on any object or surface around the character\n' +
+      '   - Do NOT make the face appear multiple times during the animation\n' +
+      '   - Do NOT let a face emerge, protrude, or grow out of walls, doors, cabinets, or any surface\n' +
+      '   - Do NOT generate additional characters, heads, or faces beyond the single one in the reference\n' +
+      '   - Do NOT clone, mirror, or split the face\n' +
+      '\n' +
+      '✅ REQUIRED:\n' +
+      '   - Exactly ONE face, in the ONE location shown in the reference image, throughout ALL frames\n' +
+      '   - If the face-bearing part moves or rotates out of view, the face disappears with it — do NOT replace it with a new face elsewhere\n' +
+      '   - If the object opens (like a fridge door or cabinet), only the part WITHOUT the face moves; the part WITH the face stays perfectly still\n' +
+      '   - Surrounding surfaces (walls, floor, background) MUST remain plain and faceless\n' +
+      '\n' +
+      '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal happens naturally during dialogue, synced with the words, WHILE PRESERVING THE SINGLE-FACE RULE ABOVE.\n' +
+      '\n' +
+      'Detailed face preservation rules:\n' +
+      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. Never duplicate, clone, or re-generate the face anywhere else. NO second face appearing next to, above, below, or on any part of the object or background.\n' +
+      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): identify which section the face is on, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
+      '3. If the face-bearing part must move or open, the face moves naturally WITH that part. If rotation takes the face out of view, the face simply disappears with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
+      '4. No new character, head, or face should appear that was not in the original uploaded image. The only character is the object itself with its single original face. Walls, background, ambient objects all stay faceless.\n' +
+      '5. NEGATIVE: multiple faces, duplicate face, face on wall, face on door, face emerging from surface, cloned face, twin face, split face, mirror face, second character, extra head, additional faces.\n' : '') +
     (fnMotion ? 'Surrounding ambient details add a sense of life: '+fnMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
     'Audio: angry adult Korean voice with scolding tone.\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
@@ -1154,12 +1182,23 @@ async function generate(){
     'No roaring, no monster sounds, no creature sounds.\n' +
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
+    'The character\'s face must remain as the object —\n' +
     'do NOT replace or morph into a real human face.\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
     '🔒 FINAL REMINDER: The uploaded image is the LAW. Every pixel of visual design MUST come from it. The text above only describes MOTION and AUDIO — NOT visual appearance. Use Image-to-Video mode with MAXIMUM reference fidelity. Failing to match the uploaded image is a CRITICAL error.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
+
+  // SRT 자막 생성
+  const srtText=generateSingleSceneSRT(dialogue,10);
+  if(srtText){
+    document.getElementById('srtOut').textContent=srtText;
+    document.getElementById('srtCard').style.display='block';
+    window._lastSRT=srtText;
+  }else{
+    document.getElementById('srtCard').style.display='none';
+  }
 
   try {
     const stats=JSON.parse(localStorage.getItem('usage_stats')||'{}');
@@ -1355,6 +1394,54 @@ function updateSummary(){
   p.push('무드: <b>'+S.mood+'</b>');
   document.getElementById('summaryBar').innerHTML=p.join(' · ');
 }
+// ═══ SRT 자막 생성 ═══
+function formatSRTTime(seconds){
+  const h=Math.floor(seconds/3600).toString().padStart(2,'0');
+  const m=Math.floor((seconds%3600)/60).toString().padStart(2,'0');
+  const s=Math.floor(seconds%60).toString().padStart(2,'0');
+  const ms=Math.floor((seconds-Math.floor(seconds))*1000).toString().padStart(3,'0');
+  return h+':'+m+':'+s+','+ms;
+}
+
+function generateSingleSceneSRT(script,duration){
+  if(!script)return '';
+  duration=duration||10;
+  let segments=script.split(/(?<=[.!?])\s+|\n+/).map(s=>s.trim()).filter(s=>s.length>0);
+  const finalSegs=[];
+  segments.forEach(seg=>{
+    if(seg.length>35){
+      const subs=seg.split(/,\s*/).filter(s=>s.length>0);
+      if(subs.length>1){finalSegs.push(...subs);}else{finalSegs.push(seg);}
+    }else{finalSegs.push(seg);}
+  });
+  if(finalSegs.length===0)return '';
+  const totalChars=finalSegs.reduce((sum,s)=>sum+s.length,0);
+  let currentTime=0;
+  const lines=[];
+  finalSegs.forEach((seg,i)=>{
+    const ratio=seg.length/totalChars;
+    const segDuration=duration*ratio;
+    const startTime=currentTime;
+    const endTime=Math.min(currentTime+segDuration,duration);
+    lines.push((i+1)+'\n'+formatSRTTime(startTime)+' --> '+formatSRTTime(endTime)+'\n'+seg);
+    currentTime=endTime;
+  });
+  return lines.join('\n\n');
+}
+
+function downloadSRTFile(){
+  if(!window._lastSRT){alert('자막이 없습니다. 먼저 프롬프트를 생성해주세요.');return;}
+  const blob=new Blob(['\ufeff'+window._lastSRT],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='subtitle_'+Date.now()+'.srt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function switchTab(t){
   document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['img','vid'][i]===t));
   ['panelImg','panelVid'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
