@@ -760,13 +760,35 @@ NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.
 - 정확히 6개 Scene 생성
 - 각 Scene = 정확히 10초 영상 분량
 - 1분 = 6 Scene × 10초 = 60초 영상
-- 대사는 짧고 밀도 있게 (각 Scene 대사 합쳐 10초 안에 말할 수 있는 분량)
+
+💬 대사 분량 규칙 (10초 기준, 매우 중요):
+- **각 Scene 대사는 합쳐서 정확히 10초 분량** (한국어 말하는 속도 기준)
+- 한국어 기준 **45-60자 정도** (너무 짧으면 영상이 허전하고 멈춰있는 느낌)
+- 2-3명이 말하면 각자 3-5초씩 자연스럽게
+- 너무 짧은 대사 금지: "뭐야?", "그래.", "응." 같은 한 단어 대사만으로 구성 금지
+- 짧은 대사는 꼭 액션이나 내레이션과 함께 조합하여 10초 채울 것
+- 예시 좋은 분량:
+  * "지수: 지진이야! 빨리 여기서 나가야 해!" → "지민: 문이 안 열려... 어떻게 하지?" (약 7-8초)
+  * "기자: 이 사건의 진실은 오직 한 사람만 알고 있습니다. 과연 그는 누구일까요?" (약 8초)
+
+⚡⚡ 역동적 액션 필수 규칙 (매우 매우 중요):
+- 각 Scene의 "event" 필드에 **구체적이고 역동적인 신체 동작** 반드시 포함
+- **절대 금지**: "가만히 서서 대사만 하는" Scene, "말없이 응시하는" 류의 정적 장면
+- Scene 상황에 맞는 강한 움직임 필수:
+  * 지진/재난 → 비틀거리며 책상 밑으로 뛰어듬, 떨어지는 물건 피함, 벽을 잡고 버팀
+  * 추격/도주 → 달리며 뒤돌아봄, 골목을 급하게 꺾음, 장애물 뛰어넘음
+  * 전투 → 주먹 휘두름, 뒷걸음질, 쓰러짐, 구르며 피함
+  * 감정 폭발 → 떨리는 손, 눈물 흘림, 주먹 쥠, 무릎 꿇음, 달려가 껴안음
+  * 놀람 → 뒤로 주춤, 입을 막음, 눈을 크게 뜨고 한 걸음 물러남
+  * 대화 장면 → 걷거나 움직이면서 대화, 손짓, 몸짓 자연스럽게
+- 배경도 반응: 물건이 떨어지고, 사람들이 움직이고, 환경이 변화
+- 10초 안에 **최소 2-3개 액션 비트** (시작 액션 → 대사/반응 → 끝 액션)
 
 🎬 1분 안에 담아야 할 것:
-- Scene 1: 후킹 (강렬한 도입)
-- Scene 2-3: 상황 설정 (공간, 캐릭터, 긴장감)
-- Scene 4-5: 전개 (갈등/미스터리 제시)
-- Scene 6: 다음을 궁금하게 만드는 끊김 (Cliffhanger)
+- Scene 1: 후킹 (강렬한 도입 + 강한 액션)
+- Scene 2-3: 상황 설정 (공간, 캐릭터, 긴장감 + 움직임)
+- Scene 4-5: 전개 (갈등/미스터리 제시 + 역동적 반응)
+- Scene 6: 다음을 궁금하게 만드는 끊김 (Cliffhanger + 강렬한 마지막 액션)
 
 🌍 세계관/캐릭터/배경의 연속성:
 - 6개 Scene이 자연스럽게 이어져야 함
@@ -811,6 +833,11 @@ NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.
 ${currentStyle}
 - 클리셰 피하고 후킹 강하게
 - 캐릭터 외형/의상 영어로 구체적 묘사 (후속 Scene에서 일관성 유지용)
+- ⚠️ 캐릭터 이름 안전 규칙 (필터 차단 방지):
+  * 한국인 캐릭터 이름은 창작 이름 사용 (한국어 대사에서는 자유롭게)
+  * 실존 유명인 이름 절대 금지 — 아이유, 지수, 지민, 유재석, 강호동, BTS 멤버, 블랙핑크 멤버, 뉴진스 멤버 등
+  * 유명인을 연상시키는 영문 표기 금지 — Jisoo, Jimin, Jennie, IU, Lisa, Rose 등
+  * 흔한 창작 이름 사용 권장 — 서연, 지훈, 현우, 수민, 하늘, 예린 등
 - visual_style 필드에는 위 스타일 가이드의 MANDATORY 키워드를 그대로 반영`;
 
     const user=`장르: ${S.genre}
@@ -977,21 +1004,226 @@ async function openScene(idx){
   const s=S.scenes[idx];
   if(!s)return;
 
+  // 프롬프트 이미 있으면 바로 프롬프트 모달
   if(s.prompts){
     showSceneModal(s,idx);
     return;
   }
+
+  // 프롬프트 없으면 편집 모달 먼저 표시
+  showSceneEditModal(idx);
+}
+
+// Scene 편집 모달 (프롬프트 생성 전 단계)
+function showSceneEditModal(idx){
+  const s=S.scenes[idx];
+  if(!s)return;
+
+  const timeStart=idx*10;
+  const timeEnd=(idx+1)*10;
+
+  const content=document.getElementById('modalContent');
+  let html='<h3>📝 Scene '+s.num+' 편집</h3>';
+  html+='<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">⏱️ '+timeStart+'s → '+timeEnd+'s · 프롬프트 생성 전에 Scene 내용을 확인/수정할 수 있습니다</div>';
+
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">🎬 Scene 제목</div>';
+  html+='<input type="text" id="edit_title_'+idx+'" value="'+escapeHtmlAttr(s.title||'')+'" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);box-sizing:border-box;">';
+  html+='</div>';
+
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">📍 위치 / 배경</div>';
+  html+='<input type="text" id="edit_location_'+idx+'" value="'+escapeHtmlAttr(s.location||'')+'" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);box-sizing:border-box;">';
+  html+='</div>';
+
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">🎭 사건 / 액션 (10초 안에 벌어지는 일)</div>';
+  html+='<textarea id="edit_event_'+idx+'" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);min-height:60px;box-sizing:border-box;resize:vertical;">'+escapeHtml(s.event||'')+'</textarea>';
+  html+='<div style="font-size:10px;color:var(--muted);margin-top:4px;">💡 역동적으로! 예: "달려가며 뒤돌아본다", "진동에 쓰러지며 책상 아래로 숨는다"</div>';
+  html+='</div>';
+
+  // 대사 편집
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">💬 대사 (10초 분량, 한국어 45-60자 권장)</div>';
+  const dialogues=s.dialogue||[];
+  html+='<div id="dialoguesEdit_'+idx+'">';
+  dialogues.forEach((d,di)=>{
+    html+='<div style="display:flex;gap:4px;margin-bottom:6px;" data-di="'+di+'">';
+    html+='<input type="text" value="'+escapeHtmlAttr(d.speaker||'')+'" placeholder="이름" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_speaker">';
+    html+='<input type="text" value="'+escapeHtmlAttr(d.line||'')+'" placeholder="대사" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_line">';
+    html+='<button onclick="this.parentElement.remove()" style="padding:4px 8px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;">✕</button>';
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='<button onclick="addDialogueRow('+idx+')" style="padding:6px 10px;margin-top:4px;font-size:11px;background:var(--accent-soft);color:var(--accent);border:none;border-radius:6px;cursor:pointer;font-weight:700;">+ 대사 추가</button>';
+  html+='<div style="font-size:10px;color:var(--muted);margin-top:4px;">💡 대사 총 합쳐서 10초 분량 (한국어 말하는 속도 기준 약 45-60자)</div>';
+  html+='</div>';
+
+  // 나레이션
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">📣 나레이션 (선택)</div>';
+  html+='<input type="text" id="edit_narration_'+idx+'" value="'+escapeHtmlAttr(s.narration||'')+'" placeholder="없으면 비워두세요" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);box-sizing:border-box;">';
+  html+='</div>';
+
+  // 액션 버튼
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">';
+  html+='<button onclick="regenSceneContent('+idx+')" style="padding:10px 14px;background:var(--warn,#f59e0b);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🔄 Scene 재생성</button>';
+  html+='<button onclick="saveSceneEdits('+idx+')" style="padding:10px 14px;background:var(--ok,#10b981);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">💾 수정 저장</button>';
+  html+='<button onclick="saveSceneEdits('+idx+',true)" style="padding:10px 14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border:none;border-radius:8px;font-size:13px;font-weight:900;cursor:pointer;flex:1;min-width:200px;">🎥 저장 후 4종 프롬프트 생성</button>';
+  html+='<button onclick="closeModal()" style="padding:10px 14px;background:var(--card-soft);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">닫기</button>';
+  html+='</div>';
+
+  content.innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function escapeHtmlAttr(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addDialogueRow(idx){
+  const wrap=document.getElementById('dialoguesEdit_'+idx);
+  if(!wrap)return;
+  const di=wrap.children.length;
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;gap:4px;margin-bottom:6px;';
+  row.setAttribute('data-di',di);
+  row.innerHTML='<input type="text" placeholder="이름" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_speaker">'+
+    '<input type="text" placeholder="대사" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_line">'+
+    '<button onclick="this.parentElement.remove()" style="padding:4px 8px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;">✕</button>';
+  wrap.appendChild(row);
+}
+
+function saveSceneEdits(idx,genPromptAfter){
+  const s=S.scenes[idx];
+  if(!s)return;
+  s.title=document.getElementById('edit_title_'+idx)?.value||s.title;
+  s.location=document.getElementById('edit_location_'+idx)?.value||s.location;
+  s.event=document.getElementById('edit_event_'+idx)?.value||s.event;
+  s.narration=document.getElementById('edit_narration_'+idx)?.value||'';
+
+  // 대사 수집
+  const rows=document.querySelectorAll('#dialoguesEdit_'+idx+' > div');
+  const newDialogues=[];
+  rows.forEach(r=>{
+    const sp=r.querySelector('.edit_speaker')?.value?.trim();
+    const ln=r.querySelector('.edit_line')?.value?.trim();
+    if(sp||ln){newDialogues.push({speaker:sp||'',line:ln||''});}
+  });
+  s.dialogue=newDialogues;
+
+  // 프롬프트 초기화 (내용 바뀌었으니)
+  s.prompts=null;
+
+  renderScenes();
+
+  if(genPromptAfter){
+    generateScenePrompts(idx);
+  }else{
+    closeModal();
+  }
+}
+
+async function regenSceneContent(idx){
+  if(!confirm('이 Scene의 대사/액션을 AI로 다시 생성하시겠습니까?'))return;
+  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
+
+  const s=S.scenes[idx];
+  if(!s)return;
+
+  showLoading('🔄 Scene 재생성 중...','AI가 더 역동적이고 자연스러운 내용으로 다시 작성하고 있어요.');
+
+  try{
+    const prevContext=idx>0?S.scenes[idx-1]:null;
+    const nextContext=idx<S.scenes.length-1?S.scenes[idx+1]:null;
+
+    const sys=`너는 영화 시나리오 작가다. 주어진 한 Scene을 10초 분량으로 더 역동적이고 자연스럽게 재작성한다.
+
+⏱️ 10초 분량 (매우 중요):
+- 대사는 정확히 10초 안에 말할 수 있는 분량 (한국어 45-60자, 2-3명 대사 합쳐서)
+- 액션도 10초 안에 자연스럽게 전개
+
+🎬 액션 필수 규칙 (매우 매우 중요):
+- 상황에 맞는 **구체적이고 역동적인** 액션 명시
+- "지진" → 바닥이 흔들리며 주인공이 비틀거리며 책상 밑으로 뛰어든다, 물건들이 떨어진다
+- "화재" → 연기 사이로 기침하며 낮은 자세로 뛰어나간다
+- "추격" → 뒤를 돌아보며 골목을 빠르게 달린다
+- "싸움" → 주먹을 피하며 뒷걸음질, 방어 자세
+- 절대 "가만히 서서 대사만 하는" Scene 만들지 말 것
+- 신체 움직임, 표정 변화, 시선 이동, 배경 반응 등 구체적으로
+
+📝 출력 JSON:
+{
+  "title":"Scene 제목",
+  "location":"위치/배경 (구체적으로)",
+  "event":"10초 안 핵심 액션 (한국어, 구체적 신체 동작 포함)",
+  "emotion":"감정 톤",
+  "dialogue":[{"speaker":"이름","line":"한국어 대사 (짧게)"}],
+  "narration":"",
+  "visual_description":"영어 시각 묘사 (10초 분량, 구체적 액션과 카메라 움직임 포함)"
+}
+
+⚠️ JSON 엄격 규칙: 쌍따옴표만, trailing comma 금지, 줄바꿈 \\n, valid JSON만.`;
+
+    const user=`[영화 컨텍스트]
+제목: ${S.movieMeta?.title||''}
+세계관: ${S.movieMeta?.world||''}
+주인공: ${S.movieMeta?.protagonist?.name||''} — ${S.movieMeta?.protagonist?.desc||''}
+비주얼: ${S.movieMeta?.visualLabel||''}
+
+[재생성할 Scene ${s.num}]
+현재 내용:
+- 위치: ${s.location||''}
+- 사건: ${s.event||''}
+- 감정: ${s.emotion||''}
+- 대사: ${(s.dialogue||[]).map(d=>d.speaker+':"'+d.line+'"').join(' / ')||'(없음)'}
+
+${prevContext?`[이전 Scene ${prevContext.num}]: ${prevContext.event||''}`:''}
+${nextContext?`[다음 Scene ${nextContext.num}]: ${nextContext.event||''}`:''}
+
+⬆️ 위 Scene을 10초 분량에 맞춰 더 역동적이고 자연스럽게 재작성. 연속성 유지. JSON만.`;
+
+    const r=await callAI(sys,user,2000);
+    const d=robustParseJSON(r);
+
+    // 새 데이터로 업데이트
+    S.scenes[idx]={
+      ...s,
+      title:d.title||s.title,
+      location:d.location||s.location,
+      event:d.event||s.event,
+      emotion:d.emotion||s.emotion,
+      dialogue:d.dialogue||s.dialogue,
+      narration:d.narration||'',
+      visual_description:d.visual_description||s.visual_description,
+      prompts:null  // 프롬프트 초기화
+    };
+
+    hideLoading();
+    renderScenes();
+    showSceneEditModal(idx);  // 편집 모달 다시 표시
+  }catch(e){
+    hideLoading();
+    showErr('Scene 재생성 실패: '+e.message);
+    console.error(e);
+  }
+}
+
+// 실제 Flow/Veo 프롬프트 생성
+async function generateScenePrompts(idx){
+  const s=S.scenes[idx];
+  if(!s)return;
 
   if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
 
   if(s._generating)return;
   s._generating=true;
 
-  showLoading('🎥 Scene '+s.num+' 프롬프트 생성 중...','Sora2 / Runway Gen-4 / Kling / Flow·Veo 4종 플랫폼 프롬프트를 작성하고 있어요. 15-25초 정도 걸립니다.');
+  showLoading('🎥 Scene '+s.num+' Flow 프롬프트 생성 중...','Flow/Veo용 10초 영상 프롬프트를 작성하고 있어요.');
 
   const overlay=document.getElementById('modalOverlay');
   const content=document.getElementById('modalContent');
-  content.innerHTML='<h3>🎬 Scene '+s.num+' 프롬프트 생성 중...</h3><div style="padding:30px;text-align:center;"><span class="spinner"></span> 4종 플랫폼 프롬프트 작성 중... (15-25초)</div>';
+  content.innerHTML='<h3>🎬 Scene '+s.num+' 프롬프트 생성 중...</h3><div style="padding:30px;text-align:center;"><span class="spinner"></span> Flow/Veo 프롬프트 작성 중... (10-15초)</div>';
   overlay.classList.add('show');
 
   try{
@@ -1004,38 +1236,71 @@ async function openScene(idx){
     const visualStyleKey=S.movieMeta?.visual||S.visual||'cinematic';
     const styleGuide=visualStyleMap[visualStyleKey];
 
-    const sys=`너는 AI 영상 프롬프트 엔지니어다. 주어진 Scene을 Sora2/Runway Gen-4/Kling/Flow·Veo 4개 플랫폼 각각의 포맷에 맞춰 10초 영상 프롬프트로 변환한다.
+    const sys=`너는 Google Flow/Veo 전용 영상 프롬프트 엔지니어다. 주어진 Scene을 Flow/Veo 포맷에 맞춰 10초 영상 프롬프트로 변환한다.
 
-⏱️ 모든 프롬프트는 정확히 10초 분량.
-🎨 비주얼 스타일 (절대 준수 — 모든 프롬프트에 강제 적용):
+⏱️ 프롬프트는 정확히 10초 분량.
+🎨 비주얼 스타일 (절대 준수 — 프롬프트에 강제 적용):
 ${styleGuide}
-👤 캐릭터 외형 유지: 모든 프롬프트에 주인공 외형 묘사 포함 (일관성 위해)
+👤 캐릭터 외형 유지: 프롬프트에 주인공 외형 묘사 포함 (일관성 위해)
 🎬 추가 설정: ${S.movieMeta?.visual_style||''}
 
-⚠️ 스타일 준수 절대 규칙:
-1. 4개 프롬프트 모두 위 MANDATORY 키워드를 첫 부분과 끝 부분에 두 번 반복
-2. NEVER 키워드는 절대 사용 금지
-3. 각 프롬프트 맨 마지막에 "Style: [${visualStyleKey.toUpperCase()}] ONLY. Do NOT render in any other style." 명시
+⚡⚡ 역동적 액션 절대 규칙 (매우 매우 중요):
+- 프롬프트에 **구체적이고 역동적인 신체 동작** 반드시 포함
+- "standing still", "calm pose", "looking at camera" 같은 정적 묘사 금지
+- Scene 상황에 맞는 적극적인 움직임 필수:
+  * 지진/재난 → running away, stumbling, debris falling, ducking for cover, panic reactions, ceiling tiles falling, bodies swaying with tremors
+  * 추격/도주 → sprinting, looking back over shoulder, dodging obstacles, jumping over barriers
+  * 전투/액션 → swinging fists, dodging attacks, spinning, falling, rolling
+  * 감정 고조 → trembling hands, tears streaming, clenched fists, chest heaving, grabbing clothes
+  * 놀람 → sudden recoil, hands flying to mouth, eyes widening with jerk motion, step backward
+  * 대화 → natural gestures (pointing, shrugging, hand movements), walking while talking, body language
+- 배경도 반응: 물건이 떨어지고, 먼지가 날리고, 사람들이 움직이고, 환경이 변화
+- 카메라도 역동적: tracking shot, handheld shaky (지진/액션), dolly zoom, whip pan
+- "static camera"만 쓰지 말 것 — 상황에 맞는 카메라 워크 명시
+- 10초 안에 **최소 2-3개의 구체적 액션 비트** 포함
 
-⚠️⚠️ 참조 이미지 절대 우선 규칙 (매우 중요):
-4. 각 프롬프트 맨 앞에 반드시 이 문구를 포함할 것:
-"⚠️ IF A REFERENCE IMAGE / CHARACTER SHEET IS PROVIDED: You MUST follow the reference image EXACTLY. Match the character's face, hair, outfit, body proportions, art style, and all visual details 100%. The attached image is the ABSOLUTE source of truth for character appearance. Do NOT deviate from it based on the text description. The text below describes only the SCENE/ACTION, not how the character should look. Preserve character consistency from the reference image across all frames."
-5. Sora2 프롬프트에는 "Reference image MUST be used. Character from reference image performs the action below:" 명시
-6. Runway Gen-4 프롬프트에는 "@image_1 character performs:" 형식으로 참조 이미지 라벨 사용
-7. Kling 프롬프트에는 "Using the provided reference image, maintain exact character appearance:" 명시
-8. Flow/Veo 프롬프트의 Subject 섹션에 "Character from reference image (MUST match exactly)" 명시
+⚠️ 스타일 준수 권장:
+- MANDATORY 키워드를 자연스럽게 프롬프트 앞/뒤에 녹여서 반영
+- NEVER 키워드는 프롬프트에 포함하지 말 것
+- Style 섹션에 "${visualStyleKey}" 간결히 명시
 
-각 플랫폼 포맷:
-**[Sora2]** 자연스러운 영어 cinematic 묘사 — 카메라 움직임, 조명, 캐릭터 디테일 풍부하게. 10초. 끝에 "Duration: 10 seconds."
-**[Runway Gen-4]** "[movement]: [scene]. [details]" 형식, 500자 이내, 10초. 끝에 "Duration: 10 seconds, 16:9."
-**[Kling]** 영어, 캐릭터 동작 + 카메라 + 분위기 + 16:9 — 명료하게, 10초
-**[Flow/Veo]** Subject: ... / Action: ... / Scene: ... / Style: ... / Camera: ... / Audio: ... 구조화, 10초
+━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Flow/Veo 전용 프롬프트 (Google 친화적, 검열 필터 통과 버전)
+━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ 공통 안전 규칙 (모든 플랫폼에 적용):
+1. 실존 인물/연예인 이름 절대 금지 (Jisoo, Jimin, IU, BTS, Blackpink 멤버, 유재석 등)
+2. 캐릭터는 "the protagonist", "a young Korean woman", "the man in a suit" 같은 일반 묘사로
+3. "MUST", "ABSOLUTELY", "100% match", "LAW", "EXACT" 같은 강제 명령어 금지
+4. "Based on the reference image", "inspired by", "maintain the style" 같은 자연스러운 권유형
+5. 한국어 대사는 그대로 사용 OK (한국어는 필터에 덜 민감)
+6. 폭력/성/혐오 관련 직설적 표현 금지 (대신 "tension", "dramatic moment", "intense scene" 등으로 우회)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**[Flow/Veo 프롬프트]** (구조화된 섹션 형식, Google 친화적 — 우리가 유일하게 사용하는 플랫폼)
+구조 (각 섹션 한 줄씩):
+Subject: [캐릭터를 일반 명사로 — reference image 자연스러운 언급]
+Action: [역동적 구체적 동작, 10초 분량]
+Scene: [장소 + 환경 디테일]
+Style: [${visualStyleKey} + 세부 미학]
+Camera: [카메라 움직임]
+Audio: [한국어 대사 + 환경음]
+Duration: 10 seconds
+
+예시:
+Subject: A young Korean woman in her 20s (visual style inspired by reference image)
+Action: Stumbles through her shaking apartment during an earthquake, grabbing the doorframe for balance as objects fall around her, then braces herself with wide-eyed shock
+Scene: Modern Seoul apartment interior, daytime, dust drifting from the ceiling, books toppling from shelves
+Style: Cinematic realistic, 35mm film grain, handheld documentary aesthetic
+Camera: Handheld shaky tracking shot, tight framing on her reaction
+Audio: Korean dialogue ("지진이야! 빨리 숨어!"), rumbling low-frequency tremors, glass rattling
+Duration: 10 seconds
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📦 출력 JSON:
 {
-  "prompt_sora": "...",
-  "prompt_runway": "...",
-  "prompt_kling": "...",
   "prompt_flow": "..."
 }
 
@@ -1099,40 +1364,20 @@ function showSceneModal(s,idx){
     html+='<div style="background:var(--card-soft);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"><b>📣 내레이션:</b> <i>'+escapeHtml(s.narration)+'</i></div>';
   }
 
-  html+='<h4>🎥 영상 프롬프트 (4종 플랫폼 · 각 10초)</h4>';
+  html+='<h4>🎥 Flow/Veo 영상 프롬프트 (10초)</h4>';
   html+='<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:11px;color:#78350f;line-height:1.7;">'+
     '<b>📸 캐릭터 일관성 최대화 팁</b><br>'+
-    '🟢 <b>Flow/Veo</b>: Ingredients에 캐릭터 시트 업로드 (최대 4장) → 프롬프트 붙여넣기<br>'+
-    '🟠 <b>Runway Gen-4</b>: Reference Images에 1-3장 업로드 → "@image_1" 자동 인식<br>'+
-    '🔵 <b>Kling</b>: Image-to-Video 모드 선택 → 캐릭터 이미지 업로드 + 프롬프트<br>'+
-    '⚫ <b>Sora2</b>: Remix 기능 사용 or 캐릭터 이미지 참조<br>'+
+    '🟢 <b>Flow/Veo</b>: Ingredients에 캐릭터 시트 업로드 (최대 4장) → 아래 프롬프트 붙여넣기<br>'+
     '💡 <b>이미지 업로드 시 아래 프롬프트가 그 이미지 외형을 강제로 유지합니다!</b>'+
     '</div>';
-  html+='<div class="subtab-bar">';
-  html+='<div class="subtab subtab-sora active" onclick="switchModalSubtab(0)">🌑 Sora2</div>';
-  html+='<div class="subtab subtab-runway" onclick="switchModalSubtab(1)">🟠 Runway Gen-4</div>';
-  html+='<div class="subtab subtab-kling" onclick="switchModalSubtab(2)">🔵 Kling</div>';
-  html+='<div class="subtab subtab-flow" onclick="switchModalSubtab(3)">🟢 Flow/Veo</div>';
-  html+='</div>';
 
   const p=s.prompts||{};
-  html+='<div id="msub_0" class="platform-section"><span class="platform-tag tag-sora">SORA 2 · 10초</span><button class="copy-btn" onclick="copyText(this,`msora`)">📋 복사</button><pre id="msora">'+escapeHtml(p.prompt_sora||'')+'</pre></div>';
-  html+='<div id="msub_1" class="platform-section" style="display:none;"><span class="platform-tag tag-runway">RUNWAY GEN-4 · 10초</span><button class="copy-btn" onclick="copyText(this,`mrunway`)">📋 복사</button><pre id="mrunway">'+escapeHtml(p.prompt_runway||'')+'</pre></div>';
-  html+='<div id="msub_2" class="platform-section" style="display:none;"><span class="platform-tag tag-kling">KLING · 10초</span><button class="copy-btn" onclick="copyText(this,`mkling`)">📋 복사</button><pre id="mkling">'+escapeHtml(p.prompt_kling||'')+'</pre></div>';
-  html+='<div id="msub_3" class="platform-section" style="display:none;"><span class="platform-tag tag-flow">FLOW/VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(p.prompt_flow||'')+'</pre></div>';
+  html+='<div class="platform-section"><span class="platform-tag tag-flow">🟢 FLOW / VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(p.prompt_flow||'')+'</pre></div>';
 
   html+='<div style="margin-top:14px;display:flex;gap:6px;"><button class="btn-sm" onclick="regenPrompts('+idx+')">🔄 프롬프트 재생성</button><button class="btn-sm" onclick="closeModal()">닫기</button></div>';
 
   content.innerHTML=html;
   document.getElementById('modalOverlay').classList.add('show');
-}
-
-function switchModalSubtab(idx){
-  document.querySelectorAll('#modalContent .subtab').forEach((t,i)=>t.classList.toggle('active',i===idx));
-  for(let i=0;i<4;i++){
-    const el=document.getElementById('msub_'+i);
-    if(el)el.style.display=(i===idx?'block':'none');
-  }
 }
 
 async function regenPrompts(idx){
