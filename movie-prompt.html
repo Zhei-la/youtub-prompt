@@ -1017,6 +1017,14 @@ ${styleGuide}
 2. NEVER 키워드는 절대 사용 금지
 3. 각 프롬프트 맨 마지막에 "Style: [${visualStyleKey.toUpperCase()}] ONLY. Do NOT render in any other style." 명시
 
+⚠️⚠️ 참조 이미지 절대 우선 규칙 (매우 중요):
+4. 각 프롬프트 맨 앞에 반드시 이 문구를 포함할 것:
+"⚠️ IF A REFERENCE IMAGE / CHARACTER SHEET IS PROVIDED: You MUST follow the reference image EXACTLY. Match the character's face, hair, outfit, body proportions, art style, and all visual details 100%. The attached image is the ABSOLUTE source of truth for character appearance. Do NOT deviate from it based on the text description. The text below describes only the SCENE/ACTION, not how the character should look. Preserve character consistency from the reference image across all frames."
+5. Sora2 프롬프트에는 "Reference image MUST be used. Character from reference image performs the action below:" 명시
+6. Runway Gen-4 프롬프트에는 "@image_1 character performs:" 형식으로 참조 이미지 라벨 사용
+7. Kling 프롬프트에는 "Using the provided reference image, maintain exact character appearance:" 명시
+8. Flow/Veo 프롬프트의 Subject 섹션에 "Character from reference image (MUST match exactly)" 명시
+
 각 플랫폼 포맷:
 **[Sora2]** 자연스러운 영어 cinematic 묘사 — 카메라 움직임, 조명, 캐릭터 디테일 풍부하게. 10초. 끝에 "Duration: 10 seconds."
 **[Runway Gen-4]** "[movement]: [scene]. [details]" 형식, 500자 이내, 10초. 끝에 "Duration: 10 seconds, 16:9."
@@ -1092,6 +1100,14 @@ function showSceneModal(s,idx){
   }
 
   html+='<h4>🎥 영상 프롬프트 (4종 플랫폼 · 각 10초)</h4>';
+  html+='<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:11px;color:#78350f;line-height:1.7;">'+
+    '<b>📸 캐릭터 일관성 최대화 팁</b><br>'+
+    '🟢 <b>Flow/Veo</b>: Ingredients에 캐릭터 시트 업로드 (최대 4장) → 프롬프트 붙여넣기<br>'+
+    '🟠 <b>Runway Gen-4</b>: Reference Images에 1-3장 업로드 → "@image_1" 자동 인식<br>'+
+    '🔵 <b>Kling</b>: Image-to-Video 모드 선택 → 캐릭터 이미지 업로드 + 프롬프트<br>'+
+    '⚫ <b>Sora2</b>: Remix 기능 사용 or 캐릭터 이미지 참조<br>'+
+    '💡 <b>이미지 업로드 시 아래 프롬프트가 그 이미지 외형을 강제로 유지합니다!</b>'+
+    '</div>';
   html+='<div class="subtab-bar">';
   html+='<div class="subtab subtab-sora active" onclick="switchModalSubtab(0)">🌑 Sora2</div>';
   html+='<div class="subtab subtab-runway" onclick="switchModalSubtab(1)">🟠 Runway Gen-4</div>';
