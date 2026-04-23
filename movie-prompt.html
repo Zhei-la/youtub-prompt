@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎬 AI 영화 프롬프트 생성기</title>
+<meta property="og:title" content="🎬 AI 영화 프롬프트 생성기">
+<meta property="og:description" content="10초 Scene 단위 대본 + 이어쓰기 + 4종 영상 프롬프트">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zhei-la.github.io/youtub-prompt/movie-prompt.html">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafafa;--card:#fff;--card-soft:#f5f5f5;--border:#e5e5e5;--text:#1a1a1f;--sub:#4a4a50;--muted:#8a8a92;--accent:#6366f1;--accent-2:#ec4899;--accent-soft:#ede9fe;--ok:#10b981;--warn:#f59e0b}
+body.dark{--bg:#0a0a0f;--card:#14141c;--card-soft:#1d1d28;--border:#2a2a35;--text:#e8e8ec;--sub:#b0b0b8;--muted:#70707a;--accent:#818cf8;--accent-2:#f472b6;--accent-soft:#2a1e4a;--ok:#34d399;--warn:#fbbf24}
+*{box-sizing:border-box}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:20px 14px 100px;-webkit-font-smoothing:antialiased}
+.container{max-width:760px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.title{font-weight:900;font-size:24px;background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-0.5px}
+.subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+.dark-toggle{background:var(--card);border:1px solid var(--border);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.apikey-bar{display:flex;gap:8px;align-items:center;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px}
+.apikey-bar input{flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px}
+.apikey-bar button{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+#apiKeyStatus{font-size:11px;color:var(--muted);margin-top:4px;display:block}
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;opacity:0.6;transition:opacity 0.2s}
+.step.active{opacity:1}
+.step.done{opacity:1;border-color:var(--accent)}
+.step-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--card-soft);color:var(--sub);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}
+.step.active .step-num,.step.done .step-num{background:var(--accent);color:white}
+.step-title{flex:1;font-weight:700;font-size:15px}
+.step-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn-sm{padding:6px 11px;background:var(--card-soft);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text)}
+.btn-sm:hover{background:var(--accent-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:7px 12px;background:var(--card-soft);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;user-select:none;transition:all 0.15s}
+.chip:hover{border-color:var(--accent)}
+.chip.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-color:transparent;font-weight:700}
+.input-row{display:flex;gap:6px;margin-top:8px}
+.input-row input{flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px}
+.input-row button{padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.big-btn{width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#ec4899);color:white;border:none;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;margin-top:14px;letter-spacing:0.5px}
+.big-btn:disabled{opacity:0.5;cursor:not-allowed}
+.big-btn-alt{background:linear-gradient(135deg,#10b981,#059669)}
+.err-msg{padding:10px;background:#fee;border:1px solid #fcc;border-radius:8px;color:#c33;font-size:13px;margin:10px 0;display:none}
+body.dark .err-msg{background:#3a1f1f;border-color:#553333;color:#fcc}
+.summary-box{background:var(--card-soft);border-radius:10px;padding:10px;font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
+.summary-box b{color:var(--text)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scene-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+.scene-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s}
+.scene-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 12px rgba(99,102,241,0.15)}
+.scene-card.has-prompts{border-color:var(--ok);background:linear-gradient(135deg,var(--card) 0%,rgba(16,185,129,0.05) 100%)}
+.scene-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.scene-badge{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:900}
+.scene-time{font-size:11px;color:var(--muted);font-weight:700}
+.scene-location{font-size:12px;color:var(--sub);flex:1}
+.scene-event{font-size:13px;font-weight:700;margin:6px 0}
+.scene-dialog-preview{font-size:12px;color:var(--sub);font-style:italic;background:var(--card-soft);padding:6px 8px;border-radius:6px;margin-top:6px;border-left:3px solid var(--accent)}
+.scene-cta{margin-top:8px;padding:8px;background:var(--accent-soft);border-radius:6px;font-size:11px;font-weight:700;text-align:center;color:var(--accent)}
+.scene-card.has-prompts .scene-cta{background:#d1fae5;color:#065f46}
+body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:100;padding:20px 10px;overflow-y:auto}
+.modal-overlay.show{display:block}
+.modal{max-width:720px;margin:0 auto;background:var(--bg);border-radius:14px;padding:20px;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:var(--card-soft);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal h3{margin:0 0 10px;font-size:18px}
+.modal h4{margin:14px 0 6px;font-size:13px;color:var(--accent)}
+.modal pre{white-space:pre-wrap;word-wrap:break-word;font-family:'Noto Sans KR',monospace;font-size:13px;line-height:1.7;margin:0;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.subtab-bar{display:flex;gap:4px;flex-wrap:wrap;margin:10px 0 6px}
+.subtab{padding:6px 11px;background:var(--card-soft);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-weight:700}
+.subtab.active{color:white;border-color:transparent}
+.subtab-sora.active{background:linear-gradient(135deg,#000,#444)}
+.subtab-runway.active{background:linear-gradient(135deg,#f97316,#ea580c)}
+.subtab-kling.active{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.subtab-flow.active{background:linear-gradient(135deg,#10b981,#059669)}
+.platform-section{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:8px}
+.platform-tag{display:inline-block;padding:4px 9px;border-radius:4px;font-size:11px;font-weight:800;margin-bottom:8px;color:white}
+.tag-sora{background:linear-gradient(135deg,#000,#444)}
+.tag-runway{background:linear-gradient(135deg,#f97316,#ea580c)}
+.tag-kling{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.tag-flow{background:linear-gradient(135deg,#10b981,#059669)}
+.copy-btn{float:right;padding:5px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
+.copy-btn.copied{background:var(--ok)}
+.saved-list{display:grid;gap:8px;margin-top:10px}
+.saved-item{background:var(--card-soft);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.saved-title{font-weight:700;font-size:13px}
+.saved-meta{font-size:10px;color:var(--muted)}
+.saved-item button{padding:5px 9px;font-size:11px;font-weight:700;border:none;border-radius:6px;cursor:pointer;color:white}
+.btn-load{background:var(--accent)}
+.btn-continue{background:var(--ok)}
+.btn-delete{background:#ef4444}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="topbar">
+  <div>
+    <div class="title">🎬 AI 영화 프롬프트 생성기</div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Sora2/Runway/Kling/Flow 4종 프롬프트</div>
+  </div>
+  <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
+</div>
+
+<div class="apikey-bar">
+  <span style="font-size:16px;">🔑</span>
+  <input type="password" id="apiKeyInput" placeholder="OpenAI API 키 입력 (sk-...)">
+  <button onclick="saveApiKey()">저장</button>
+  <button onclick="clearApiKey()" style="background:var(--muted);">🗑️</button>
+</div>
+<div id="apiKeyStatus">API 키를 먼저 저장해주세요.</div>
+<div class="err-msg" id="errMsg"></div>
+
+<div class="step active" id="s0" style="opacity:1;">
+  <div class="step-hd">
+    <div class="step-num">💾</div>
+    <div class="step-title">저장된 대본</div>
+  </div>
+  <div id="savedList" class="saved-list">
+    <div style="font-size:12px;color:var(--muted);padding:8px;">저장된 대본이 아직 없습니다.</div>
+  </div>
+</div>
+
+<div class="step active" id="s1">
+  <div class="step-hd">
+    <div class="step-num">1</div>
+    <div class="step-title">장르 선택</div>
+    <div class="step-actions"><button class="btn-sm" onclick="randomGenre()">🎲 랜덤</button></div>
+  </div>
+  <div class="chips" id="genreChips"></div>
+</div>
+
+<div class="step" id="s2">
+  <div class="step-hd">
+    <div class="step-num">2</div>
+    <div class="step-title">영화 주제</div>
+    <div class="step-actions">
+      <button class="btn-sm" onclick="genTopics()">✨ AI 생성</button>
+      <button class="btn-sm" onclick="genTopics(true)">🔄 재생성</button>
+    </div>
+  </div>
+  <div class="chips" id="topicChips">
+    <div style="font-size:12px;color:var(--muted);padding:8px;">먼저 장르 선택 후 ✨ AI 생성, 또는 직접 입력.</div>
+  </div>
+  <div class="input-row">
+    <input type="text" id="customTopic" placeholder="직접 입력: 예) 시간을 되돌리는 손목시계를 가진 형사">
+    <button onclick="addCustomTopic()">+ 추가</button>
+  </div>
+</div>
+
+<div class="step" id="s3">
+  <div class="step-hd">
+    <div class="step-num">3</div>
+    <div class="step-title">분위기 / 톤</div>
+    <div class="step-actions"><button class="btn-sm" onclick="randomMood()">🎲 랜덤</button></div>
+  </div>
+  <div class="chips" id="moodChips">
+    <div class="chip" data-val="epic" data-label="⚔️ 웅장한/서사적" onclick="selMood(this)">⚔️ 웅장한/서사적</div>
+    <div class="chip" data-val="emotional" data-label="🥺 감성적/잔잔" onclick="selMood(this)">🥺 감성적/잔잔</div>
+    <div class="chip" data-val="dark" data-label="🌑 어두운/무거운" onclick="selMood(this)">🌑 어두운/무거운</div>
+    <div class="chip" data-val="hopeful" data-label="✨ 희망찬/따뜻" onclick="selMood(this)">✨ 희망찬/따뜻</div>
+    <div class="chip" data-val="mystery" data-label="🔍 미스터리/음산" onclick="selMood(this)">🔍 미스터리/음산</div>
+    <div class="chip" data-val="action" data-label="💥 액션/긴박" onclick="selMood(this)">💥 액션/긴박</div>
+    <div class="chip" data-val="romantic" data-label="💕 로맨틱/설렘" onclick="selMood(this)">💕 로맨틱/설렘</div>
+    <div class="chip" data-val="surreal" data-label="🌌 초현실/몽환" onclick="selMood(this)">🌌 초현실/몽환</div>
+    <div class="chip" data-val="comedy" data-label="😂 코미디/유쾌" onclick="selMood(this)">😂 코미디/유쾌</div>
+    <div class="chip" data-val="thriller" data-label="😱 스릴러/긴장" onclick="selMood(this)">😱 스릴러/긴장</div>
+  </div>
+</div>
+
+<button class="big-btn" id="genScriptBtn" onclick="genScript()">✨ 1분 대본 생성 (6 Scene × 10초)</button>
+
+<div class="summary-box" id="summaryBox"></div>
+
+<div id="scenesWrap" style="display:none;margin-top:20px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+    <h3 style="margin:0;font-size:16px;flex:1;">🎬 Scene (클릭하면 프롬프트 생성)</h3>
+    <button class="btn-sm" onclick="saveScript()" style="background:var(--accent);color:white;border:none;">💾 저장</button>
+    <button class="btn-sm" onclick="regenScript()">🔄 새로</button>
+  </div>
+  <div id="movieMeta" style="background:var(--card-soft);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;line-height:1.7;"></div>
+  <div class="scene-grid" id="sceneGrid"></div>
+  <button class="big-btn big-btn-alt" onclick="continueScript()" style="margin-top:20px;">
+    ➕ 다음 1분 이어쓰기 (6 Scene 추가)
+  </button>
+</div>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+const GENRES = [
+  {val:'sf', label:'🚀 SF/우주'},{val:'fantasy', label:'🐉 판타지'},{val:'thriller', label:'🔪 스릴러'},
+  {val:'romance', label:'💑 로맨스'},{val:'action', label:'💥 액션'},{val:'horror', label:'👻 호러'},
+  {val:'mystery', label:'🔍 미스터리'},{val:'drama', label:'🎭 드라마'},{val:'crime', label:'🚓 범죄/누아르'},
+  {val:'historical', label:'⚔️ 역사 사극'},{val:'apocalypse', label:'☢️ 종말물'},{val:'cyberpunk', label:'🌃 사이버펑크'},
+  {val:'timetravel', label:'⏰ 시간여행'},{val:'superhero', label:'🦸 슈퍼히어로'},{val:'magical', label:'✨ 마법/이세계'},
+  {val:'kdrama', label:'🇰🇷 K-드라마'},{val:'wuxia', label:'🗡️ 무협'},{val:'disaster', label:'🌪️ 재난'}
+];
+
+const S = {
+  genre:null, genreVal:null, topic:null, topicDesc:'',
+  mood:null, moodLabel:'',
+  movieMeta:null,  scenes:[],  scriptId:null,
+};
+
+const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+
+function getApiKey(){try{return localStorage.getItem('movie_api_key')||''}catch(e){return ''}}
+function saveApiKey(){
+  const v=document.getElementById('apiKeyInput').value.trim();
+  if(!v||!v.startsWith('sk-')){alert('올바른 sk-키 입력');return}
+  try{localStorage.setItem('movie_api_key',v);
+    document.getElementById('apiKeyInput').value='sk-••••••••••••••••';
+    document.getElementById('apiKeyStatus').textContent='✅ API 키 저장 완료';
+  }catch(e){alert('저장 실패')}
+}
+function clearApiKey(){
+  try{localStorage.removeItem('movie_api_key');
+    document.getElementById('apiKeyInput').value='';
+    document.getElementById('apiKeyStatus').textContent='API 키를 먼저 저장해주세요.';
+  }catch(e){}
+}
+
+async function callAI(system, user, maxTokens){
+  const apiKey=getApiKey();
+  if(!apiKey)throw new Error('API 키가 없습니다.');
+  const res=await fetch(PROXY_URL+'/openai/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({apiKey,system,user,max_tokens:maxTokens||4000,temperature:0.95})
+  });
+  if(!res.ok){const t=await res.text();throw new Error('API 오류: '+t.substring(0,200))}
+  const d=await res.json();
+  return d.text||'';
+}
+
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  const isDark=document.body.classList.contains('dark');
+  document.getElementById('darkToggle').textContent=isDark?'☀️':'🌙';
+  try{localStorage.setItem('movie_dark',isDark?'1':'0')}catch(e){}
+}
+function act(id){const e=document.getElementById(id);if(e){e.classList.add('active');e.classList.remove('done')}}
+function done(id){const e=document.getElementById(id);if(e)e.classList.add('active','done')}
+function showErr(msg){
+  const e=document.getElementById('errMsg');
+  e.textContent='❌ '+msg;e.style.display='block';
+  setTimeout(()=>e.style.display='none',8000);
+}
+
+function buildGenres(){
+  const wrap=document.getElementById('genreChips');
+  GENRES.forEach(g=>{
+    const d=document.createElement('div');
+    d.className='chip';d.dataset.val=g.val;d.dataset.label=g.label;
+    d.textContent=g.label;
+    d.onclick=()=>selGenre(d);
+    wrap.appendChild(d);
+  });
+}
+function selGenre(el){
+  document.querySelectorAll('#genreChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.genre=el.dataset.label;S.genreVal=el.dataset.val;S.topic=null;
+  document.getElementById('topicChips').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">✨ AI 생성 누르거나 직접 입력하세요.</div>';
+  done('s1');act('s2');updateSummary();
+}
+function randomGenre(){
+  const chips=document.querySelectorAll('#genreChips .chip');
+  selGenre(chips[Math.floor(Math.random()*chips.length)]);
+}
+
+async function genTopics(regen){
+  if(!S.genre){showErr('먼저 장르 선택');return}
+  const wrap=document.getElementById('topicChips');
+  wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;"><span class="spinner"></span> AI가 주제 생성 중...</div>';
+  try{
+    const sys='너는 영화 시나리오 기획자다. 장르에 맞는 흥미롭고 독창적인 영화 주제 8개를 JSON으로 생성. 클리셰 피하고 후킹 강하게.\n포맷: {"topics":[{"title":"주제(15자 내)","desc":"한 줄 요약"}]}\nJSON만.';
+    const user='장르: '+S.genre+'\n\n흥미로운 주제 8개. '+(regen?'이전과 완전 다른 방향으로.':'');
+    const r=await callAI(sys,user,1200);
+    let cleaned=r.replace(/```json|```/g,'').trim();
+    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
+    const d=JSON.parse(cleaned);
+    wrap.innerHTML='';
+    d.topics.forEach(t=>{
+      const c=document.createElement('div');
+      c.className='chip';c.textContent=t.title;c.title=t.desc;
+      c.onclick=()=>selTopic(c,t.title,t.desc);
+      wrap.appendChild(c);
+    });
+  }catch(e){
+    wrap.innerHTML='<div style="font-size:12px;color:#c33;padding:8px;">❌ '+e.message+'</div>';
+  }
+}
+function selTopic(el,title,desc){
+  document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.topic=title;S.topicDesc=desc||'';
+  done('s2');act('s3');updateSummary();
+}
+function addCustomTopic(){
+  const v=document.getElementById('customTopic').value.trim();
+  if(!v)return;
+  const wrap=document.getElementById('topicChips');
+  const c=document.createElement('div');
+  c.className='chip';c.textContent='✏️ '+v;
+  c.onclick=()=>selTopic(c,v,'');
+  wrap.appendChild(c);selTopic(c,v,'');
+  document.getElementById('customTopic').value='';
+}
+
+function selMood(el){
+  document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.mood=el.dataset.val;S.moodLabel=el.dataset.label;
+  done('s3');updateSummary();
+}
+function randomMood(){
+  const chips=document.querySelectorAll('#moodChips .chip');
+  selMood(chips[Math.floor(Math.random()*chips.length)]);
+}
+function updateSummary(){
+  const p=[];
+  if(S.genre)p.push('장르: <b>'+S.genre+'</b>');
+  if(S.topic)p.push('주제: <b>'+S.topic+'</b>');
+  if(S.moodLabel)p.push('분위기: <b>'+S.moodLabel+'</b>');
+  if(S.scenes&&S.scenes.length>0)p.push('Scene: <b>'+S.scenes.length+'개 ('+(S.scenes.length*10)+'초)</b>');
+  document.getElementById('summaryBox').innerHTML=p.length?p.join(' · '):'선택한 옵션이 여기에 표시됩니다.';
+}
+
+async function genScript(){
+  if(!S.genre||!S.topic){showErr('장르와 주제 먼저 선택');return}
+  if(!S.mood){showErr('분위기 선택');return}
+
+  const btn=document.getElementById('genScriptBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> 대본 생성 중... (20-40초)';
+
+  try{
+    const moodMap={
+      epic:'웅장하고 서사적',emotional:'감성적이고 잔잔',dark:'어둡고 무거운',
+      hopeful:'희망찬 따뜻한',mystery:'미스터리 음산',action:'액션 긴박감',
+      romantic:'로맨틱 설렘',surreal:'초현실 몽환',comedy:'코미디 유쾌',thriller:'스릴러 긴장'
+    };
+
+    const sys=`너는 영화 시나리오 작가다. 1분짜리 영화 도입부를 작성한다.
+
+⏱️ 중요 시간 규칙:
+- 정확히 6개 Scene 생성
+- 각 Scene = 정확히 10초 영상 분량
+- 1분 = 6 Scene × 10초 = 60초 영상
+- 대사는 짧고 밀도 있게 (각 Scene 대사 합쳐 10초 안에 말할 수 있는 분량)
+
+🎬 1분 안에 담아야 할 것:
+- Scene 1: 후킹 (강렬한 도입)
+- Scene 2-3: 상황 설정 (공간, 캐릭터, 긴장감)
+- Scene 4-5: 전개 (갈등/미스터리 제시)
+- Scene 6: 다음을 궁금하게 만드는 끊김 (Cliffhanger)
+
+🌍 세계관/캐릭터/배경의 연속성:
+- 6개 Scene이 자연스럽게 이어져야 함
+- 같은 캐릭터 등장, 같은 장소/세계관 유지
+- 시간 흐름 자연스럽게 (Scene 1 → 2 → ... → 6)
+- 배경/분위기/조명 일관성 유지
+
+📦 출력 JSON ONLY:
+{
+  "title": "영화 제목 (한국어)",
+  "subtitle": "영문 부제",
+  "theme": "주제 한 줄",
+  "world": "세계관/배경 설정 (3-4줄, 모든 Scene에서 일관되게 유지할 요소)",
+  "protagonist": {"name":"주인공 이름(나이)","desc":"외형/성격/배경 (영어 시각 묘사 필수, 후속 Scene에서 동일 외형 유지)"},
+  "supporting": [{"name":"조연 이름","desc":"외형/역할 (영어 시각 묘사)"}],
+  "visual_style": "전체 비주얼 톤 (영어, cinematic live-action, 조명/색감 구체적으로)",
+  "scenes": [
+    {
+      "num": 1, "title":"Scene 한글 제목","duration":"10s",
+      "location":"공간/배경 (한글+영어)",
+      "event":"10초 안 핵심 순간 (한글)",
+      "emotion":"감정 톤 (한글)",
+      "dialogue":[{"speaker":"이름","line":"한국어 대사 (3-5초 분량)"}],
+      "narration":"내레이션 (있으면, 없으면 빈 문자열)",
+      "visual_description":"이 Scene의 영상 시각 묘사 (영어, 10초 분량, 구체적 액션/카메라/조명)"
+    }
+  ]
+}
+
+🎯 품질:
+- 분위기: ${moodMap[S.mood]}
+- 비주얼: cinematic live-action realistic film, 35mm film grain
+- 클리셰 피하고 후킹 강하게
+- 캐릭터 외형/의상 영어로 구체적 묘사 (후속 Scene에서 일관성 유지용)`;
+
+    const user=`장르: ${S.genre}
+주제: ${S.topic}
+${S.topicDesc?'주제 설명: '+S.topicDesc:''}
+분위기: ${S.moodLabel}
+
+1분 (6 Scene × 10초) 대본 생성. JSON만.`;
+
+    const r=await callAI(sys,user,5000);
+    let cleaned=r.replace(/```json|```/g,'').trim();
+    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
+    const d=JSON.parse(cleaned);
+
+    S.movieMeta={
+      title:d.title, subtitle:d.subtitle, theme:d.theme,
+      world:d.world, protagonist:d.protagonist,
+      supporting:d.supporting||[], visual_style:d.visual_style
+    };
+    S.scenes=d.scenes.map(s=>({...s,prompts:null}));
+    S.scriptId=null;
+
+    renderScenes();
+    document.getElementById('scenesWrap').style.display='block';
+    document.getElementById('scenesWrap').scrollIntoView({behavior:'smooth',block:'start'});
+    updateSummary();
+  }catch(e){
+    showErr('대본 생성 실패: '+e.message);
+    console.error(e);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='✨ 1분 대본 생성 (6 Scene × 10초)';
+  }
+}
+
+function regenScript(){
+  if(confirm('현재 대본을 버리고 새로 생성하시겠습니까?')){
+    S.scenes=[];S.movieMeta=null;S.scriptId=null;
+    document.getElementById('scenesWrap').style.display='none';
+    genScript();
+  }
+}
+
+async function continueScript(){
+  if(!S.movieMeta||!S.scenes||S.scenes.length===0){showErr('이어쓸 대본이 없습니다.');return}
+
+  const btn=event.target;
+  const origText=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> 이어서 대본 생성 중... (20-40초)';
+
+  try{
+    const lastScene=S.scenes[S.scenes.length-1];
+    const recentScenes=S.scenes.slice(-3).map(s=>'[Scene '+s.num+'] '+s.location+' | '+s.event+' | 대사: '+(s.dialogue||[]).map(d=>d.speaker+':"'+d.line+'"').join(' / ')).join('\n');
+
+    const sys=`너는 영화 시나리오 작가다. 기존 대본에 자연스럽게 이어지는 다음 1분(6 Scene × 10초)을 작성한다.
+
+⏱️ 시간: 정확히 6 Scene × 10초 = 60초
+🔗 연속성 절대 규칙:
+- 마지막 Scene 끝에서 자연스럽게 이어짐 (시간 흐름, 공간 연결 논리적)
+- 같은 캐릭터 동일 외형/의상/성격 유지 (주인공, 조연 이름도 정확히 동일)
+- 같은 세계관/배경 유지
+- 전 장면에서 제시된 갈등/미스터리 전개·심화
+- 새 캐릭터 등장 시 자연스럽게 도입
+
+📦 출력 JSON ONLY:
+{
+  "scenes": [
+    {
+      "num": ${S.scenes.length+1},
+      "title":"한글 제목","duration":"10s",
+      "location":"공간","event":"10초 순간","emotion":"감정",
+      "dialogue":[{"speaker":"이름","line":"짧은 한국어 대사"}],
+      "narration":"",
+      "visual_description":"영어 시각 묘사 (10초)"
+    }
+  ]
+}
+
+Scene num은 ${S.scenes.length+1}부터 ${S.scenes.length+6}까지.`;
+
+    const user=`[영화 메타]
+제목: ${S.movieMeta.title}
+세계관: ${S.movieMeta.world}
+주인공: ${S.movieMeta.protagonist.name} — ${S.movieMeta.protagonist.desc}
+${S.movieMeta.supporting.length>0?'조연: '+S.movieMeta.supporting.map(s=>s.name+' ('+s.desc+')').join(', '):''}
+비주얼: ${S.movieMeta.visual_style}
+
+[최근 3 Scene 요약]
+${recentScenes}
+
+[마지막 Scene 세부]
+위치: ${lastScene.location}
+사건: ${lastScene.event}
+감정: ${lastScene.emotion}
+
+⬇️ 위에서 자연스럽게 이어지는 Scene ${S.scenes.length+1}~${S.scenes.length+6} 생성. JSON만.`;
+
+    const r=await callAI(sys,user,4500);
+    let cleaned=r.replace(/```json|```/g,'').trim();
+    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
+    const d=JSON.parse(cleaned);
+
+    (d.scenes||[]).forEach(s=>{
+      S.scenes.push({...s,prompts:null});
+    });
+
+    renderScenes();
+    updateSummary();
+  }catch(e){
+    showErr('이어쓰기 실패: '+e.message);
+    console.error(e);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML=origText;
+  }
+}
+
+function renderScenes(){
+  const meta=document.getElementById('movieMeta');
+  if(S.movieMeta){
+    meta.innerHTML=
+      '🎬 <b>'+escapeHtml(S.movieMeta.title||'')+'</b>'+
+      (S.movieMeta.subtitle?' <i style="color:var(--muted);">('+escapeHtml(S.movieMeta.subtitle)+')</i>':'')+'<br>'+
+      '🎯 ' + escapeHtml(S.movieMeta.theme||'')+'<br>'+
+      '👤 '+escapeHtml(S.movieMeta.protagonist?.name||'')+
+      (S.movieMeta.supporting?.length?' · 조연: '+S.movieMeta.supporting.map(s=>escapeHtml(s.name)).join(', '):'')+
+      '<br>⏱️ 총 <b>'+S.scenes.length+' Scene × 10초 = '+(S.scenes.length*10)+'초</b>';
+  }
+  const grid=document.getElementById('sceneGrid');
+  grid.innerHTML='';
+  S.scenes.forEach((s,idx)=>{
+    const card=document.createElement('div');
+    card.className='scene-card'+(s.prompts?' has-prompts':'');
+    const timeStart=idx*10;
+    const timeEnd=(idx+1)*10;
+    const firstDialog=(s.dialogue&&s.dialogue.length>0)?s.dialogue[0]:null;
+    card.innerHTML=
+      '<div class="scene-card-hd">'+
+        '<span class="scene-badge">Scene '+s.num+'</span>'+
+        '<span class="scene-time">⏱️ '+timeStart+'s → '+timeEnd+'s</span>'+
+        '<span class="scene-location">📍 '+escapeHtml(s.location||'')+'</span>'+
+      '</div>'+
+      '<div class="scene-event">'+escapeHtml(s.event||'')+'</div>'+
+      (firstDialog?'<div class="scene-dialog-preview"><b>'+escapeHtml(firstDialog.speaker)+':</b> "'+escapeHtml(firstDialog.line)+'"</div>':'')+
+      '<div class="scene-cta">'+(s.prompts?'✅ 프롬프트 생성됨 — 클릭해서 보기':'🎥 클릭해서 4종 영상 프롬프트 생성')+'</div>';
+    card.onclick=()=>openScene(idx);
+    grid.appendChild(card);
+  });
+}
+
+async function openScene(idx){
+  const s=S.scenes[idx];
+  if(!s)return;
+
+  if(s.prompts){
+    showSceneModal(s,idx);
+    return;
+  }
+
+  if(s._generating)return;
+  s._generating=true;
+
+  const overlay=document.getElementById('modalOverlay');
+  const content=document.getElementById('modalContent');
+  content.innerHTML='<h3>🎬 Scene '+s.num+' 프롬프트 생성 중...</h3><div style="padding:30px;text-align:center;"><span class="spinner"></span> 4종 플랫폼 프롬프트 작성 중... (15-25초)</div>';
+  overlay.classList.add('show');
+
+  try{
+    const sys=`너는 AI 영상 프롬프트 엔지니어다. 주어진 Scene을 Sora2/Runway Gen-4/Kling/Flow·Veo 4개 플랫폼 각각의 포맷에 맞춰 10초 영상 프롬프트로 변환한다.
+
+⏱️ 모든 프롬프트는 정확히 10초 분량으로 작성.
+🎨 비주얼 스타일: ${S.movieMeta?.visual_style||'cinematic live-action realistic film, 35mm film grain'}
+👤 캐릭터 외형 유지: 모든 프롬프트에 주인공 외형 묘사 포함 (일관성 위해)
+
+각 플랫폼 포맷:
+**[Sora2]** 자연스러운 영어 cinematic 묘사 — 카메라 움직임, 조명, 캐릭터 디테일 풍부하게. 10초 분량. 끝에 "Duration: 10 seconds."
+**[Runway Gen-4]** "[movement]: [scene]. [details]" 형식, 500자 이내, 10초 분량. 끝에 "Duration: 10 seconds, cinematic realistic, 16:9."
+**[Kling]** 영어, 캐릭터 동작 + 카메라 + 분위기 + 16:9 — 명료하게, 10초
+**[Flow/Veo]** Subject: ... / Action: ... / Scene: ... / Style: ... / Camera: ... / Audio: ... 구조화, 10초
+
+📦 출력 JSON:
+{
+  "prompt_sora": "...",
+  "prompt_runway": "...",
+  "prompt_kling": "...",
+  "prompt_flow": "..."
+}`;
+
+    const user=`[영화 컨텍스트]
+제목: ${S.movieMeta?.title||''}
+세계관: ${S.movieMeta?.world||''}
+주인공: ${S.movieMeta?.protagonist?.name||''} — ${S.movieMeta?.protagonist?.desc||''}
+${S.movieMeta?.supporting?.length?'조연: '+S.movieMeta.supporting.map(sp=>sp.name+' ('+sp.desc+')').join(', '):''}
+비주얼 톤: ${S.movieMeta?.visual_style||''}
+
+[이번 Scene ${s.num} (10초)]
+위치: ${s.location}
+사건: ${s.event}
+감정: ${s.emotion}
+대사: ${(s.dialogue||[]).map(d=>d.speaker+':"'+d.line+'"').join(' / ')}
+${s.narration?'내레이션: '+s.narration:''}
+시각 묘사: ${s.visual_description||''}
+
+⬆️ 위 Scene을 4종 플랫폼용 10초 영상 프롬프트로 변환. JSON만.`;
+
+    const r=await callAI(sys,user,2500);
+    let cleaned=r.replace(/```json|```/g,'').trim();
+    const m=cleaned.match(/\{[\s\S]*\}/);if(m)cleaned=m[0];
+    const d=JSON.parse(cleaned);
+    s.prompts=d;
+    s._generating=false;
+
+    renderScenes();
+    showSceneModal(s,idx);
+  }catch(e){
+    s._generating=false;
+    content.innerHTML='<h3>❌ 프롬프트 생성 실패</h3><p>'+escapeHtml(e.message)+'</p><button class="btn-sm" onclick="closeModal()">닫기</button>';
+  }
+}
+
+function showSceneModal(s,idx){
+  const content=document.getElementById('modalContent');
+  const timeStart=idx*10;
+  const timeEnd=(idx+1)*10;
+
+  let html='<h3>🎬 Scene '+s.num+': '+escapeHtml(s.title||'')+'</h3>';
+  html+='<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⏱️ '+timeStart+'s → '+timeEnd+'s · 📍 '+escapeHtml(s.location||'')+' · 감정: '+escapeHtml(s.emotion||'')+'</div>';
+  html+='<div style="background:var(--card-soft);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"><b>🎬 사건:</b> '+escapeHtml(s.event||'')+'</div>';
+
+  if((s.dialogue||[]).length){
+    html+='<div style="background:var(--card-soft);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"><b>💬 대사:</b><br>';
+    s.dialogue.forEach(d=>{
+      html+='<span style="font-style:italic;">'+escapeHtml(d.speaker)+': "'+escapeHtml(d.line)+'"</span><br>';
+    });
+    html+='</div>';
+  }
+  if(s.narration){
+    html+='<div style="background:var(--card-soft);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"><b>📣 내레이션:</b> <i>'+escapeHtml(s.narration)+'</i></div>';
+  }
+
+  html+='<h4>🎥 영상 프롬프트 (4종 플랫폼 · 각 10초)</h4>';
+  html+='<div class="subtab-bar">';
+  html+='<div class="subtab subtab-sora active" onclick="switchModalSubtab(0)">🌑 Sora2</div>';
+  html+='<div class="subtab subtab-runway" onclick="switchModalSubtab(1)">🟠 Runway Gen-4</div>';
+  html+='<div class="subtab subtab-kling" onclick="switchModalSubtab(2)">🔵 Kling</div>';
+  html+='<div class="subtab subtab-flow" onclick="switchModalSubtab(3)">🟢 Flow/Veo</div>';
+  html+='</div>';
+
+  const p=s.prompts||{};
+  html+='<div id="msub_0" class="platform-section"><span class="platform-tag tag-sora">SORA 2 · 10초</span><button class="copy-btn" onclick="copyText(this,`msora`)">📋 복사</button><pre id="msora">'+escapeHtml(p.prompt_sora||'')+'</pre></div>';
+  html+='<div id="msub_1" class="platform-section" style="display:none;"><span class="platform-tag tag-runway">RUNWAY GEN-4 · 10초</span><button class="copy-btn" onclick="copyText(this,`mrunway`)">📋 복사</button><pre id="mrunway">'+escapeHtml(p.prompt_runway||'')+'</pre></div>';
+  html+='<div id="msub_2" class="platform-section" style="display:none;"><span class="platform-tag tag-kling">KLING · 10초</span><button class="copy-btn" onclick="copyText(this,`mkling`)">📋 복사</button><pre id="mkling">'+escapeHtml(p.prompt_kling||'')+'</pre></div>';
+  html+='<div id="msub_3" class="platform-section" style="display:none;"><span class="platform-tag tag-flow">FLOW/VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(p.prompt_flow||'')+'</pre></div>';
+
+  html+='<div style="margin-top:14px;display:flex;gap:6px;"><button class="btn-sm" onclick="regenPrompts('+idx+')">🔄 프롬프트 재생성</button><button class="btn-sm" onclick="closeModal()">닫기</button></div>';
+
+  content.innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function switchModalSubtab(idx){
+  document.querySelectorAll('#modalContent .subtab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  for(let i=0;i<4;i++){
+    const el=document.getElementById('msub_'+i);
+    if(el)el.style.display=(i===idx?'block':'none');
+  }
+}
+
+async function regenPrompts(idx){
+  if(!confirm('이 Scene의 프롬프트를 다시 생성하시겠습니까?'))return;
+  S.scenes[idx].prompts=null;
+  closeModal();
+  await openScene(idx);
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+function copyText(btn,id){
+  const el=document.getElementById(id);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='✅ 복사됨';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied')},1500);
+  });
+}
+function escapeHtml(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getSavedScripts(){
+  try{return JSON.parse(localStorage.getItem('movie_scripts')||'[]');}catch(e){return [];}
+}
+function saveSavedScripts(list){
+  try{localStorage.setItem('movie_scripts',JSON.stringify(list))}catch(e){}
+}
+function saveScript(){
+  if(!S.movieMeta||!S.scenes||S.scenes.length===0){alert('저장할 대본이 없습니다.');return}
+  const list=getSavedScripts();
+  const id=S.scriptId||('script_'+Date.now());
+  const title=S.movieMeta.title||'무제';
+  const record={
+    id, title, savedAt:new Date().toISOString(),
+    genre:S.genre, topic:S.topic, mood:S.moodLabel,
+    movieMeta:S.movieMeta, scenes:S.scenes
+  };
+  const existingIdx=list.findIndex(x=>x.id===id);
+  if(existingIdx>=0){list[existingIdx]=record}
+  else{list.unshift(record)}
+  if(list.length>20)list.length=20;
+  saveSavedScripts(list);
+  S.scriptId=id;
+  renderSavedList();
+  alert('✅ 대본 저장 완료!\n\n"'+title+'" ('+S.scenes.length+' Scene)');
+}
+function loadScript(id){
+  const list=getSavedScripts();
+  const r=list.find(x=>x.id===id);
+  if(!r){alert('대본을 찾을 수 없습니다.');return}
+  S.genre=r.genre;S.topic=r.topic;S.moodLabel=r.mood;
+  S.movieMeta=r.movieMeta;S.scenes=r.scenes||[];S.scriptId=r.id;
+  renderScenes();
+  document.getElementById('scenesWrap').style.display='block';
+  updateSummary();
+  document.getElementById('scenesWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function deleteScript(id){
+  if(!confirm('이 대본을 삭제하시겠습니까?'))return;
+  let list=getSavedScripts();
+  list=list.filter(x=>x.id!==id);
+  saveSavedScripts(list);
+  renderSavedList();
+  if(S.scriptId===id){S.scriptId=null}
+}
+function renderSavedList(){
+  const wrap=document.getElementById('savedList');
+  const list=getSavedScripts();
+  if(list.length===0){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">저장된 대본이 아직 없습니다.</div>';
+    return;
+  }
+  wrap.innerHTML=list.map(r=>{
+    const date=new Date(r.savedAt).toLocaleString('ko-KR',{year:'2-digit',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="saved-item">
+      <div style="flex:1;min-width:150px;">
+        <div class="saved-title">🎬 ${escapeHtml(r.title)}</div>
+        <div class="saved-meta">${escapeHtml(r.genre||'')} · ${(r.scenes||[]).length} Scene · ${date}</div>
+      </div>
+      <button class="btn-load" onclick="loadScript('${r.id}')">📂 불러오기</button>
+      <button class="btn-continue" onclick="loadAndContinue('${r.id}')">➕ 이어쓰기</button>
+      <button class="btn-delete" onclick="deleteScript('${r.id}')">🗑️</button>
+    </div>`;
+  }).join('');
+}
+async function loadAndContinue(id){
+  loadScript(id);
+  setTimeout(()=>{
+    const btn=document.querySelector('button[onclick="continueScript()"]');
+    if(btn)btn.click();
+  },500);
+}
+
+window.addEventListener('load',()=>{
+  buildGenres();
+  renderSavedList();
+  try{
+    if(localStorage.getItem('movie_dark')==='1'){
+      document.body.classList.add('dark');
+      document.getElementById('darkToggle').textContent='☀️';
+    }
+  }catch(e){}
+  const saved=getApiKey();
+  if(saved){
+    document.getElementById('apiKeyInput').value='sk-••••••••••••••••';
+    document.getElementById('apiKeyStatus').textContent='✅ 저장된 API 키 있음';
+  }
+  updateSummary();
+});
+</script>
+</body>
+</html>
