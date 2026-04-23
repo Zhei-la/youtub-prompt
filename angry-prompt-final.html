@@ -327,20 +327,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </footer>
 
 <script>
-// ════════ 통계 트래킹 (서버 기반, 익명 IP 카운트) ════════
-const TRACK_PROXY = 'https://angry-prompt-server-angry-prompt.up.railway.app';
-function trackEvent(action) {
-  try {
-    fetch(TRACK_PROXY + '/track/' + action, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appId: 'angry', name: '앵그리 에디션' }),
-      keepalive: true,
-    }).catch(function(){});
-  } catch(e) {}
-}
-trackEvent('visit');
-
 const DB = {
   food:{objs:[{kr:'☕ 커피잔',en:'coffee mug'},{kr:'🍜 라면 그릇',en:'ramen bowl'},{kr:'🍔 햄버거',en:'burger'},{kr:'🥤 음료캔',en:'soda can'},{kr:'🍕 피자 조각',en:'pizza slice'},{kr:'🥛 우유팩',en:'milk carton'},{kr:'🍩 도넛',en:'donut'},{kr:'🍜 컵라면',en:'instant noodle cup'},{kr:'🌶️ 떡볶이',en:'tteokbokki'},{kr:'🍶 소주병',en:'soju bottle'},{kr:'🍱 도시락',en:'lunchbox'},{kr:'🧃 주스팩',en:'juice box'},{kr:'🍦 아이스크림',en:'ice cream cone'},{kr:'🥚 계란',en:'egg'},{kr:'🍞 식빵',en:'bread loaf'},{kr:'🧋 버블티',en:'bubble tea cup'}],
     locs:[{kr:'밤의 번화한 식당 테이블',en:'on a busy restaurant table with warm evening lighting'},{kr:'새벽 편의점 카운터',en:'on a convenience store counter at 3am under harsh fluorescent light'},{kr:'아침 햇살 주방 조리대',en:'on a kitchen countertop bathed in soft morning sunlight'},{kr:'창가 카페 나무 테이블',en:'on a worn wooden café table beside a fogged window'},{kr:'서울 포장마차 안',en:'inside a steaming Seoul pojangmacha street stall'},{kr:'냉장고 안 차가운 빛',en:'inside a refrigerator under cold clinical white light'},{kr:'혼밥 1인용 테이블',en:'on a solo dining table in a late-night restaurant corner'}]},
@@ -417,12 +403,14 @@ const ANGRY_FUNCTION_MOTION = {
 };
 function getAngryFunctionMotion(objKr){
   if(!objKr) return '';
+  // 한글 검색: emoji + 이름에서 매칭되는 키 찾기
   for(const key of Object.keys(ANGRY_FUNCTION_MOTION)){
     if(objKr.includes(key)) return ANGRY_FUNCTION_MOTION[key];
   }
   return '';
 }
 
+// ═══ 감정별 시연 스타일 (앵그리 무드 전용) ═══
 const ANGRY_EMOTION_REVEAL_STYLE = {
   angry: 'forcefully slamming it open — aggressively showing off',
   furious: 'violently ripping it open — raging hard',
@@ -441,6 +429,7 @@ const ANGRY_EMOTION_REVEAL_STYLE = {
   cute_angry: 'cutely but firmly opening it with puffed cheeks — adorable fury'
 };
 
+// ═══ 사물별 "기능 시연" — 캐릭터가 자기 기능을 직접 보여줌 ═══
 const FUNCTION_REVEAL = {
   '🧊 냉장고': {
     action: 'opens ONLY the lower refrigerator door (the one WITHOUT the face) with one cartoon arm, keeping the upper freezer door with the face completely still and closed',
@@ -496,6 +485,7 @@ function getFunctionReveal(objKr, mood){
     }
   }
   if(!reveal){
+    // 키워드 매칭
     const k = objKr;
     if(k.includes('냉장고')) reveal = FUNCTION_REVEAL['🧊 냉장고'];
     else if(k.includes('세탁기')) reveal = FUNCTION_REVEAL['🌀 세탁기'];
@@ -513,6 +503,7 @@ function getFunctionReveal(objKr, mood){
   return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
 }
 
+// 카테고리별 주변 ambient motion (너무 잡스럽지 않게 1-2 포인트)
 const AMBIENT_BY_CAT = {
   food:'steam rising from nearby food, condensation droplets slowly forming on cold drinks, a napkin corner barely fluttering',
   object:'fabric or paper edges slightly moving, dust particles drifting through light, a stray item on the floor nearby',
@@ -618,6 +609,7 @@ function buildTopics(){
   });
 }
 
+// ═══ 주제 직접 입력 ═══
 function addCustomTopic(){
   const input = document.getElementById('topicInput');
   const val = (input.value || '').trim();
@@ -640,6 +632,7 @@ function addCustomTopic(){
   d.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
+// ═══ AI 주제 랜덤 생성 (선택된 사물 기반) ═══
 async function aiRandomTopic(){
   if(!S.obj){
     showErr('오브젝트를 먼저 선택해주세요 (Step 2).');
@@ -791,6 +784,7 @@ function selDur(el){
   el.classList.add('active');S.dur=el.dataset.val;
 }
 
+// ═══ AI 랜덤 ═══
 async function aiRandom(step){
   if(step===1){
     const cats=Object.keys(DB);
@@ -804,6 +798,7 @@ async function aiRandom(step){
     const btn=document.querySelector('#s'+step+' .btn-sm');
     const ot=btn.textContent;btn.textContent='⏳...';btn.disabled=true;
     try{
+      // 카테고리별 엄격한 가이드라인
       const CAT_GUIDE = {
         food: '한국 사람이 자주 먹는 음식/식품/디저트 (예: 김밥, 떡볶이, 라면, 치킨, 삼겹살, 아이스크림). 판타지나 희귀한 것 금지',
         object: '일상에서 매일 쓰는 생활 사물 (예: 휴대폰, 이어폰, 안경, 지갑, 열쇠, 머리끈, 우산). 판타지 아이템 금지',
@@ -852,6 +847,7 @@ async function aiRandom(step){
     return;
   }
   if(step===4){
+    // 스타일은 픽사 고정 — step 4 호출 시 바로 mood 랜덤으로 넘어감
     const chips=document.querySelectorAll('#moodChips .chip');
     if(chips.length>0){
       const idx=Math.floor(Math.random()*chips.length);
@@ -871,6 +867,7 @@ async function aiRandom(step){
   }
 }
 
+// ═══ 대사 생성 (품질 강화) ═══
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
 async function genDialogue(regen){
@@ -905,6 +902,7 @@ async function genDialogue(regen){
 
   dialogueEl.placeholder = '⏳ 정보 수집 중 (웹 검색)...';
 
+  // 웹 검색으로 사물×주제 관련 실제 정보 수집
   let research = null;
   try {
     research = await getResearch(S.obj, S.topicDesc);
@@ -917,6 +915,7 @@ async function genDialogue(regen){
 
   const styleTone=STYLE_DIALOGUE_TONE[S.style]||'자연스러운 한국어 구어체';
 
+  // 연구 결과를 시스템 프롬프트에 주입할 텍스트
   const researchText = research && (research.reasons.length || research.stats.length || research.common_mistakes.length || research.real_examples.length)
     ? '\n\n【🔍 웹 검색 기반 실제 정보 — 이걸 대사에 녹여라】\n' +
       (research.reasons.length ? '\n▶ 왜 안 좋은가:\n' + research.reasons.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
@@ -1014,6 +1013,7 @@ ${BAN_RULES}
 4. 이전 대사와 같은 각도 → 다른 각도 골라라
 약하면 다시 써.`;
 
+  // 재생성 다양성 강화: 매번 다른 각도 seed
   const angles = ['건강/위생 피해', '금전적/경제적 피해', '사회적 민폐', '구체적 숫자/통계', '과거 사례/목격담'];
   const angleHint = regen
     ? '\n\n⚠️ 이번엔 반드시 "' + angles[Math.floor(Math.random()*angles.length)] + '" 각도로 써라. 이전과 완전히 다른 톤/각도.'
@@ -1045,8 +1045,8 @@ ${BAN_RULES}
   }
 }
 
+// ═══ 프롬프트 생성 ═══
 async function generate(){
-  trackEvent('generate');
   if(!S.obj){showErr('오브젝트를 선택해주세요.');return;}
   if(!S.loc){showErr('장소를 선택해주세요.');return;}
   if(!S.style) S.style='pixar';
@@ -1081,6 +1081,7 @@ async function generate(){
   const locEn=S.locEn||S.loc;
   const styleTpl=STYLE_PROMPTS[S.style];
   const sizeHint=getSizeHint(S.obj);
+  // 카테고리 기반 fallback ambient + AI 시도로 덮어쓰기
   let ambient = getAmbient(S.cat);
   let enhancedLoc = locEn;
   let enhancedProps = 'contextually relevant items placed naturally around the subject';
@@ -1092,6 +1093,7 @@ async function generate(){
     if(aiScene.ambient) ambient = aiScene.ambient;
   }
 
+  // 3단계 폴백 모션
   let fnMotion = getAngryFunctionMotion(S.obj);
   if(!fnMotion && aiScene && aiScene.motion){
     fnMotion = aiScene.motion;
@@ -1118,7 +1120,13 @@ async function generate(){
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
   const videoPrompt =
-    'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
+    '⚠️⚠️ ABSOLUTE CRITICAL RULE — REFERENCE IMAGE IS THE SINGLE SOURCE OF TRUTH ⚠️⚠️\n' +
+    'YOU MUST use the uploaded image as the EXACT first frame of this video.\n' +
+    'DO NOT change, modify, reinterpret, or redesign ANY visual element from the uploaded image.\n' +
+    'The character design, face shape, face expression starting pose, body proportions, colors, textures, lighting, background composition, camera angle, and ALL visual details MUST match the uploaded image 100%.\n' +
+    'If the text description below conflicts with the uploaded image, ALWAYS follow the image — the image wins.\n' +
+    'This is Image-to-Video with MAXIMUM reference fidelity. The final video must look like the uploaded image came alive and started moving — NOT a reinterpretation.\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
     'Animate this character with angry upper-body movement.\n' +
     'The character is yelling: "' + dialogue + '"\n' +
     'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
@@ -1147,7 +1155,8 @@ async function generate(){
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
     'do NOT replace or morph into a real human face.\n' +
-    'Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '🔒 FINAL REMINDER: The uploaded image is the LAW. Every pixel of visual design MUST come from it. The text above only describes MOTION and AUDIO — NOT visual appearance. Use Image-to-Video mode with MAXIMUM reference fidelity. Failing to match the uploaded image is a CRITICAL error.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -1177,6 +1186,7 @@ async function generate(){
   btn.disabled=false;btn.textContent='🔥 프롬프트 생성하기';
 }
 
+// ═══ API 키 ═══
 function saveApiKey(){
   const statusEl=document.getElementById('apiKeyStatus');
   if(!statusEl){alert('⚠️ 페이지 로딩 중.');return;}
@@ -1218,6 +1228,7 @@ function getApiKey(){
   }catch(e){return '';}
 }
 
+// ═══ Railway 프록시 설정 ═══
 const PROXY_URL = 'https://angry-prompt-server-angry-prompt.up.railway.app';
 
 async function callAI(system,user){
@@ -1242,6 +1253,7 @@ async function callAI(system,user){
   return d.text || '';
 }
 
+// ═══ 사물 맞춤 배경 + ambient 동적 생성 ═══
 async function getScene(object, category){
   const apiKey = getApiKey();
   if(!apiKey) return null;
@@ -1271,6 +1283,7 @@ async function getScene(object, category){
   }
 }
 
+// 사물별 작동/주변 모션 전용 AI 호출 (FUNCTION_MOTION 매칭 없을 때 fallback)
 async function getMotionAI(object){
   const apiKey = getApiKey();
   if(!apiKey) return '';
@@ -1295,6 +1308,7 @@ async function getMotionAI(object){
   }
 }
 
+// ═══ 웹 검색 기반 정보 수집 ═══
 async function getResearch(object, topic){
   const apiKey = getApiKey();
   if(!apiKey) return null;
@@ -1323,6 +1337,7 @@ async function getResearch(object, topic){
   }
 }
 
+// ═══ 유틸 ═══
 function toggleDark(){
   const isDark=document.body.classList.toggle('dark');
   document.getElementById('darkToggle').textContent=isDark?'☀️':'🌙';
