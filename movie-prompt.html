@@ -92,6 +92,17 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 .btn-load{background:var(--accent)}
 .btn-continue{background:var(--ok)}
 .btn-delete{background:#ef4444}
+
+/* 전체 화면 로딩 오버레이 */
+.loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px;text-align:center}
+.loading-overlay.show{display:flex}
+.loading-spinner-big{width:60px;height:60px;border:5px solid rgba(255,255,255,0.15);border-top-color:#ec4899;border-radius:50%;animation:spin 1s linear infinite}
+.loading-text{color:white;font-size:16px;font-weight:700;max-width:400px}
+.loading-sub{color:#aaa;font-size:13px;max-width:400px;line-height:1.5}
+
+/* 버튼에 로딩 강조 */
+.big-btn.loading{background:linear-gradient(135deg,#ec4899,#6366f1);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
 </style>
 </head>
 <body>
@@ -197,6 +208,13 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
   </div>
 </div>
 
+<!-- 전체 화면 로딩 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner-big"></div>
+  <div class="loading-text" id="loadingText">대본 생성 중...</div>
+  <div class="loading-sub" id="loadingSub">AI가 1분짜리 영화 대본을 작성하고 있어요. 보통 20-40초 정도 걸립니다.</div>
+</div>
+
 <script>
 const GENRES = [
   {val:'sf', label:'🚀 SF/우주'},{val:'fantasy', label:'🐉 판타지'},{val:'thriller', label:'🔪 스릴러'},
@@ -255,7 +273,17 @@ function done(id){const e=document.getElementById(id);if(e)e.classList.add('acti
 function showErr(msg){
   const e=document.getElementById('errMsg');
   e.textContent='❌ '+msg;e.style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
   setTimeout(()=>e.style.display='none',8000);
+}
+
+function showLoading(text,sub){
+  document.getElementById('loadingText').textContent=text||'생성 중...';
+  document.getElementById('loadingSub').textContent=sub||'잠시만 기다려주세요.';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading(){
+  document.getElementById('loadingOverlay').classList.remove('show');
 }
 
 function buildGenres(){
@@ -281,9 +309,11 @@ function randomGenre(){
 }
 
 async function genTopics(regen){
+  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
   if(!S.genre){showErr('먼저 장르 선택');return}
   const wrap=document.getElementById('topicChips');
   wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;"><span class="spinner"></span> AI가 주제 생성 중...</div>';
+  showLoading('✨ 주제 생성 중...','AI가 '+S.genre+' 장르 주제 8개를 만들고 있어요.');
   try{
     const sys='너는 영화 시나리오 기획자다. 장르에 맞는 흥미롭고 독창적인 영화 주제 8개를 JSON으로 생성. 클리셰 피하고 후킹 강하게.\n포맷: {"topics":[{"title":"주제(15자 내)","desc":"한 줄 요약"}]}\nJSON만.';
     const user='장르: '+S.genre+'\n\n흥미로운 주제 8개. '+(regen?'이전과 완전 다른 방향으로.':'');
@@ -300,6 +330,8 @@ async function genTopics(regen){
     });
   }catch(e){
     wrap.innerHTML='<div style="font-size:12px;color:#c33;padding:8px;">❌ '+e.message+'</div>';
+  }finally{
+    hideLoading();
   }
 }
 function selTopic(el,title,desc){
@@ -339,11 +371,21 @@ function updateSummary(){
 }
 
 async function genScript(){
-  if(!S.genre||!S.topic){showErr('장르와 주제 먼저 선택');return}
-  if(!S.mood){showErr('분위기 선택');return}
+  // API 키 먼저 체크
+  if(!getApiKey()){
+    showErr('먼저 상단에 OpenAI API 키를 입력하고 저장해주세요!');
+    document.querySelector('.apikey-bar').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  if(!S.genre){showErr('1단계에서 장르를 먼저 선택해주세요!');return}
+  if(!S.topic){showErr('2단계에서 주제를 선택하거나 직접 입력해주세요!');return}
+  if(!S.mood){showErr('3단계에서 분위기를 선택해주세요!');return}
 
   const btn=document.getElementById('genScriptBtn');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> 대본 생성 중... (20-40초)';
+  btn.disabled=true;
+  btn.classList.add('loading');
+  btn.innerHTML='<span class="spinner"></span> 대본 생성 중... (20-40초)';
+  showLoading('🎬 1분 대본 생성 중...','AI가 주제에 맞게 6개 Scene (각 10초) 대본을 작성 중이에요. 20-40초 정도 걸립니다.');
 
   try{
     const moodMap={
@@ -429,7 +471,9 @@ ${S.topicDesc?'주제 설명: '+S.topicDesc:''}
     console.error(e);
   }finally{
     btn.disabled=false;
+    btn.classList.remove('loading');
     btn.innerHTML='✨ 1분 대본 생성 (6 Scene × 10초)';
+    hideLoading();
   }
 }
 
@@ -442,11 +486,15 @@ function regenScript(){
 }
 
 async function continueScript(){
+  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
   if(!S.movieMeta||!S.scenes||S.scenes.length===0){showErr('이어쓸 대본이 없습니다.');return}
 
   const btn=event.target;
   const origText=btn.innerHTML;
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> 이어서 대본 생성 중... (20-40초)';
+  btn.disabled=true;
+  btn.classList.add('loading');
+  btn.innerHTML='<span class="spinner"></span> 이어서 대본 생성 중... (20-40초)';
+  showLoading('➕ 다음 1분 이어쓰기 중...','이전 Scene들을 이어받아 자연스럽게 6개 Scene을 추가로 작성하고 있어요.');
 
   try{
     const lastScene=S.scenes[S.scenes.length-1];
@@ -511,7 +559,9 @@ ${recentScenes}
     console.error(e);
   }finally{
     btn.disabled=false;
+    btn.classList.remove('loading');
     btn.innerHTML=origText;
+    hideLoading();
   }
 }
 
@@ -557,8 +607,12 @@ async function openScene(idx){
     return;
   }
 
+  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
+
   if(s._generating)return;
   s._generating=true;
+
+  showLoading('🎥 Scene '+s.num+' 프롬프트 생성 중...','Sora2 / Runway Gen-4 / Kling / Flow·Veo 4종 플랫폼 프롬프트를 작성하고 있어요. 15-25초 정도 걸립니다.');
 
   const overlay=document.getElementById('modalOverlay');
   const content=document.getElementById('modalContent');
@@ -609,12 +663,15 @@ ${s.narration?'내레이션: '+s.narration:''}
     const d=JSON.parse(cleaned);
     s.prompts=d;
     s._generating=false;
+    hideLoading();
 
     renderScenes();
     showSceneModal(s,idx);
   }catch(e){
     s._generating=false;
-    content.innerHTML='<h3>❌ 프롬프트 생성 실패</h3><p>'+escapeHtml(e.message)+'</p><button class="btn-sm" onclick="closeModal()">닫기</button>';
+    hideLoading();
+    overlay.classList.add('show');
+    content.innerHTML='<h3>❌ 프롬프트 생성 실패</h3><p style="color:#c33;font-size:13px;">'+escapeHtml(e.message)+'</p><div style="display:flex;gap:6px;margin-top:12px;"><button class="btn-sm" onclick="closeModal();openScene('+idx+')">🔄 다시 시도</button><button class="btn-sm" onclick="closeModal()">닫기</button></div>';
   }
 }
 
