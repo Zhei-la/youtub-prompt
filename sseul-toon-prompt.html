@@ -496,13 +496,11 @@ body.dark .err-msg { background: #3a1f1f; border-color: #553333; color: #fcc; }
   </div>
   <div class="chips" id="styleChips">
     <div class="chip active" data-val="mixed" onclick="selStyle(this)">🎭 혼합 (AI 자동 선택)</div>
-    <div class="chip" data-val="webtoon" onclick="selStyle(this)">🎨 웹툰 일러스트</div>
     <div class="chip" data-val="photo" onclick="selStyle(this)">📸 실사 사진</div>
-    <div class="chip" data-val="meme" onclick="selStyle(this)">🤪 밈 스타일</div>
     <div class="chip" data-val="pixar" onclick="selStyle(this)">🎬 픽사 3D</div>
-    <div class="chip" data-val="anime" onclick="selStyle(this)">📺 애니 스타일</div>
-    <div class="chip" data-val="simple" onclick="selStyle(this)">✏️ 심플 선그림</div>
-    <div class="chip" data-val="emoji" onclick="selStyle(this)">🎭 이모티콘/스티커</div>
+    <div class="chip" data-val="anime" onclick="selStyle(this)">🌸 애니 스타일</div>
+    <div class="chip" data-val="emoji" onclick="selStyle(this)">💬 이모티콘/스티커</div>
+    <div class="chip" data-val="webtoon" onclick="selStyle(this)">📖 웹툰 (네이버 스타일)</div>
   </div>
   <div style="margin-top:10px;font-size:11px;color:var(--muted);">
     💡 '혼합' 선택 시 AI가 컷마다 가장 어울리는 스타일을 자동으로 선택해요 (밈, 실사, 일러스트 등 섞어서)
@@ -878,7 +876,7 @@ function updateSummary() {
   if (S.cuts) p.push('컷 수: <b>' + S.cuts + '</b>');
   if (S.lineLen) p.push('자막: <b>' + (S.lineLen==='short'?'짧게':'길게') + '</b>');
   if (S.style) {
-    const stmap = {mixed:'혼합',webtoon:'웹툰',photo:'실사',meme:'밈',pixar:'픽사',anime:'애니',simple:'심플',emoji:'이모티콘'};
+    const stmap = {mixed:'혼합',photo:'실사',pixar:'픽사 3D',anime:'애니',emoji:'이모티콘',webtoon:'웹툰'};
     p.push('스타일: <b>' + stmap[S.style] + '</b>');
   }
   document.getElementById('summaryBox').innerHTML = p.length ? p.join(' · ') : '선택한 옵션이 여기에 표시됩니다.';
@@ -900,14 +898,27 @@ async function genPrompts() {
 
     // AI에게 각 컷별 이미지 프롬프트 생성 요청 (묶을지 여부도 판단)
     const styleMap = {
-      mixed: 'AI choose best style per cut (mix of webtoon, photo, meme, illustration, emoji — varies per cut to maximize visual interest)',
-      webtoon: 'Korean webtoon illustration (Naver webtoon style, clean line, expressive)',
-      photo: 'realistic iPhone candid photo (lifestyle, natural lighting)',
-      meme: 'Korean internet meme style (deep-fried, exaggerated, meme aesthetic)',
-      pixar: 'Pixar-style 3D animation (warm lighting, vibrant colors)',
-      anime: 'Japanese anime style (cel-shaded, expressive eyes)',
-      simple: 'simple minimalist line drawing (black and white, clean)',
-      emoji: 'KakaoTalk emoji sticker style (cute, transparent background vibe)'
+      mixed: 'IMPORTANT: For each cut, choose ONE of the 5 specific styles below based on what fits best. Mix freely: (1) realistic photo, (2) Pixar 3D, (3) anime, (4) emoji sticker, (5) webtoon. Each cut should clearly belong to ONE style.',
+      photo: `REALISTIC PHOTOGRAPHY ONLY (not illustration, not 3D, not anime).
+MANDATORY style keywords to include in every prompt:
+"photorealistic, real photograph, DSLR photo, natural skin texture, authentic human features, real-world lighting, candid lifestyle photograph, shot on iPhone 15 Pro, no illustration, no cartoon, no anime style, no 3D render, documentary photo style, natural depth of field"
+NEVER use words like: drawing, illustration, animated, cartoon, rendered, 3D, anime, cel-shaded.`,
+      pixar: `PIXAR 3D ANIMATION ONLY (not photo, not anime, not 2D).
+MANDATORY style keywords to include in every prompt:
+"Pixar-style 3D animation, 3D rendered character, stylized 3D model with rounded features, large expressive eyes, soft subsurface scattering skin, warm volumetric lighting, Disney Pixar movie aesthetic, CGI render, no photorealism, no anime, no flat 2D drawing, like Inside Out or Toy Story style, vibrant saturated colors, smooth 3D surfaces"
+NEVER use words like: photo, photograph, realistic human, anime, 2D illustration, flat drawing.`,
+      anime: `JAPANESE ANIME STYLE ONLY (not realistic, not 3D, not webtoon).
+MANDATORY style keywords to include in every prompt:
+"Japanese anime illustration, cel-shaded 2D animation style, large sparkling anime eyes, sharp anime lineart, flat cel-shading with clear color boundaries, typical anime hair (spiky or flowing), expressive anime facial features, Studio Ghibli or Makoto Shinkai aesthetic, 2D flat style, vibrant anime colors, NO realism, NO 3D depth, NO webtoon simple lines"
+NEVER use words like: photorealistic, photograph, 3D rendered, realistic skin, real person.`,
+      emoji: `KAKAOTALK EMOJI STICKER STYLE ONLY (cute chibi cartoon).
+MANDATORY style keywords to include in every prompt:
+"KakaoTalk emoticon sticker style, super-deformed chibi character, oversized head small body ratio 1:1, simple bold outline, flat cartoon coloring with minimal shading, pure white or transparent background, extremely cute simplified features, large round eyes, tiny mouth, cartoonish exaggerated expressions like Korean emoji stickers (KakaoTalk/LINE Friends/Munchlax style), 2D cute mascot, NO realism, NO detailed backgrounds"
+NEVER use words like: photorealistic, detailed background, 3D, anime lineart.`,
+      webtoon: `KOREAN WEBTOON STYLE ONLY (Naver/Kakao webtoon).
+MANDATORY style keywords to include in every prompt:
+"Korean webtoon illustration (네이버웹툰 스타일), clean thin digital lineart, soft pastel coloring with cell shading, typical Korean webtoon character proportions (tall slim figures, pretty features), gentle gradient skin tone, webtoon panel composition, digital illustration style like 'True Beauty' or 'Tower of God', smooth clean lines, NO anime (different from Japanese anime), NO 3D, NO photograph, light watercolor-like shadows"
+NEVER use words like: photorealistic, 3D rendered, anime (Japanese), cel-shaded Japanese style.`
     };
 
     const sys = `너는 한국 유튜브 썰툰용 이미지 프롬프트 생성 전문가다.
@@ -934,23 +945,23 @@ async function genPrompts() {
     {
       "group_id": 1,
       "cut_nums": [1, 2],  // 이 그룹에 속하는 컷 번호들
-      "image_type": "webtoon | photo | meme | pixar | anime | simple | emoji",  // 이 이미지에 가장 어울리는 타입
-      "image_prompt": "상세한 영어 이미지 생성 프롬프트 (Midjourney/Nano Banana용). 장면, 표정, 분위기, 구도 다 포함. 끝에 'vertical 9:16 composition, no text overlays' 추가",
-      "meme_reference": "혹시 밈 타입이면 어떤 밈 참고하면 좋을지 한국어로 (예: '당황한 카피바라', '짜증난 고양이', '놀란 뽀로로'), 밈 아니면 빈 문자열",
+      "image_type": "photo | pixar | anime | emoji | webtoon",  // 이 이미지 타입 (5가지 중 하나만)
+      "image_prompt": "영어 이미지 생성 프롬프트. ⚠️ 절대 중요: 선택한 image_type의 MANDATORY style keywords를 반드시 프롬프트 첫 부분과 끝에 모두 포함할 것. NEVER 키워드는 절대 쓰지 말 것. 장면/표정/분위기/구도 포함. 끝에 'vertical 9:16 composition, no text overlays' 추가",
+      "style_check": "이 프롬프트가 선택된 스타일을 확실히 반영하는지 한 줄 자체 체크 (예: '픽사 3D 키워드 6개 포함, 실사/애니 금지어 제외 확인')",
       "tip": "이 이미지를 실제 영상에 쓸 때 팁 (한국어 1줄)"
     }
   ]
 }
 
-⚠️ 중요:
-- group_id는 1부터 순서대로
-- cut_nums는 연속된 숫자만 포함
-- 모든 컷이 반드시 하나의 그룹에 속해야 함 (빠뜨리지 말 것)
-- image_prompt는 해당 그룹 자막들을 모두 커버할 수 있도록 작성
-- '${S.style === 'mixed' ? '혼합 스타일' : styleMap[S.style]}' 기준으로 컷 성격에 맞게 결정`;
+⚠️ 스타일 준수 절대 규칙:
+1. image_type은 반드시 photo/pixar/anime/emoji/webtoon 중 하나
+2. image_prompt에는 그 스타일의 MANDATORY 키워드를 **프롬프트 첫 문장**과 **끝 문장**에 두 번 반복해 강조
+3. 그 스타일의 NEVER 키워드는 절대 쓰지 말 것
+4. 프롬프트 마지막에 "Style: [image_type 스타일명 대문자로] ONLY. Do NOT generate in any other style." 명시
+5. ${S.style === 'mixed' ? 'mixed 모드: 각 컷 성격에 맞춰 5개 스타일 중 다양하게 혼합' : `'${S.style}' 단일 스타일 고정: 모든 그룹의 image_type이 반드시 '${S.style}'이어야 함`}`;
 
     const cutsText = cuts.map(c => `[컷${c.num}] (${c.emotion}): ${c.narration}`).join('\n');
-    const user = `아래 썰툰 컷들을 보고 이미지 그룹 분할 + 각 그룹 이미지 프롬프트 생성:\n\n${cutsText}\n\n컷 개수: ${cuts.length}\n이미지 스타일: ${S.style}\n\n위 구조로 JSON만 출력.`;
+    const user = `아래 썰툰 컷들을 보고 이미지 그룹 분할 + 각 그룹 이미지 프롬프트 생성:\n\n${cutsText}\n\n컷 개수: ${cuts.length}\n선택된 이미지 스타일: ${S.style}\n${S.style!=='mixed'?`\n⚠️ 모든 그룹의 image_type은 반드시 "${S.style}" 이어야 하며, 프롬프트에 해당 스타일의 MANDATORY 키워드를 강력하게 반영할 것.`:''}\n\n위 구조로 JSON만 출력.`;
 
     const r = await callAI(sys, user, 4000);
     let cleaned = r.replace(/```json|```/g, '').trim();
@@ -1010,10 +1021,10 @@ function renderResults(groups, cuts) {
       '<div class="cut-label">🎬 이미지 그룹 ' + g.group_id + '</div>' +
       '<div class="cut-meta">적용 컷: ' + g.cut_nums.join(', ') + ' · 타입: ' + (g.image_type || '자동') + '</div>' +
       narrHtml +
-      '<h4 style="margin:12px 0 4px;font-size:12px;color:var(--sub);">🎨 이미지 프롬프트</h4>' +
+      '<h4 style="margin:12px 0 4px;font-size:12px;color:var(--sub);">🎨 이미지 프롬프트 <span style="background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:900;margin-left:6px;">'+escapeHtml((g.image_type||'mixed').toUpperCase())+'</span></h4>' +
       '<button class="copy-btn" onclick="copyResult(this, `prompt_' + idx + '`)">📋 복사</button>' +
       '<pre id="prompt_' + idx + '">' + escapeHtml(g.image_prompt || '') + '</pre>' +
-      (g.meme_reference ? '<div style="margin-top:10px;padding:8px 10px;background:var(--accent-soft);border-radius:6px;font-size:12px;"><b>🤪 밈 추천:</b> ' + escapeHtml(g.meme_reference) + '</div>' : '') +
+      (g.style_check ? '<div style="margin-top:8px;padding:6px 10px;background:var(--accent-soft);border-radius:6px;font-size:11px;color:var(--sub);"><b>✅ 스타일 체크:</b> ' + escapeHtml(g.style_check) + '</div>' : '') +
       (g.tip ? '<div style="margin-top:6px;font-size:11px;color:var(--muted);">💡 ' + escapeHtml(g.tip) + '</div>' : '');
 
     cards.appendChild(card);
