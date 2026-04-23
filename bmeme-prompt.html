@@ -1968,12 +1968,31 @@ async function generate(){
     'The character stays grounded — no floating or jumping.\n' +
     'Camera mostly static with a slight zoom-in.\n' +
     'Style: '+styleTpl.note+' — preserve the EXACT style of the uploaded image, do not reinterpret.\n' +
-    (functionReveal ? '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal should happen naturally during the dialogue, synced with the words being said, making the scene feel dynamic and purposeful.\n' +
-      '🚫 CRITICAL FACE PRESERVATION RULES (반드시 지켜야 함):\n' +
-      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. NEVER duplicate, clone, or re-generate the face anywhere else during the animation. NO second face appearing next to or above the opening part.\n' +
-      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): determine which section the face is attached to in the reference image, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
-      '3. If the face-bearing part MUST move or open, then the face moves naturally WITH that part — NEVER jumps to a new location, NEVER splits, NEVER duplicates. If the rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
-      '4. No character should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face.\n' : '') +
+    (functionReveal ? '🚫🚫🚫 CRITICAL: ONE FACE ONLY — NO FACE DUPLICATION 🚫🚫🚫\n' +
+      'The uploaded reference image shows ONE character with ONE single face in ONE specific location. Throughout the entire animation, there must be ONLY THIS ONE FACE — the exact same face in the exact same location as in the reference image.\n' +
+      '\n' +
+      '❌ FORBIDDEN (these are CRITICAL errors that ruin the video):\n' +
+      '   - Do NOT generate a second face anywhere else (not on the wall, not on the door, not on the side, not popping out, not floating)\n' +
+      '   - Do NOT create a duplicate face on any object or surface around the character\n' +
+      '   - Do NOT make the face appear multiple times during the animation\n' +
+      '   - Do NOT let a face emerge, protrude, or grow out of walls, doors, cabinets, or any surface\n' +
+      '   - Do NOT generate additional characters, heads, or faces beyond the single one in the reference\n' +
+      '   - Do NOT clone, mirror, or split the face\n' +
+      '\n' +
+      '✅ REQUIRED:\n' +
+      '   - Exactly ONE face, in the ONE location shown in the reference image, throughout ALL frames\n' +
+      '   - If the face-bearing part moves or rotates out of view, the face disappears with it — do NOT replace it with a new face elsewhere\n' +
+      '   - If the object opens (like a fridge door or cabinet), only the part WITHOUT the face moves; the part WITH the face stays perfectly still\n' +
+      '   - Surrounding surfaces (walls, floor, background) MUST remain plain and faceless\n' +
+      '\n' +
+      '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal happens naturally during dialogue, synced with the words, WHILE PRESERVING THE SINGLE-FACE RULE ABOVE.\n' +
+      '\n' +
+      'Detailed face preservation rules:\n' +
+      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. Never duplicate, clone, or re-generate the face anywhere else. NO second face appearing next to, above, below, or on any part of the object or background.\n' +
+      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): identify which section the face is on, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
+      '3. If the face-bearing part must move or open, the face moves naturally WITH that part. If rotation takes the face out of view, the face simply disappears with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
+      '4. No new character, head, or face should appear that was not in the original uploaded image. The only character is the object itself with its single original face. Walls, background, ambient objects all stay faceless.\n' +
+      '5. NEGATIVE: multiple faces, duplicate face, face on wall, face on door, face emerging from surface, cloned face, twin face, split face, mirror face, second character, extra head, additional faces.\n' : '') +
     (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with '+scene.ambient+'. Keep these visible but not distracting from the talking character.\n' : 'Subtle environmental life: '+scene.ambient+'.\n') +
     'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker.\n' +
     'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
