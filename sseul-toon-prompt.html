@@ -1087,7 +1087,7 @@ NEVER use words like: photorealistic, 3D rendered, anime (Japanese), cel-shaded 
       "group_id": 1,
       "cut_nums": [1, 2],  // 이 그룹에 속하는 컷 번호들
       "image_type": "photo | pixar | anime | emoji | webtoon",  // 이 이미지 타입 (5가지 중 하나만)
-      "image_prompt": "영어 이미지 생성 프롬프트. ⚠️ 절대 중요: 선택한 image_type의 MANDATORY style keywords를 반드시 프롬프트 첫 부분과 끝에 모두 포함할 것. NEVER 키워드는 절대 쓰지 말 것. 장면/표정/분위기/구도 포함. 끝에 'vertical 9:16 composition, no text overlays' 추가",
+      "image_prompt": "영어 이미지 생성 프롬프트. ⚠️ 절대 중요: (1) 선택한 image_type의 MANDATORY style keywords를 반드시 프롬프트 첫 부분과 끝에 모두 포함할 것. NEVER 키워드는 절대 쓰지 말 것. (2) 프롬프트 맨 앞에 반드시 '⚠️ IF A REFERENCE IMAGE IS ATTACHED: You MUST follow the reference image EXACTLY — same character appearance, same outfit, same facial features, same art style. Do NOT change the character based on the text prompt if an image is provided. Use the attached image as the ABSOLUTE source of truth for appearance. The text below only describes the SCENE/ACTION, not the character's look.' 문구 포함할 것. 장면/표정/분위기/구도 포함. 끝에 'vertical 9:16 composition, no text overlays' 추가",
       "style_check": "이 프롬프트가 선택된 스타일을 확실히 반영하는지 한 줄 자체 체크 (예: '픽사 3D 키워드 6개 포함, 실사/애니 금지어 제외 확인')",
       "tip": "이 이미지를 실제 영상에 쓸 때 팁 (한국어 1줄)"
     }
@@ -1168,6 +1168,9 @@ function renderResults(groups, cuts) {
       '<div class="cut-label">🎬 이미지 그룹 ' + g.group_id + '</div>' +
       '<div class="cut-meta">적용 컷: ' + g.cut_nums.join(', ') + ' · 타입: ' + (g.image_type || '자동') + '</div>' +
       narrHtml +
+      '<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:8px;padding:8px 10px;margin-top:10px;font-size:10px;color:#78350f;line-height:1.7;">'+
+        '<b>📸 캐릭터 시트 사용 시</b>: Midjourney에서 <code>--cref [이미지URL]</code>, Nano Banana는 이미지 첨부, Flux는 ControlNet 사용 → <b>이 프롬프트가 그 캐릭터 외형을 강제 유지</b>합니다!'+
+      '</div>'+
       '<h4 style="margin:12px 0 4px;font-size:12px;color:var(--sub);">🎨 이미지 프롬프트 <span style="background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:900;margin-left:6px;">'+escapeHtml((g.image_type||'mixed').toUpperCase())+'</span></h4>' +
       '<button class="copy-btn" onclick="copyResult(this, `prompt_' + idx + '`)">📋 복사</button>' +
       '<pre id="prompt_' + idx + '">' + escapeHtml(g.image_prompt || '') + '</pre>' +
