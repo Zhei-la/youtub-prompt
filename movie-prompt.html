@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎬 AI 영화 프롬프트 생성기</title>
 <meta property="og:title" content="🎬 AI 영화 프롬프트 생성기">
-<meta property="og:description" content="10초 Scene 단위 대본 + 이어쓰기 + 4종 영상 프롬프트">
+<meta property="og:description" content="10초 Scene 단위 대본 + 이어쓰기 + Flow/Veo 프롬프트 생성">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zhei-la.github.io/youtub-prompt/movie-prompt.html">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 생성</div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 생성 <span style="opacity:0.5;font-size:11px;">v2.1</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -518,6 +518,13 @@ async function callAI(system, user, maxTokens){
 // 강력한 JSON 파서 (GPT의 변덕 대응)
 function robustParseJSON(text){
   if(!text)throw new Error('빈 응답');
+
+  // ⚠️ text가 문자열이 아니면 문자열로 변환
+  if(typeof text!=='string'){
+    // 이미 객체/배열이면 그대로 반환
+    if(typeof text==='object')return text;
+    text=String(text);
+  }
 
   // 1차: 기본 정제
   let cleaned=text.replace(/```json|```/g,'').trim();
@@ -1359,7 +1366,7 @@ ${S.movieMeta?.supporting?.length?'조연: '+S.movieMeta.supporting.map(sp=>sp.n
 ${s.narration?'내레이션: '+s.narration:''}
 시각 묘사: ${s.visual_description||''}
 
-⬆️ 위 Scene을 4종 플랫폼용 10초 영상 프롬프트로 변환. JSON만.`;
+⬆️ 위 Scene을 Flow/Veo용 10초 영상 프롬프트로 변환. JSON만.`;
 
     const r=await callAI(sys,user,2500);
     const d=robustParseJSON(r);
