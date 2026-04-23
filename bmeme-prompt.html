@@ -51,7 +51,6 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 
 .wrap{max-width:860px;margin:0 auto;padding:0 20px 100px;}
 
-/* API Key bar */
 #apiKeyBanner{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;}
 .api-row{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .api-label{font-size:11px;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
@@ -65,7 +64,6 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 .api-btn.ghost{border:1px solid var(--border);background:transparent;color:var(--muted);}
 #apiKeyStatus{font-size:11px;margin-top:5px;color:var(--muted);max-width:860px;margin-left:auto;margin-right:auto;}
 
-/* Step */
 .step{margin-bottom:26px;opacity:0.35;pointer-events:none;transition:opacity 0.3s;}
 .step.active{opacity:1;pointer-events:all;}
 .step.done{opacity:0.7;pointer-events:all;}
@@ -89,7 +87,6 @@ header{padding:36px 20px 24px;text-align:center;border-bottom:1px solid var(--bo
 .btn-sm:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
 .btn-sm:disabled{opacity:0.35;cursor:not-allowed;}
 
-/* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:6px;}
 .chip{
   padding:7px 12px;border-radius:6px;
@@ -108,7 +105,6 @@ body.dark .chip.active .del{color:rgba(0,0,0,0.5);}
 
 .country-toggle .chip{font-size:13px;padding:8px 16px;}
 
-/* Concept toggle - special big toggle */
 .concept-row{display:flex;gap:10px;flex-wrap:wrap;}
 .concept-chip{
   flex:1;min-width:180px;padding:14px 18px;border-radius:10px;
@@ -128,7 +124,6 @@ body.dark .chip.active .del{color:rgba(0,0,0,0.5);}
 }
 .cat-group-title{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:1px;}
 
-/* Inputs */
 .input-row{display:flex;gap:8px;margin-top:10px;}
 input[type=text]{
   flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:7px;
@@ -142,7 +137,6 @@ input[type=text]:focus{border-color:var(--accent);}
 }
 .add-btn:hover{background:var(--accent);color:var(--bg);border-color:var(--accent);}
 
-/* Dialogue box */
 .dialogue-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
 .sec-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
 .dialogue-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
@@ -154,7 +148,6 @@ textarea{
 textarea:focus{border-color:var(--accent);}
 .dialogue-note{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5;}
 
-/* Summary & Gen */
 .divider{height:1px;background:var(--border);margin:24px 0;}
 .summary-bar{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
@@ -174,7 +167,6 @@ textarea:focus{border-color:var(--accent);}
 .gen-btn:hover{opacity:0.85;}
 .gen-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
-/* Results */
 .result-wrap{display:none;}
 .result-wrap.show{display:block;animation:fadeUp 0.35s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -198,14 +190,12 @@ textarea:focus{border-color:var(--accent);}
 .copy-btn.ok{border-color:var(--green)!important;color:var(--green)!important;}
 .result-text{font-size:13px;line-height:1.9;color:var(--sub);white-space:pre-wrap;word-break:break-word;}
 
-/* Style note */
 .style-note{
   font-size:11px;padding:7px 11px;border-radius:6px;
   background:var(--surface);border:1px solid var(--border);color:var(--sub);
   margin-top:8px;display:none;
 }
 
-/* Lang sub-tabs inside dialogue result */
 .lang-tabs{display:flex;gap:4px;margin-bottom:10px;}
 .lang-tab{padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;}
 .lang-tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700;}
@@ -238,7 +228,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <div class="wrap">
 
-<!-- S0: 국가 -->
 <div class="step active" id="s0">
   <div class="step-hd">
     <div class="step-num">0</div>
@@ -250,7 +239,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S1: 컨셉 (NEW) -->
 <div class="step active" id="s1c">
   <div class="step-hd">
     <div class="step-num">1</div>
@@ -270,7 +258,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S2: 카테고리 -->
 <div class="step active" id="s1">
   <div class="step-hd">
     <div class="step-num">2</div>
@@ -296,7 +283,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S2-1: 사물 -->
 <div class="step" id="s1b">
   <div class="step-hd">
     <div class="step-num">2.5</div>
@@ -310,7 +296,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S3: 상황 -->
 <div class="step" id="s2">
   <div class="step-hd">
     <div class="step-num">3</div>
@@ -324,7 +309,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S4: 스타일 -->
 <div class="step" id="s3">
   <div class="step-hd">
     <div class="step-num">4</div>
@@ -336,7 +320,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
     <div class="chip" data-val="bmeme" onclick="selStyle(this)">🤪 병맛 만화</div>
   </div>
   <div class="style-note" id="styleNote"></div>
-  <!-- 감정 표현 -->
   <div style="margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border);">
     <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:0.5px;">🎭 감정 표현 (병맛 톤으로 표현됨)</div>
     <div class="chips" id="moodChips">
@@ -354,7 +337,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       <div class="chip" data-val="chibi_rage" onclick="selMood(this)">👹 폭발 직전</div>
     </div>
   </div>
-  <!-- 병맛 대화 전용: 배경 참조 + 스토리 이어쓰기 (항상 표시) -->
   <div style="margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border);">
     <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:0.5px;">💬 사물 대화 옵션</div>
     <div style="font-size:12px;margin-bottom:12px;">
@@ -369,7 +351,6 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   </div>
 </div>
 
-<!-- S5: 대본 -->
 <div class="step" id="s4">
   <div class="step-hd">
     <div class="step-num">5</div>
@@ -462,6 +443,20 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </footer>
 
 <script>
+// ════════ 통계 트래킹 (서버 기반, 익명 IP 카운트) ════════
+const TRACK_PROXY = 'https://angry-prompt-server-angry-prompt.up.railway.app';
+function trackEvent(action) {
+  try {
+    fetch(TRACK_PROXY + '/track/' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appId: 'bmeme', name: '병맛 사물 대화' }),
+      keepalive: true,
+    }).catch(function(){});
+  } catch(e) {}
+}
+trackEvent('visit');
+
 // ═══ 데이터베이스 ═══
 const OBJECTS = {
   kr:{
@@ -582,6 +577,8 @@ const OBJECTS = {
     ]}
   }
 };
+
+
 
 // ═══ 상황 (컨셉별 / 국가별) ═══
 const SITUATIONS = {
@@ -888,6 +885,8 @@ const SITUATIONS = {
   }
 };
 
+
+
 // ═══ 스타일 템플릿 (배경 디테일 강화) ═══
 const STYLE_TEMPLATES = {
   webtoon:{note:'📱 웹툰 — 손그림 라인, 얼굴이 사물에 스케치된 듯한 스타일',
@@ -974,48 +973,31 @@ const MOODS = {
   }
 };
 
-// ═══ 배경 상황별 소품 매핑 (이미지 프롬프트 디테일 강화용) ═══
-// ═══ 사물별 실제 크기 힌트 (비율/스케일을 프롬프트에 강제하기 위함) ═══
-// 카테고리별로 real-world size reference + 화면 내 프레이밍 가이드
+// ═══ 사물별 실제 크기 힌트 ═══
 const SIZE_HINTS = {
-  // 대형 가전 (사람 키와 비슷하거나 큼)
   'large_appliance': 'real-world life-size — roughly 150-180cm tall or wall-mounted, matches how it actually appears in a real home. Framed from mid-shot to wide, so the object fills about 60-70% of the vertical frame without distortion',
-  // 중형 가전 (허리~가슴 높이)
   'medium_appliance': 'real-world counter-top or floor-standing size — around 30-60cm, sitting naturally on its actual surface. Framed so the object takes about 50-60% of the frame with realistic surroundings visible',
-  // 소형 주방/욕실용품 (한 손 크기)
   'small_handheld': 'real-world hand-held size — around 10-25cm. Framed in a realistic close-up but NOT extreme macro — the surrounding scene is still clearly visible around it, the object takes about 40-50% of the frame',
-  // 가구
   'furniture': 'real-world furniture size — matches a real bed/desk/chair in a normal room. Framed wide enough to show its actual scale relative to the room, object takes about 50-60% of the frame',
-  // 작은 사무/생활 소품
   'tiny_object': 'real-world tiny object size — around 5-15cm. Framed with care so it does NOT look absurdly enlarged — the natural surrounding (desk surface, palm-sized perspective) is clearly shown, object takes about 30-45% of the frame',
-  // 큰 공간/장소
   'space': 'real-world architectural scale — a full room or vehicle interior. Framed as establishing shot showing the whole environment realistically',
-  // 기본값
   'default': 'real-world life-size matching how this object actually appears in daily life — never cartoonishly oversized, never shrunken. The object sits naturally in its real environment with correct scale relative to surrounding props'
 };
 
-// 사물 → 크기 카테고리 매핑
 const OBJECT_SIZE = {
-  // 대형 가전
   '🧊 냉장고':'large_appliance', '🌀 세탁기':'large_appliance', '❄️ 에어컨':'large_appliance', '🧹 청소기':'medium_appliance',
-  // 중형
   '🍚 전기밥솥':'medium_appliance', '🖨️ 프린터':'medium_appliance', '🖥️ 사무용 책상':'furniture',
   '📠 팩스기':'medium_appliance', '🥤 자판기':'large_appliance',
-  // 가구
   '🛏️ 침대':'furniture', '🛌 이불':'furniture', '🛌 후톤 이불':'furniture',
-  // 소형
   '⏰ 알람시계':'small_handheld', '🪞 거울':'medium_appliance', '🚿 샤워기':'small_handheld',
   '☕ 커피잔':'small_handheld', '🍜 컵라면':'small_handheld', '🍱 편의점 도시락':'small_handheld',
   '🍙 오니기리 도시락':'small_handheld', '📟 에어컨 리모컨':'tiny_object',
-  // 초소형
   '🔌 충전기':'tiny_object', '🧻 화장지 롤':'small_handheld', '🦷 칫솔':'tiny_object',
   '⌨️ 키보드':'small_handheld', '📇 명함':'tiny_object', '💳 통장':'tiny_object',
   '🔴 도장(한코)':'tiny_object', '👔 넥타이':'small_handheld', '📎 서류 클립':'tiny_object',
-  // 공간
   '🛁 욕조':'furniture', '🚰 싱크대':'furniture', '🗑️ 쓰레기통':'medium_appliance',
   '🗑️ 분리수거통 (연소/불연)':'medium_appliance', '🛗 엘리베이터':'space',
   '🚃 통근 전철':'space', '🚲 자전거':'furniture',
-  // 기타
   '🍺 회식 잔':'small_handheld', '💼 노트북':'small_handheld', '📧 이메일 받은편지함':'small_handheld',
   '🏢 타임카드':'small_handheld', '🪟 쇼지 (장지문)':'furniture', '🧊 유니트 버스':'space'
 };
@@ -1025,7 +1007,7 @@ function getSizeHint(objKey){
   return SIZE_HINTS[cat];
 }
 
-// ═══ 사물의 자연 작동 모션 (세탁기는 돌아가고, 전자레인지는 턴테이블 돌고 등) ═══
+// ═══ 사물의 자연 작동 모션 ═══
 const FUNCTION_MOTION = {
   '🌀 세탁기': 'the drum visibly spinning behind the glass door with tumbling laundry inside — actual washing cycle in progress with water suds visible, the machine body gently vibrating from the spin',
   '🧊 냉장고': 'interior fridge light pulsing faintly when face moves, condensation droplets slowly forming on the door handle, ice cubes occasionally clinking faintly inside',
@@ -1122,7 +1104,6 @@ const FUNCTION_REVEAL = {
 function getFunctionReveal(objKey, mood){
   let reveal = FUNCTION_REVEAL[objKey];
   if(!reveal){
-    // 키워드 매칭
     const k = objKey || '';
     if(k.includes('냉장고')) reveal = FUNCTION_REVEAL['🧊 냉장고'];
     else if(k.includes('세탁기')) reveal = FUNCTION_REVEAL['🌀 세탁기'];
@@ -1141,6 +1122,8 @@ function getFunctionReveal(objKey, mood){
   const emotionStyle = EMOTION_REVEAL_STYLE[mood] || EMOTION_REVEAL_STYLE.angry;
   return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
 }
+
+
 
 const SCENE_PROPS = {
   kr:{
@@ -1218,6 +1201,8 @@ let lastScriptKR='',lastScriptJP='',lastScriptEN='';
 let currentScriptLang='native';
 let usedScripts=[];
 
+
+
 // ═══ 국가 선택 ═══
 function selCountry(el){
   document.querySelectorAll('#countryChips .chip').forEach(c=>c.classList.remove('active'));
@@ -1239,7 +1224,6 @@ function selConcept(el){
   document.querySelectorAll('.concept-chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   S.concept=el.dataset.val;
-  // 기존 사물 유지하되, 상황 목록은 재빌드
   if(S.obj){buildSituations();}
   updateSummary();
 }
@@ -1256,7 +1240,6 @@ function selBmemeCat(el){
   updateSummary();
 }
 
-// 카테고리별 사물 표시
 function buildObjectsForCat(){
   const wrap=document.getElementById('objectGroups');
   wrap.innerHTML='';
@@ -1277,7 +1260,6 @@ function buildObjectsForCat(){
   });
 }
 
-// 🎲 카테고리 랜덤
 function aiRandomCat(){
   const chips=document.querySelectorAll('#catChips .chip');
   if(chips.length===0) return;
@@ -1306,7 +1288,6 @@ function buildSituations(){
     return;
   }
   list.forEach(sit=>{
-    // sit은 문자열이거나 {kr, jp} 객체
     const displayText = (typeof sit === 'object') ? sit.kr : sit;
     const aiValue = (typeof sit === 'object') ? (sit.jp||sit.kr) : sit;
     const c=document.createElement('div');
@@ -1320,8 +1301,8 @@ function buildSituations(){
 function selSit(displayText, aiValue, el){
   document.querySelectorAll('#sitChips .chip').forEach(c=>c.classList.remove('active'));
   if(el) el.classList.add('active');
-  S.sit = displayText;           // 화면에 보이는 한글
-  S.sitAI = aiValue || displayText;  // AI에 전달할 현지어(일본이면 일본어)
+  S.sit = displayText;
+  S.sitAI = aiValue || displayText;
   done('s2');act('s3');deact('s4');
   S.style=null;
   document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.remove('active'));
@@ -1370,7 +1351,6 @@ function selStyle(el){
   updateSummary();
 }
 
-// 감정 선택 (독립적, 스타일과 함께 작동)
 function selMood(el){
   document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
@@ -1378,7 +1358,6 @@ function selMood(el){
   updateSummary();
 }
 
-// ═══ 기타 ═══
 function selDur(el){
   document.querySelectorAll('#durChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');S.dur=el.dataset.val;
@@ -1388,8 +1367,7 @@ function selVoice(el){
   el.classList.add('active');S.voice=el.dataset.val;
 }
 
-// ═══ AI 랜덤 — 카테고리별 ═══
-// 카테고리별 AI 사물 생성
+// ═══ AI 사물 생성 ═══
 const BMEME_CAT_DESC = {
   home:'자취방/집 생활용품 (냉장고, 세탁기, 침대, 에어컨, 청소기, 쓰레기통 등)',
   kitchen:'주방용품 (식칼, 프라이팬, 도마, 전자레인지, 밥솥, 믹서기 등)',
@@ -1427,7 +1405,7 @@ async function aiGenObjForCat(){
     const already = Array.from(document.querySelectorAll('#objectGroups .chip')).map(c=>c.dataset.kr).join(', ');
 
     const r = await callAI(
-      '너는 '+countryDesc+' 일상 사물 큐레이터다. 반드시 JSON만 반환. 설명·주석·코드블록 금지.\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語"}]}\n\n** 필수 규칙 **\n1. 지정된 카테고리에 해당하는 사물만 생성.\n2. 절대 카테고리 외 엉뚱한 사물 넣지 말 것 ("행운양말", "무지개", "마법봉" 같은 것 금지)\n3. 병맛 사물 대화 컨셉(사물끼리 서로 티격태격)이 재미있게 성립하는 사물 우선\n4. 일상에서 흔히 볼 수 있고 영상 소재로 쓰기 좋은 사물',
+      '너는 '+countryDesc+' 일상 사물 큐레이터다. 반드시 JSON만 반환. 설명·주석·코드블록 금지.\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語"}]}\n\n** 필수 규칙 **\n1. 지정된 카테고리에 해당하는 사물만 생성.\n2. 절대 카테고리 외 엉뚱한 사물 넣지 말 것 ("행운양말", "마법봉" 같은 것 금지)\n3. 병맛 사물 대화 컨셉(사물끼리 서로 티격태격)이 재미있게 성립하는 사물 우선\n4. 일상에서 흔히 볼 수 있고 영상 소재로 쓰기 좋은 사물',
       '카테고리: '+groupTitle+' ('+categoryDesc+')\n\n이 카테고리 내에서 6개 사물 생성. 이모지 포함.\n\n이미 선택지에 있는 것들 (중복 금지): '+already+'\n\nJSON만 출력.'
     );
     let cleaned = r.replace(/```json|```/g,'').trim();
@@ -1461,7 +1439,6 @@ async function aiGenObjForCat(){
   }
 }
 
-// Backward compat (기존 코드 호출 안 깨지도록)
 async function aiRandomObjGroup(groupKey){
   if(groupKey){ S.cat = groupKey; }
   await aiGenObjForCat();
@@ -1485,10 +1462,8 @@ async function aiRandomSit(){
   const isTip = S.concept==='tip';
   const countryDesc = isJP ? '일본' : '한국';
 
-  // 이미 있는 상황들 (중복 방지)
   const existing = Array.from(document.querySelectorAll('#sitChips .chip')).map(c=>c.textContent.replace(/^✨\s*/,'')).join(', ');
 
-  // 사물 특화된 예시로 AI에게 명확히 가이드
   const tipExamples = isJP
     ? `[例 - 洗濯機]: "ファスナー開けたまま洗濯", "柔軟剤を多く入れすぎ", "脱水後すぐ放置"
 [例 - 冷蔵庫]: "ドアの開けっぱなし", "熱いもの入れる", "奥の食材忘れる"
@@ -1557,6 +1532,8 @@ async function aiRandomSit(){
 
 }
 
+
+
 // ═══ 대본 AI 생성 ═══
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
@@ -1569,7 +1546,6 @@ async function genDialogue(regen){
     return;
   }
 
-  // 즉시 시각적 피드백 - 버튼이 반응하는지 확인 가능
   dialogueEl.placeholder = '⏳ 대본 생성 준비 중...';
 
   if(!S.obj){
@@ -1598,11 +1574,6 @@ async function genDialogue(regen){
   const moodPerform = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].perform : '';
   const styleTone = baseStyleTone + (moodPerform ? ' / 감정·말투 추가: ' + moodPerform : '');
 
-  // ═════════════════════════════════════════════════
-  // 품질 강제: 실제 레퍼런스 대본을 few-shot으로 주입
-  // ═════════════════════════════════════════════════
-
-  // 꿀팁 컨셉 레퍼런스 (Objects Talk Back 실제 스타일)
   const TIP_REFS_KR = {
     30: `[예시1 - 세탁기] "잠깐, 너 지금 지퍼 열고 나 돌리려는 거야? 야 그 금속 이빨이 얼마나 날카로운 줄 알아? 네 실크 블라우스, 니 좋아하는 스웨터, 다 내 안에서 갈기갈기 긁히는 중이거든. 30분이면 천이 보풀 지경 돼. 세탁 전에 지퍼는 무조건 끝까지 올려. 벨크로 찍찍이도 마찬가지고. 3초면 되는 거를 안 해서 옷 한 벌 날리지 마."
 
@@ -1643,7 +1614,6 @@ async function genDialogue(regen){
     ? (isTip ? TIP_REFS_JP : COMPLAINT_REFS_JP)[S.dur]
     : (isTip ? TIP_REFS_KR : COMPLAINT_REFS_KR)[S.dur];
 
-  // 구조 강제
   const structureKR = isTip
     ? (S.dur==='30'
       ? `【필수 구조 - 30초 꿀팁】
@@ -1690,7 +1660,6 @@ async function genDialogue(regen){
 ② 苛立ち (1~2文)
 合計2~3文。`);
 
-  // 금지 사항 강제
   const BAN_RULES_KR = `
 ⛔ 절대 금지 사항 (이런 대본은 영양가 제로, 시청자 이탈 원인):
 - "구석에 쳐박혀 있네", "날개 펼치고 싶다", "숨은 친구", "나도 좀 아껴줘" 같은 뜬구름 비유
@@ -1724,9 +1693,6 @@ async function genDialogue(regen){
     ? '\n\n⚠️ 아래 최근 대본들과 완전히 다른 각도/표현/예시로 써줘:\n'+usedScripts.slice(-3).map((s,i)=>`[${i+1}] ${s}`).join('\n---\n')
     : '';
 
-  // ═════════════════════════════════════════════════
-  // 최종 시스템 프롬프트
-  // ═════════════════════════════════════════════════
   const systemPrompt = isJP
     ? `あなたは日本のTikTok/Instagram Reels/YouTube Shorts で再生数100万超を連発する「物が話す」ショート動画の専門台本作家だ。
 
@@ -1765,7 +1731,6 @@ ${BAN_RULES_KR}
 "내 대본의 모든 문장이 구체적인 정보를 담고 있나? 영양가 없는 감성 문장 없나? 독자가 실제로 뭔가 배우거나 공감할 요소가 있나?"
 없으면 다시 써.`;
 
-  // 이전 사물 대사 이어받기 (항상 체크)
   const bmemePrev = (document.getElementById('webtoonPrevScript')||{}).value||'';
   const continuationHint = bmemePrev.trim()
     ? '\n\n📖 이어쓰기 요청: 이전 사물이 이런 말을 했어:\n"'+bmemePrev.trim()+'"\n\n이 대사를 듣고 자연스럽게 반응/대꾸/말대답하는 대본을 써. 병맛 사물 대화 흐름이라는 걸 느낄 수 있게, 하지만 이번 사물의 성격으로. (예: 이전 사물이 "야 선풍기!" 라고 했으면, "헐 뭔데 왜 나한테 ㅋㅋ" 같은 대꾸로 시작)'
@@ -1805,8 +1770,11 @@ ${BAN_RULES_KR}
   }
 }
 
+
+
 // ═══ 프롬프트 생성 ═══
 async function generate(){
+  trackEvent('generate');
   if(!S.obj){showErr('사물을 선택해주세요.');return;}
   if(!S.sit){showErr('상황을 선택해주세요.');return;}
   if(!S.style){showErr('스타일을 선택해주세요.');return;}
@@ -1817,7 +1785,6 @@ async function generate(){
 
   let script=document.getElementById('dialogue').value.trim();
   if(!script){
-    // 대본 없으면 생성 시도
     if(getApiKey()){
       await genDialogue(false);
       script=document.getElementById('dialogue').value.trim();
@@ -1827,18 +1794,15 @@ async function generate(){
     }
   }
 
-  // 자동 번역 (일본 → 한국 / 한국 → 영어)
   let scriptEN = '';
-  let scriptTrans = ''; // 일본어 대본일 때 한국어 번역
+  let scriptTrans = '';
   if(getApiKey()){
     try {
       if(S.country==='jp'){
-        // 일본어 대본 → 한국어 번역 (본인 확인용)
         scriptTrans = await callAI(
           '너는 일본어 숏폼 영상 대본을 한국어로 자연스럽게 번역하는 번역가다. 설명 없이 번역 결과만 출력. 말투의 뉘앙스, 일본식 표현, 텐션을 살려서 자연스러운 한국어 구어체로 옮겨라.',
           '일본어 대본:\n'+script+'\n\n자연스러운 한국어 구어체로 번역.'
         );
-        // 영어도
         scriptEN = await callAI(
           'You translate short-form video scripts to natural spoken English for AI voice generation. Output only the translation, no explanation. Preserve emotion, rhythm, and talking style. Use contractions and natural flow.',
           'Original (Japanese):\n'+script+'\n\nTranslate to natural spoken English.'
@@ -1855,21 +1819,17 @@ async function generate(){
     }
   }
 
-  // 저장
   if(S.country==='jp'){
     lastScriptJP = script;
-    lastScriptKR = scriptTrans; // 일본어 원본의 한국어 번역
+    lastScriptKR = scriptTrans;
   } else {
     lastScriptKR = script;
     lastScriptJP = '';
   }
   lastScriptEN = scriptEN||script;
 
-  // ═ 이미지 프롬프트 ═
   const styleTpl=STYLE_TEMPLATES[S.style];
-  // 1) 먼저 SCENE_PROPS 하드코딩 시도 (빠름)
   let scene = SCENE_PROPS[S.country][S.obj];
-  // 2) 없으면 Railway 프록시로 AI에게 실시간 생성 요청
   if(!scene){
     const aiScene = await getScene(S.objEn||S.obj, S.country);
     if(aiScene && aiScene.loc){
@@ -1878,7 +1838,6 @@ async function generate(){
       scene = SCENE_PROPS[S.country]['default'];
     }
   }
-  // ambient가 없는 기존 데이터는 fallback 추가
   if(!scene.ambient){
     scene = {
       loc: scene.loc,
@@ -1889,7 +1848,6 @@ async function generate(){
   const objEn=S.objEn||S.obj;
   const sizeHint = getSizeHint(S.obj);
 
-  // 같은 집/공간 배경 연속성 (항상 체크)
   const webtoonBgRef = (document.getElementById('webtoonBgRef')||{}).value||'';
   const sceneLoc = webtoonBgRef.trim()
     ? scene.loc + ' (the SAME location setting as the previous scene described here: "' + webtoonBgRef.trim() + '")'
@@ -1920,7 +1878,6 @@ async function generate(){
     '\n' +
     'Vertical 9:16 composition, cinematic lighting, highly detailed. No text overlays, no subtitles, no captions, no watermarks, no UI.';
 
-  // ═ 영상 프롬프트 ═
   const voiceDesc=VOICE_EN[S.voice]||VOICE_EN.adult_m;
   const scriptOriginal = script;
   const scriptForGuide = scriptEN||script;
@@ -1964,7 +1921,6 @@ async function generate(){
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
-  // 대본 탭 세팅
   currentScriptLang='native';
   updateScriptDisplay();
 
@@ -1984,10 +1940,8 @@ function updateScriptDisplay(){
   const out3=document.getElementById('scrOut3');
 
   if(S.country==='jp'){
-    // 메인: 일본어 (영상에 쓸 언어)
     label1.textContent='📝 台本 · 日本語 (メイン)';
     out1.textContent=lastScriptJP||'(없음)';
-    // 번역: 한국어
     label2.textContent='🇰🇷 한국어 번역 (내용 확인용)';
     out2.textContent=lastScriptKR||'(번역 없음 — API 키 필요)';
     transCard.style.display='block';
@@ -1999,7 +1953,7 @@ function updateScriptDisplay(){
   out3.textContent=lastScriptEN||'(영어 번역 없음)';
 }
 
-function switchScript(){ /* 더이상 사용 안 함 (병렬 표시로 변경) */ }
+function switchScript(){ /* 더이상 사용 안 함 */ }
 
 // ═══ 유틸 ═══
 function toggleDark(){
@@ -2009,7 +1963,6 @@ function toggleDark(){
 }
 
 function saveApiKey(){
-  // 즉시 시각적 피드백 (버튼이 반응하는지 확인 가능)
   const statusEl = document.getElementById('apiKeyStatus');
   if(!statusEl){
     alert('⚠️ 페이지가 아직 로딩 중입니다. 잠시 후 다시 시도해주세요.');
@@ -2033,7 +1986,6 @@ function saveApiKey(){
     return;
   }
 
-  // 마스킹된 값 ( sk-•••• )은 저장 거부
   if(key.includes('•') || key.includes('*')){
     try {
       const existing = localStorage.getItem('openai_api_key');
@@ -2059,7 +2011,6 @@ function saveApiKey(){
     return;
   }
 
-  // 실제 저장
   try {
     localStorage.setItem('openai_api_key', key);
     const verify = localStorage.getItem('openai_api_key');
@@ -2102,7 +2053,6 @@ function clearApiKey(){
 function getApiKey(){
   try {
     const k = localStorage.getItem('openai_api_key') || '';
-    // 혹시 과거 버그로 마스킹 값이 저장되어 있으면 삭제
     if(k.includes('•') || k.includes('*')){
       localStorage.removeItem('openai_api_key');
       return '';
@@ -2145,7 +2095,6 @@ async function callAI(system,user){
   return d.text || '';
 }
 
-// ═══ 사물 맞춤 배경 + ambient 동적 생성 ═══
 async function getScene(object, country){
   const apiKey = getApiKey();
   if(!apiKey) return null;
@@ -2174,7 +2123,6 @@ async function getScene(object, country){
   }
 }
 
-// 사물별 작동/주변 모션 전용 AI 호출 (FUNCTION_MOTION 매칭 없을 때 fallback)
 async function getMotionAI(object){
   const apiKey = getApiKey();
   if(!apiKey) return '';
@@ -2199,7 +2147,6 @@ async function getMotionAI(object){
   }
 }
 
-// ═══ 웹 검색 기반 정보 수집 (꿀팁/민폐 상황의 실제 정보) ═══
 async function getResearch(object, topic, country){
   const apiKey = getApiKey();
   if(!apiKey) return null;
@@ -2272,7 +2219,6 @@ function hideErr(){document.getElementById('errMsg').style.display='none';}
 
 // ═══ 초기화 ═══
 window.addEventListener('load',()=>{
-  // 카테고리 선택 기반이라 초기엔 objectGroups는 비워둠
   try{
     if(localStorage.getItem('darkMode_v3')==='1'){
       document.body.classList.add('dark');
