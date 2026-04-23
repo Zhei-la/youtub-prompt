@@ -784,6 +784,20 @@ NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.
 - 배경도 반응: 물건이 떨어지고, 사람들이 움직이고, 환경이 변화
 - 10초 안에 **최소 2-3개 액션 비트** (시작 액션 → 대사/반응 → 끝 액션)
 
+🎯 대사 ↔ 액션 매칭 규칙 (매우 중요 — 자연스러움의 핵심):
+- **대사 내용에 맞는 구체적 동작** 반드시 event 필드에 함께 명시
+- 대사는 단순히 음성이 아니라 **몸의 행동과 함께** 나와야 자연스러움
+- 매칭 예시:
+  * "빨리 숨어!" → 상대방 팔을 잡아끌며 책상 밑으로 밀어넣는 동작
+  * "저기 봐!" → 손가락으로 먼 곳을 가리키며 시선도 그곳으로 향함
+  * "미안해..." → 고개 숙이고 시선 피하며 주먹을 꽉 쥠
+  * "도망쳐!" → 뒤돌아보며 팔을 휘저어 상대를 밀어냄
+  * "안 돼!" → 두 손으로 막는 제스처 + 뒤로 한 발 물러섬
+  * "왜 그랬어?" → 손을 벌리며 다가가거나 고개를 젓는 동작
+  * "조심해!" → 상대의 팔을 잡아당기거나 앞으로 뛰쳐나감
+- event 필드는 반드시 **"[대사 말하는 행동] + [구체적 신체 동작]"** 형식으로 작성
+- 예: "지수가 '빨리 숨어!'라고 소리치며 지훈의 팔을 잡아끌어 책상 밑으로 밀어넣고, 자신도 머리를 숙이며 뛰어든다"
+
 🎬 1분 안에 담아야 할 것:
 - Scene 1: 후킹 (강렬한 도입 + 강한 액션)
 - Scene 2-3: 상황 설정 (공간, 캐릭터, 긴장감 + 움직임)
@@ -1258,6 +1272,18 @@ ${styleGuide}
 - 카메라도 역동적: tracking shot, handheld shaky (지진/액션), dolly zoom, whip pan
 - "static camera"만 쓰지 말 것 — 상황에 맞는 카메라 워크 명시
 - 10초 안에 **최소 2-3개의 구체적 액션 비트** 포함
+
+🎯 대사 ↔ 액션 매칭 규칙 (Action 섹션에 반드시 반영):
+- 대사가 있으면 **말하면서 하는 구체적 신체 동작**을 Action 섹션에 함께 명시
+- 매칭 예시 (영어):
+  * "Run!" → grabs partner's arm and pulls them, then bolts forward
+  * "Look!" → points sharply toward distance, eyes following the gesture
+  * "I'm sorry..." → head drops, eyes avert, fist clenches
+  * "Stop!" → both palms raised forward, stepping back defensively
+  * "Why?" → hands spread open, shaking head, taking a step toward the other person
+  * "Watch out!" → lunges forward to pull partner out of the way
+- Action 섹션 형식: "[physical action while speaking] while saying the Korean line"
+- 예: "The protagonist grabs her friend's arm and pulls her toward the desk while shouting 'Hide now!', then ducks her head low as debris crashes around them"
 
 ⚠️ 스타일 준수 권장:
 - MANDATORY 키워드를 자연스럽게 프롬프트 앞/뒤에 녹여서 반영
