@@ -1926,7 +1926,13 @@ async function generate(){
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
   const videoPrompt =
-    'Use the uploaded image as the first frame — keep the character design, face expression start, arms position, colors, background composition, and camera angle exactly as they appear in the uploaded image.\n' +
+    '⚠️⚠️ ABSOLUTE CRITICAL RULE — REFERENCE IMAGE IS THE SINGLE SOURCE OF TRUTH ⚠️⚠️\n' +
+    'YOU MUST use the uploaded image as the EXACT first frame of this video.\n' +
+    'DO NOT change, modify, reinterpret, or redesign ANY visual element from the uploaded image.\n' +
+    'The character design, face shape, face expression starting pose, body proportions, colors, textures, lighting, background composition, camera angle, and ALL visual details MUST match the uploaded image 100%.\n' +
+    'If the text description below conflicts with the uploaded image, ALWAYS follow the image — the image wins.\n' +
+    'This is Image-to-Video with MAXIMUM reference fidelity. The final video must look like the uploaded image came alive and started moving — NOT a reinterpretation.\n' +
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
     'Animate this character with upper-body movement showing the following emotion: '+moodData.label+'.\n' +
     'The character is speaking: "'+scriptOriginal+'"\n' +
     'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
@@ -1952,7 +1958,8 @@ async function generate(){
     'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
     'The character\'s face must remain as the object —\n' +
     'do NOT replace or morph into a real human face.\n' +
-    'Use Image-to-Video mode with maximum reference fidelity to the uploaded image.';
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+    '🔒 FINAL REMINDER: The uploaded image is the LAW. Every pixel of visual design MUST come from it. The text above only describes MOTION and AUDIO — NOT visual appearance. Use Image-to-Video mode with MAXIMUM reference fidelity. Failing to match the uploaded image is a CRITICAL error.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
