@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.1</span></div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.2</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -769,15 +769,29 @@ NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.
 - 각 Scene = 정확히 10초 영상 분량
 - 1분 = 6 Scene × 10초 = 60초 영상
 
-💬 대사 분량 규칙 (10초 기준, 매우 중요):
+💬 대사 분량 규칙 (10초 기준, 매우 매우 중요 — 영화/드라마처럼 풍부하게):
 - **각 Scene 대사는 합쳐서 정확히 10초 분량** (한국어 말하는 속도 기준)
-- 한국어 기준 **45-60자 정도** (너무 짧으면 영상이 허전하고 멈춰있는 느낌)
-- 2-3명이 말하면 각자 3-5초씩 자연스럽게
-- 너무 짧은 대사 금지: "뭐야?", "그래.", "응." 같은 한 단어 대사만으로 구성 금지
-- 짧은 대사는 꼭 액션이나 내레이션과 함께 조합하여 10초 채울 것
-- 예시 좋은 분량:
-  * "지수: 지진이야! 빨리 여기서 나가야 해!" → "지민: 문이 안 열려... 어떻게 하지?" (약 7-8초)
-  * "기자: 이 사건의 진실은 오직 한 사람만 알고 있습니다. 과연 그는 누구일까요?" (약 8초)
+- 한국어 기준 **반드시 60-90자** (총 합산 — 적을수록 영상 어색해짐!)
+- 2-3 cut으로 분할되므로 **각 cut마다 짧게라도 대사가 있어야 자연스러움**
+- 침묵 구간 최대 1초까지만 (그 이상은 어색)
+- 너무 짧은 대사 금지: "뭐야?", "그래." 단독 사용 금지
+- 한국 영화/드라마처럼 **밀도 높은 대화 + 짧은 한마디 + 신음/외침** 조합
+- 좋은 패턴:
+  * 긴 대사 1개 (40-50자) + 짧은 반응 1개 (10-20자)
+  * 짧은 대사 3개 연속 (각 15-25자)
+  * 외침 + 긴 설명 + 짧은 마무리
+- ✅ 예시:
+  * "지수: 지진이야! 빨리 여기서 나가야 해!" → "지민: 어떡해... 문이 안 열려!" → "지수: 진정해! 이쪽으로 와!" (약 80자)
+  * 주인공: "방금 뭔가 떨어지는 소리 들었지? 위층에서 분명히..." → 친구: "야, 너 또 그러는 거야? 별것도 아닌 걸 가지고!" (약 75자)
+  * 형사: "당신, 지금 거짓말하고 있는 거 알아요. 어젯밤 그 시간에 어디 있었습니까?" (약 50자)
+
+🎯 대사 ↔ 컷 매칭 (Multi-Cut 영상에서 매우 중요):
+- 한 영상 안에 2-3 cut이 있으면 **각 cut마다 대사가 깔리도록** 분배
+- Action 시간 마커와 대사 타이밍 매칭:
+  * [0-3s] cut 1: 첫 번째 대사 + 액션
+  * [3-6s] cut 2: 반응 대사 + 다른 액션
+  * [6-10s] cut 3: 마무리 대사 + 결정적 액션
+- 침묵 구간이 있으면 **나레이션이나 환경 외침**으로 채울 것
 
 ⚡⚡ 역동적 액션 필수 규칙 (매우 매우 중요):
 - 각 Scene의 "event" 필드에 **구체적이고 역동적인 신체 동작** 반드시 포함
@@ -1442,11 +1456,15 @@ ${styleGuide}
 - ❌ 간단: "handheld shaky"
 - ✅ 풍부함: "Handheld documentary-style camera with intense shake during the action peaks, dynamic tracking shot following her movement, briefly cuts to a low-angle close-up on her face during the shout, anamorphic lens flares from the flickering lights, slight motion blur on fast movements"
 
-▶ Audio (사운드 — 입체적):
-- 대사 (한국어 그대로, 따옴표 안에)
+▶ Audio (사운드 — 입체적, 대사 풍부하게):
+- **대사**: 한국어 그대로, 따옴표 안에 — **여러 대사 모두 명시!**
+  ✅ Audio: Korean dialogues — "지진이야! 빨리 숨어!", "어떡해... 무서워!", "내 손 잡아!", panicked shouts and ambient screams
+  ❌ Audio: Korean dialogue (one line only) — 너무 적음
 - 환경음 (구체적: 사이렌 톤, 발자국 종류, 비명소리 등)
 - 효과음 (지진 우르릉, 유리 깨짐, 금속 비명)
 - 분위기 (저음 base rumble, 고음 tension)
+- **대사의 톤도 명시**: panicked, urgent, whispered, shouted, breathless
+- **여러 캐릭터 대사**가 있으면 모두 포함
 
 🎯 **Flow/Veo 최적화 팁**:
 - 단어 수 100-150개 정도가 sweet spot
@@ -1494,11 +1512,39 @@ Duration: 10 seconds
 ✅ Style에 multi-shot 강조:
 "Style: Multi-shot cinematic film editing, professional cut transitions, anamorphic lens, teal-orange color grading, Korean disaster film aesthetic"
 
+🎙️ **대사 ↔ 컷 매칭 절대 규칙 (영상 어색함 방지)**:
+- 대사가 적으면 영상이 멈춘 듯 어색함! 한국 영화처럼 대사 풍부하게!
+- Action 섹션에 **각 시간대마다 대사 명시**:
+  ✅ "[0-3s] First, close-up of her face shouting 'OO!' in panic. [3-6s] Then cut to wide shot, the friend yells back 'XX!'. [6-10s] Finally, tracking shot as she runs while shouting 'YY!'"
+- 한 대사가 끝나면 → 즉시 다음 대사 또는 외침/신음
+- 침묵 구간 최대 1초만 허용
+- ❌ 나쁜 예: "[0-3s] she shouts. [3-6s] she runs silently. [6-10s] she stops" — 침묵이 너무 길어 어색
+
+🎬 **자연스러운 움직임 절대 규칙 (영상 어색함 방지)**:
+1. **연속적인 동작 흐름** 명시 (멈춤 없이 자연스럽게):
+   - "stumbles → catches herself → braces → looks around → bolts forward"
+   - 정적인 단어 금지: "stands", "stays", "remains still"
+2. **신체 부위별 디테일** (얼굴/시선/팔/다리 따로):
+   - "her eyes dart to the falling debris" (시선)
+   - "her hand reaches for the railing" (손)
+   - "her feet stumble on the broken concrete" (발)
+3. **속도 변화** 명시:
+   - "slowly turns her head, then suddenly snaps it back" (느림→빠름)
+   - "frantic running slows as she reaches the corner" (빠름→느림)
+4. **반응 액션** 추가 (혼자만 움직이지 않게):
+   - 환경 반응: "debris falls → she dodges → ground shakes → she stumbles"
+   - 사람들 반응: "crowd panics → she grabs someone → both run"
+5. **표정 변화** 다단계 명시:
+   - "calm → confusion → realization → fear → determination"
+
 ❌ 나쁜 예시 (한 컷만 길게):
 "Action: She runs through the chaotic street." — 단조롭고 평범함
 
 ❌ 나쁜 예시 (시간 마커 없이):
 "Action: She panics and then runs." — Flow가 어디서 컷 전환할지 모름
+
+❌ 나쁜 예시 (대사 없이):
+"Action: [0-3s] close-up of face. [3-6s] she runs. [6-10s] looks back." — 침묵이 길어 어색
 
 🎯 캐릭터 일관성 (반드시 유지):
 - 한 프롬프트 안의 모든 cut에서 **같은 캐릭터** 등장
