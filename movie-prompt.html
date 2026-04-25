@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v3.2</span></div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.1</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -1018,7 +1018,7 @@ function renderScenes(){
       '</div>'+
       '<div class="scene-event">'+escapeHtml(s.event||'')+'</div>'+
       (firstDialog?'<div class="scene-dialog-preview"><b>'+escapeHtml(dSpeaker)+':</b> "'+escapeHtml(dLine)+'"</div>':'')+
-      '<div class="scene-cta">'+(s.prompts?'✅ 프롬프트 생성됨 — 클릭해서 보기':'🎥 클릭해서 프롬프트 생성')+'</div>';
+      '<div class="scene-cta">'+(s.prompts?'✅ Multi-Cut 프롬프트 생성됨 — 클릭해서 보기':'🎬 클릭해서 Multi-Cut 프롬프트 생성 (10초)')+'</div>';
     card.onclick=()=>openScene(idx);
     grid.appendChild(card);
   });
@@ -1468,21 +1468,50 @@ Duration: 10 seconds
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📦 출력 JSON (반드시 이 형식 — prompt_flow는 단일 문자열!):
+📦 출력 JSON (반드시 이 형식 — Flow는 무조건 10초이므로 한 프롬프트에 2-3 cut 시퀀스 작성):
 {
-  "prompt_flow": "Subject: A young Korean woman...\\nAction: Stumbles through her shaking apartment...\\nScene: Modern Seoul apartment...\\nStyle: Cinematic realistic...\\nCamera: Handheld shaky tracking shot\\nAudio: Korean dialogue (\\"지진이야!\\"), rumbling tremors\\nDuration: 10 seconds"
+  "prompt_image": "A cinematic film still showing... (Scene의 가장 임팩트 있는 한 순간 — Flow Ingredients에 업로드용 스틸컷)",
+  "prompt_flow": "Subject: ...\\nAction: [0-3s] First close-up of...\\n[3-6s] then cut to wide shot of...\\n[6-10s] finally medium tracking shot of...\\nScene: ...\\nStyle: Multi-shot cinematic composition...\\nCamera: Close-up to wide shot to tracking shot transitions\\nAudio: ...\\nDuration: 10 seconds"
 }
 
-⚠️ JSON 엄격 규칙 (반드시 지켜야 함):
-1. valid JSON만 (앞뒤 설명/코드블록 마커 금지)
-2. **prompt_flow의 값은 반드시 단일 문자열(string)** — 절대 객체나 중첩 구조 금지!
-3. 절대 이렇게 쓰지 말 것: "prompt_flow": { "Subject": "...", "Action": "..." }  ❌
-4. 반드시 이렇게 쓸 것: "prompt_flow": "Subject: ...\\nAction: ...\\nScene: ..."  ✅
-5. Subject/Action/Scene/Style/Camera/Audio/Duration 섹션은 모두 **하나의 문자열 안에** \\n 줄바꿈으로 연결
-6. 쌍따옴표("...")만, 홑따옴표 금지
-7. 프롬프트 내부 쌍따옴표는 \\" 로 이스케이프
-8. 문자열 안 실제 줄바꿈 금지 (\\n 사용)
-9. trailing comma 금지`;
+🎬 효율적 Multi-Cut 작성 절대 규칙 (Flow 크레딧 아끼기 위해):
+
+⚠️ **Flow는 무조건 10초 영상만 생성됩니다.** 그래서 1 Scene = 1 Flow 영상 = 1 크레딧 사용!
+한 프롬프트 안에서 Flow가 자연스럽게 2-3 cut 전환하도록 작성해야 효율적!
+
+📐 Action 섹션 작성법 (시간 마커 + 컷 전환 키워드 사용):
+- **[0-Xs]**, **[X-Ys]**, **[Y-10s]** 시간 마커 표기 필수
+- 컷 전환 키워드: "First...", "then cut to...", "finally...", "transitions to..."
+- 각 cut은 시각적으로 명확히 다른 샷 사이즈/앵글
+- 2-3 cut 권장 (한 컷당 약 3-5초)
+
+✅ 좋은 예시 (지진 Scene):
+"Action: [0-3s] First, an extreme close-up of her eyes widening in shock as a low rumble begins, her ponytail trembling. [3-6s] Then cut to a wide shot of the Seoul intersection — the tall billboard violently swaying, debris starting to fall, panicked pedestrians beginning to scatter. [6-10s] Finally, a medium tracking shot following her as she sprints across the street, her arm sweeping in a 'follow me' gesture, dust filling the air."
+
+✅ Camera 섹션도 다중 샷 명시:
+"Camera: Multi-shot cinematic composition — extreme close-up transitions to wide establishing shot, then to handheld tracking shot following the subject"
+
+✅ Style에 multi-shot 강조:
+"Style: Multi-shot cinematic film editing, professional cut transitions, anamorphic lens, teal-orange color grading, Korean disaster film aesthetic"
+
+❌ 나쁜 예시 (한 컷만 길게):
+"Action: She runs through the chaotic street." — 단조롭고 평범함
+
+❌ 나쁜 예시 (시간 마커 없이):
+"Action: She panics and then runs." — Flow가 어디서 컷 전환할지 모름
+
+🎯 캐릭터 일관성 (반드시 유지):
+- 한 프롬프트 안의 모든 cut에서 **같은 캐릭터** 등장
+- 같은 외형 (머리, 옷, 체격)
+- Subject 묘사를 풍부하게 한 번만 (모든 cut에 적용)
+
+⚠️ JSON 엄격 규칙:
+1. valid JSON만, 앞뒤 설명/코드블록 마커 금지
+2. prompt_image와 prompt_flow는 단일 문자열
+3. 절대 prompt_flow를 객체로 만들지 말 것
+4. 쌍따옴표만, 홑따옴표 금지
+5. 줄바꿈은 \\n, 실제 줄바꿈 금지
+6. trailing comma 금지`;
 
     const user=`[영화 컨텍스트]
 제목: ${S.movieMeta?.title||''}
@@ -1504,9 +1533,9 @@ ${s.narration?'내레이션: '+s.narration:''}
     const r=await callAI(sys,user,2500);
     const d=robustParseJSON(r);
 
-    // prompt_flow가 객체로 온 경우 문자열로 변환 (방어 코드)
-    if(d.prompt_flow && typeof d.prompt_flow==='object'){
-      const obj=d.prompt_flow;
+    // 객체→문자열 헬퍼
+    const flowObjToString=(obj)=>{
+      if(!obj||typeof obj!=='object')return obj;
       const sections=[];
       ['Subject','Action','Scene','Style','Camera','Audio','Duration','subject','action','scene','style','camera','audio','duration'].forEach(key=>{
         if(obj[key]!==undefined&&obj[key]!==null){
@@ -1516,7 +1545,6 @@ ${s.narration?'내레이션: '+s.narration:''}
           sections.push(label+': '+String(val));
         }
       });
-      // 위 키에 없는 다른 필드도 추가
       Object.keys(obj).forEach(k=>{
         const lower=k.toLowerCase();
         if(!['subject','action','scene','style','camera','audio','duration'].includes(lower)){
@@ -1525,12 +1553,50 @@ ${s.narration?'내레이션: '+s.narration:''}
           sections.push(k+': '+String(val));
         }
       });
-      d.prompt_flow=sections.join('\n');
-      console.log('[Movie] prompt_flow를 객체→문자열로 변환:',d.prompt_flow);
+      return sections.join('\n');
+    };
+
+    // shots 배열 구조 정규화
+    if(d.shots && Array.isArray(d.shots)){
+      d.shots.forEach((shot,i)=>{
+        if(!shot)return;
+        // shot_num 자동 채우기
+        if(!shot.shot_num)shot.shot_num=i+1;
+        // duration 기본값
+        if(!shot.duration)shot.duration=Math.round(10/d.shots.length);
+
+        // prompt_image 정규화
+        if(shot.prompt_image && typeof shot.prompt_image==='object'){
+          shot.prompt_image=JSON.stringify(shot.prompt_image);
+        }else if(shot.prompt_image!==undefined && typeof shot.prompt_image!=='string'){
+          shot.prompt_image=String(shot.prompt_image);
+        }
+
+        // prompt_flow 정규화 (객체→문자열)
+        if(shot.prompt_flow && typeof shot.prompt_flow==='object'){
+          shot.prompt_flow=flowObjToString(shot.prompt_flow);
+        }else if(shot.prompt_flow!==undefined && typeof shot.prompt_flow!=='string'){
+          shot.prompt_flow=String(shot.prompt_flow);
+        }
+      });
+      console.log('[Movie] Shot 분할 완료:',d.shots.length,'개');
     }
-    // 그래도 문자열이 아니면 강제 변환
-    if(d.prompt_flow!==undefined && typeof d.prompt_flow!=='string'){
-      d.prompt_flow=String(d.prompt_flow);
+    // 구버전 호환: shots가 없고 prompt_flow만 있는 경우
+    else if(d.prompt_flow){
+      if(typeof d.prompt_flow==='object'){
+        d.prompt_flow=flowObjToString(d.prompt_flow);
+      }else if(typeof d.prompt_flow!=='string'){
+        d.prompt_flow=String(d.prompt_flow);
+      }
+      // 단일 shot으로 래핑
+      d.shots=[{
+        shot_num:1,
+        duration:10,
+        description:'전체 Scene',
+        prompt_image:d.prompt_image||'',
+        prompt_flow:d.prompt_flow
+      }];
+      console.log('[Movie] 구버전 prompt_flow를 단일 shot으로 변환');
     }
 
     s.prompts=d;
@@ -1590,20 +1656,74 @@ function showSceneModal(s,idx){
     '</div>';
 
   const p=s.prompts||{};
-  // prompt_flow가 객체인 경우에도 문자열로 변환해서 표시 (이중 방어)
-  let flowText=p.prompt_flow||'';
-  if(typeof flowText==='object'){
-    const sections=[];
-    Object.keys(flowText).forEach(k=>{
-      let val=flowText[k];
-      if(typeof val==='object')val=JSON.stringify(val);
-      sections.push(k+': '+String(val));
-    });
-    flowText=sections.join('\n');
-  }else if(typeof flowText!=='string'){
-    flowText=String(flowText);
+
+  // 객체→문자열 변환 헬퍼 (런타임 방어)
+  const flowToString=(val)=>{
+    if(!val)return '';
+    if(typeof val==='string')return val;
+    if(typeof val==='object'){
+      const sections=[];
+      Object.keys(val).forEach(k=>{
+        let v=val[k];
+        if(typeof v==='object')v=JSON.stringify(v);
+        sections.push(k+': '+String(v));
+      });
+      return sections.join('\n');
+    }
+    return String(val);
+  };
+
+  // 이미지/영상 프롬프트 추출 (구조 정규화)
+  let imageText=flowToString(p.prompt_image||'');
+  let flowText=flowToString(p.prompt_flow||'');
+
+  // 구버전 호환: shots 배열로 온 경우 첫 번째 shot 사용 (또는 합치기)
+  if(p.shots && Array.isArray(p.shots) && p.shots.length>0){
+    if(!imageText)imageText=flowToString(p.shots[0].prompt_image||'');
+    if(!flowText){
+      // shots을 multi-cut 한 프롬프트로 합치기
+      flowText=flowToString(p.shots[0].prompt_flow||'');
+    }
   }
-  html+='<div class="platform-section"><span class="platform-tag tag-flow">🟢 FLOW / VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(flowText)+'</pre></div>';
+
+  if(imageText || flowText){
+    // 헤더
+    html+='<div style="background:linear-gradient(135deg,#a855f7,#ec4899);color:white;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:13px;font-weight:700;">'+
+      '🎬 Flow 10초 영상 1개 = 2-3 cut 자연스럽게 전환 (크레딧 효율 최적화)'+
+    '</div>';
+
+    // 이미지 프롬프트
+    if(imageText){
+      html+='<div style="background:linear-gradient(135deg,#dbeafe,#e0e7ff);border:1px solid #6366f1;border-radius:10px;padding:12px;margin-bottom:12px;position:relative;">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'+
+          '<span style="font-size:12px;font-weight:900;color:#3730a3;">🖼️ 이미지 프롬프트 (Flow Ingredients용 스틸컷)</span>'+
+          '<button class="copy-btn" style="position:static;background:#3730a3;color:#fff;" onclick="copyText(this,\'mimage\')">📋 복사</button>'+
+        '</div>'+
+        '<pre id="mimage" style="background:#eef2ff;color:#3730a3;font-size:11px;margin:0;">'+escapeHtml(imageText)+'</pre>'+
+      '</div>';
+    }
+
+    // 영상 프롬프트 (10초, multi-cut)
+    if(flowText){
+      html+='<div style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #10b981;border-radius:10px;padding:12px;position:relative;margin-bottom:12px;">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'+
+          '<span style="font-size:12px;font-weight:900;color:#065f46;">🎥 Flow/Veo 영상 프롬프트 · 10초 (Multi-Cut)</span>'+
+          '<button class="copy-btn" style="position:static;background:#065f46;color:#fff;" onclick="copyText(this,\'mflow\')">📋 복사</button>'+
+        '</div>'+
+        '<pre id="mflow" style="background:#f0fdf4;color:#065f46;font-size:11px;margin:0;">'+escapeHtml(flowText)+'</pre>'+
+        '<div style="font-size:10px;color:#065f46;margin-top:6px;">💡 [0-3s], [3-6s], [6-10s] 시간 마커가 Flow에서 컷 전환을 만들어요!</div>'+
+      '</div>';
+    }
+
+    // 워크플로우 안내
+    html+='<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:10px;padding:12px;margin-bottom:12px;font-size:11px;color:#78350f;line-height:1.7;">'+
+      '<b>💰 효율적 워크플로우 (Flow 크레딧 1번만 사용):</b><br>'+
+      '1️⃣ 🖼️ 이미지 프롬프트 → Midjourney/Nano Banana → 스틸컷 생성<br>'+
+      '2️⃣ 🎥 영상 프롬프트 → <b>Flow에 1번만 입력</b> + 캐릭터 시트 업로드 → 10초 영상 (자동으로 2-3 cut 전환됨)<br>'+
+      '3️⃣ 6개 Scene 영상 완성 → 캡컷에서 이어붙이기 → 1분짜리 영화 + SRT 자막!<br>'+
+      '✨ <b>총 크레딧: 6번만 사용</b> (Scene 1개당 1번)'+
+    '</div>';
+  }
 
   // SRT 자막 카드
   const srtText=generateSceneSRT(s);
