@@ -2142,79 +2142,145 @@ async function generate(){
   const functionMotion = fnMotion;
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
-  // 🔒 캐릭터 고정 규칙 (영상) — 얼굴/팔이 새로 생기거나 위치가 바뀌는 문제 방지
+  // 🎬 자연스러운 상황 우선 + 자연 가림 허용 시스템
+  // 핵심 철학: 얼굴은 "보일 때만 보인다", "가려지면 그냥 가려진 채로"
   const identityAndLimbVideoLock =
-    '🔒 IDENTITY + LIMB LOCK — MUST FOLLOW THROUGHOUT ALL FRAMES 🔒\n' +
-    'The uploaded reference image is the character anchor. Preserve the exact same single face: same eyes, nose, mouth, expression, proportions, face location, and object surface attachment. Do NOT create a new face or reinterpret the face.\n' +
-    'There must be exactly ONE face only, in the exact same location as the reference image. No second face, no face appearing on another surface, no duplicated face, no floating face, no face morphing.\n' +
-    'There must be exactly TWO arms only. Preserve the same arm attachment logic from the source image. Arms may move slightly, but their root points must stay locked to the same object area.\n' +
-    'For sink/faucet characters specifically: arms must remain attached only to the sink/faucet area. Do NOT let arms grow from dishes, bowls, windows, background, countertop, water, sponge, empty air, or random surfaces.\n' +
-    'No extra arms, no extra hands, no floating limbs, no disconnected hands, no wrong limb placement, no mutated anatomy.\n' +
-    'Use subtle motion only: small mouth movement, slight eyebrow/eye expression, and tiny arm gestures from the fixed attachment points. Avoid large gestures that cause identity drift or limb regeneration.\n' +
-    'Camera must remain mostly static. No strong rotation, no big angle change, no zoom that reframes the face/arms into a new design.\n' +
+    '🎬 NATURAL SITUATION FIRST — IDENTITY PRESERVATION 🎬\n' +
+    '\n' +
+    '🎯 PRIORITY ORDER (most important first):\n' +
+    '1. Natural situation matching the dialogue (e.g., for sink: turn on faucet, fill water, rinse)\n' +
+    '2. Natural object motion that fits the dialogue meaning\n' +
+    '3. Original object structure preserved (single object identity, no extra parts, no morphing)\n' +
+    '4. If face is naturally visible, keep the EXACT same face from the reference image\n' +
+    '5. If face becomes occluded by water, motion, props, hands, or angle — keep it occluded, do NOT regenerate\n' +
+    '\n' +
+    '👤 FACE STATES (all 3 are acceptable — no need to keep face always visible):\n' +
+    '- face_visible: face naturally shown — preserve the EXACT same face from reference\n' +
+    '- face_partially_occluded: water / hand / prop / angle covers part of face — this is fine, keep partial\n' +
+    '- face_hidden: face not visible due to natural situation — this is also fine, do NOT invent a new face\n' +
+    '\n' +
+    '✅ NATURAL OCCLUSION RULES:\n' +
+    '- If the face becomes naturally occluded by motion, water, props, hands, or camera angle, do NOT generate a new visible face\n' +
+    '- If the face is not clearly visible in a moment, that is acceptable — natural occlusion is better than hallucinating a new face\n' +
+    '- Do NOT force face visibility through awkward camera moves\n' +
+    '- Do NOT reveal the face unnaturally just to keep it on screen\n' +
+    '- If the face is hidden, KEEP IT HIDDEN rather than inventing a new face elsewhere\n' +
+    '\n' +
+    '🚫 ABSOLUTE PROHIBITIONS:\n' +
+    '- NO new face generation when the original face is occluded\n' +
+    '- NO secondary face / alternate face / replacement face\n' +
+    '- NO reappearing alternate face on walls, doors, surfaces, or background\n' +
+    '- NO face hallucination during occlusion\n' +
+    '- NO face cloning, mirroring, splitting, or morphing\n' +
+    '- NO forced face visibility — trust the natural situation\n' +
+    '\n' +
+    '✋ LIMB RULES (kept strict):\n' +
+    '- Exactly TWO arms only, attached at the same root points as the reference image\n' +
+    '- Arms may move with natural gestures during the action, but root points stay locked\n' +
+    '- For sink/faucet characters: arms attached only to sink/faucet area, never from dishes, water, sponges, or background\n' +
+    '- No extra arms, no floating limbs, no disconnected hands, no mutated anatomy\n' +
+    '\n' +
+    '📷 CAMERA & MOTION:\n' +
+    '- Subtle camera movement allowed (slight zoom, gentle dolly) — but not chasing the face\n' +
+    '- Use natural angles that fit the action, even if face is sometimes off-frame or covered\n' +
+    '- Object motion should be slow and deliberate, matching the dialogue meaning\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
 
+  // 🪣 사물별 자연스러운 상황 연출 가이드
+  const getSituationalAction = (objKey, objEn) => {
+    const lowerObj = (objEn||'').toLowerCase();
+    const krObj = (objKey||'').toLowerCase();
+
+    if(lowerObj.includes('sink')||lowerObj.includes('faucet')||krObj.includes('싱크')||krObj.includes('수전')){
+      return 'turning on the faucet, water flowing into the basin, dishes being rinsed, water filling up — face may be partially obscured by the water stream or angle, that is fine';
+    }
+    if(lowerObj.includes('washing machine')||krObj.includes('세탁기')){
+      return 'laundry being placed inside, door closing, detergent being added, drum starting to spin — focus on the action, face may be partially occluded by the door or motion';
+    }
+    if(lowerObj.includes('refrigerator')||lowerObj.includes('fridge')||krObj.includes('냉장고')){
+      return 'door opening, food being placed inside or taken out, cool mist drifting out — face may be partially blocked by the door or items, that is fine';
+    }
+    if(lowerObj.includes('microwave')||krObj.includes('전자레인지')){
+      return 'a bowl being placed inside, door closing, buttons being pressed, light glowing inside — face may be partially blocked by the door or hand, that is fine';
+    }
+    if(lowerObj.includes('toilet')||krObj.includes('변기')){
+      return 'lid lifting, water flushing, splashing — face may be obscured by the lid angle or water, that is fine';
+    }
+    if(lowerObj.includes('shower')||krObj.includes('샤워')){
+      return 'water flowing down, steam rising, the spray pattern — face may be partially obscured by water and steam, that is fine';
+    }
+    if(lowerObj.includes('vacuum')||krObj.includes('청소기')){
+      return 'moving across the floor sucking up dust, hose extending, dust collecting — face may be at angle, that is fine';
+    }
+    if(lowerObj.includes('rice cooker')||krObj.includes('밥솥')){
+      return 'lid opening with steam rising, rice visible inside, scoop being used — face may be obscured by steam, that is fine';
+    }
+    if(lowerObj.includes('frying pan')||lowerObj.includes('pan')||krObj.includes('프라이팬')){
+      return 'food sizzling inside, oil splattering, spatula moving — face may be partially obscured by steam or food, that is fine';
+    }
+    if(lowerObj.includes('trash')||krObj.includes('쓰레기')){
+      return 'lid opening, items being thrown in, bag being lifted out — face may be obscured by lid or items, that is fine';
+    }
+    if(lowerObj.includes('air conditioner')||krObj.includes('에어컨')){
+      return 'air visible blowing out, filter being shown, lights blinking — subtle environmental motion';
+    }
+    return 'a natural action that matches the dialogue meaning, with the object operating in its everyday function';
+  };
+
+  const situationalAction = getSituationalAction(S.obj, S.objEn);
+
   const videoPrompt =
-    '⚠️⚠️ ABSOLUTE CRITICAL RULE — REFERENCE IMAGE IS THE SINGLE SOURCE OF TRUTH ⚠️⚠️\n' +
-    'YOU MUST use the uploaded image as the EXACT first frame of this video.\n' +
-    'DO NOT change, modify, reinterpret, or redesign ANY visual element from the uploaded image.\n' +
-    'The character design, face shape, face expression starting pose, body proportions, colors, textures, lighting, background composition, camera angle, and ALL visual details MUST match the uploaded image 100%.\n' +
-    'If the text description below conflicts with the uploaded image, ALWAYS follow the image — the image wins.\n' +
-    'This is Image-to-Video with MAXIMUM reference fidelity. The final video must look like the uploaded image came alive and started moving — NOT a reinterpretation.\n' +
+    '⚠️⚠️ CRITICAL — REFERENCE IMAGE IS THE ANCHOR ⚠️⚠️\n' +
+    'Use the uploaded image as the EXACT first frame. Preserve the original character design, object structure, body proportions, colors, textures, lighting, and composition.\n' +
+    'BUT — face visibility is NOT mandatory throughout. Natural occlusion is acceptable and preferred over fake face generation.\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
     identityAndLimbVideoLock +
-    'Animate this character with upper-body movement showing the following emotion: '+moodData.label+'.\n' +
-    'The character is speaking: "'+scriptOriginal+'"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
-    'Performance tone: '+moodData.perform+'.\n' +
-    'Facial expression throughout the clip: '+moodData.face+'.\n' +
-    (functionReveal ? '🚫🚫🚫 CRITICAL: ONE FACE ONLY — NO FACE DUPLICATION 🚫🚫🚫\n' +
-      'The uploaded reference image shows ONE character with ONE single face in ONE specific location. Throughout the entire animation, there must be ONLY THIS ONE FACE — the exact same face in the exact same location as in the reference image.\n' +
-      '\n' +
-      '❌ FORBIDDEN (these are CRITICAL errors that ruin the video):\n' +
-      '   - Do NOT generate a second face anywhere else (not on the wall, not on the door, not on the side, not popping out, not floating)\n' +
-      '   - Do NOT create a duplicate face on any object or surface around the character\n' +
-      '   - Do NOT make the face appear multiple times during the animation\n' +
-      '   - Do NOT let a face emerge, protrude, or grow out of walls, doors, cabinets, or any surface\n' +
-      '   - Do NOT generate additional characters, heads, or faces beyond the single one in the reference\n' +
-      '   - Do NOT clone, mirror, or split the face\n' +
-      '\n' +
-      '✅ REQUIRED:\n' +
-      '   - Exactly ONE face, in the ONE location shown in the reference image, throughout ALL frames\n' +
-      '   - If the face-bearing part moves or rotates out of view, the face disappears with it — do NOT replace it with a new face elsewhere\n' +
-      '   - If the object opens (like a fridge door or cabinet), only the part WITHOUT the face moves; the part WITH the face stays perfectly still\n' +
-      '   - Surrounding surfaces (walls, floor, background) MUST remain plain and faceless\n' +
-      '\n' +
-      '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal happens naturally during dialogue, synced with the words, WHILE PRESERVING THE SINGLE-FACE RULE ABOVE.\n' +
-      '\n' +
-      'Detailed face preservation rules:\n' +
-      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. Never duplicate, clone, or re-generate the face anywhere else. NO second face appearing next to, above, below, or on any part of the object or background.\n' +
-      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): identify which section the face is attached to in the reference, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still. Example: if face is on the upper freezer door, only the lower fridge door opens while the upper section stays perfectly still with the face intact.\n' +
-      '3. If the face-bearing part must move or open, the face moves naturally WITH that part (rotating, tilting, going off-screen as the door swings). If rotation takes the face out of view, the face simply disappears from sight along with its mounting surface. Do NOT regenerate the face elsewhere to "keep it visible".\n' +
-      '4. No new character, head, or face should appear in the frame that was not in the original uploaded image. The only character is the object itself with its single original face. Walls, background, ambient objects all stay faceless.\n' +
-      '5. NEGATIVE: multiple faces, duplicate face, face on wall, face on door, face emerging from surface, cloned face, twin face, split face, mirror face, second character, extra head, additional faces.\n' : '') +
-    'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
-    'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
-    'Mouth opens and closes naturally in sync with the spoken words, matching the emotion.\n' +
-    'The character stays grounded — no floating or jumping.\n' +
-    'Camera mostly static with a slight zoom-in.\n' +
-    'Exaggerated, Pixar-style 3D animation.\n' +
-    (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
-    'Audio: Korean adult voice delivering the line with the matching emotion ('+moodData.label+').\n' +
-    'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
-    'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
-    'No roaring, no monster sounds, no creature sounds.\n' +
-    'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
-    'The character\'s face must remain as the object —\n' +
-    'do NOT replace or morph into a real human face.\n' +
+    '🎬 SCENE STRUCTURE (7-second short video, 2 connected scenes):\n' +
+    '\n' +
+    '━━ Scene 1 (0-3s) — SITUATION FIRST ━━\n' +
+    'Show the everyday situation that matches the dialogue meaning. Focus on the natural action: ' + situationalAction + '.\n' +
+    'The object is in its environment doing its everyday function. Camera uses subtle, natural movement.\n' +
+    'The face may or may not be visible during this scene — both are acceptable. Do NOT force face visibility.\n' +
+    '\n' +
+    '━━ Scene 2 (3-7s) — REACTION + DIALOGUE ━━\n' +
+    'The object reacts naturally to the situation while delivering the line: "' + scriptOriginal + '"\n' +
+    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form, do not paraphrase.\n' +
+    'Performance tone: ' + moodData.perform + '\n' +
+    'If the face is naturally visible during this reaction, keep the EXACT same face from the reference (eyes, nose, mouth, expression structure preserved).\n' +
+    'If the face becomes occluded by water, motion, hands, props, or camera angle, leave it occluded — do NOT generate a replacement face.\n' +
+    'Mouth movement syncs with the spoken words ONLY when the face is visible. When face is hidden, the voice still speaks but no visible mouth motion is needed.\n' +
+    '\n' +
+    '━━ NATURAL ACTION GUIDE FOR THIS OBJECT ━━\n' +
+    'Recommended situational action: ' + situationalAction + '\n' +
+    'This action should anchor the visual narrative. The dialogue accompanies this action — it does NOT replace it.\n' +
+    '\n' +
+    (functionMotion ? '🌬️ Surrounding ambient: ' + functionMotion + ', with subtle environmental motion that adds life without distracting.\n\n' : '') +
+    '🎙️ AUDIO:\n' +
+    '- Korean ' + voiceDesc + ' voice delivering the line with ' + moodData.label + ' emotion\n' +
+    '- Clear and dry sound — no echo, no reverb, no hollow sound\n' +
+    '- Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music — only the clean Korean voice and natural environmental sounds (water flowing, door clicking, etc.)\n' +
+    '- No roaring, no monster sounds, no creature sounds\n' +
+    '- No humming, no melodic tones, no subtle music layer\n' +
+    '\n' +
+    '🚫 NEGATIVE PROMPTS:\n' +
+    '- No new face, no alternate face, no replacement face during occlusion\n' +
+    '- No second character, no extra head, no duplicate face\n' +
+    '- No extra arms, no floating limbs, no disconnected hands, no morphing\n' +
+    '- No forced face visibility, no awkward camera angles to chase the face\n' +
+    '- No real human face, no photorealistic human (keep as the object)\n' +
+    '- No text, no subtitles, no captions, no watermarks, no logos\n' +
+    '- No background music, no BGM, no soundtrack\n' +
+    '\n' +
+    '🎨 STYLE: Exaggerated Pixar-like 3D animation, stable composition, natural relatable ending. Vertical 9:16 format.\n' +
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '🔒 FINAL REMINDER: The uploaded image is the LAW. Every pixel of visual design MUST come from it. The text above only describes MOTION and AUDIO — NOT visual appearance. Use Image-to-Video mode with MAXIMUM reference fidelity. Failing to match the uploaded image is a CRITICAL error.';
+    '🔑 KEY REMINDER: SITUATION > ACTION > IDENTITY > VISIBLE FACE.\n' +
+    'A natural moment with the face occluded is BETTER than a forced face shot. Trust the situation.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
   // SRT 자막 생성 (대본 있을 때만)
-  const srtText=generateSingleSceneSRT(scriptOriginal,10);
+  const srtText=generateSingleSceneSRT(scriptOriginal,7);
   if(srtText){
     document.getElementById('srtOut').textContent=srtText;
     document.getElementById('srtCard').style.display='block';
