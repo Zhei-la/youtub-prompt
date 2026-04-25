@@ -277,8 +277,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
     </div>
     <div class="sec-label">⏱️ 대사 길이</div>
     <div class="chips" id="durChips" style="margin-bottom:14px;">
-      <div class="chip active" data-val="10" onclick="selDur(this)">⚡ 10초</div>
-      <div class="chip" data-val="30" onclick="selDur(this)">🎬 30초</div>
+      <div class="chip active" data-val="7" onclick="selDur(this)">⚡ 7초</div>
     </div>
     <div class="dialogue-btns">
       <button class="btn-sm" onclick="autoDialogue()">✨ AI 공감 대사 생성</button>
@@ -600,7 +599,7 @@ const STYLE_DIALOGUE_TONE = {
 };
 
 // ═══ STATE ═══
-const S={cat:null,obj:null,objEn:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'10'};
+const S={cat:null,obj:null,objEn:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'7'};
 let usedDialogues=[];
 
 function buildTopics(){
@@ -952,15 +951,9 @@ async function genDialogue(regen){
 [예시3 - 운동화 × 현관 방치]
 "일주일째 이 꼴이야. 흙 다 말라붙어서 부서지는 중이다. 5분이면 되는 걸 왜 안 해?"`;
 
-  const refs = S.dur==='30' ? REFS_30 : REFS_10;
+  const refs = REFS_10;
 
-  const structure = S.dur==='30'
-    ? `【필수 구조 - 30초】
-① 분노 폭발 오프닝 (1~2문장): "야 너 미친 거 아니야?" / "제정신이야?" / "진심으로 묻자" 같은 강한 도입
-② 구체적 짜증 포인트 (3~4문장): 숫자·빈도·과거 사례·현장 목격 필수 ("3일째야", "네 번째야", "어제는 심지어")
-③ 직설적 훈계/욕구 폭발 (2~3문장): "이게 어려워?" "진심 답답하다" "양심이 있냐?" 강한 마무리
-총 7~8문장. 분노가 느껴져야 함.`
-    : `【필수 구조 - 10초】
+  const structure = `【필수 구조 - 7초】
 ① 분노 폭발 직격 (1문장): 강하게 시작 ("야 너", "미친", "진짜")
 ② 구체적 짜증 포인트 (1~2문장): 숫자/사실 포함 + 분노 마무리
 총 2~3문장. 약한 타박 아니라 분노 전달.`;
@@ -1030,7 +1023,7 @@ ${BAN_RULES}
 
   const userPrompt = `오브젝트: ${S.obj}
 공감 주제: ${S.topicDesc}
-길이: ${S.dur==='30'?'30초':'10초'}
+길이: ${'7초'}
 
 이 오브젝트(${S.obj})가 "${S.topicDesc}" 하는 사람에게 1인칭으로 화내는 대사를, 위 예시 수준 분노 + 웹 검색 정보 녹여서 생성.${avoid}${angleHint}`;
 
