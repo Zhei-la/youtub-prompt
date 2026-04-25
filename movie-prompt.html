@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v3.0</span></div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v3.1</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -1082,7 +1082,10 @@ function showSceneEditModal(idx){
     html+='</div>';
   });
   html+='</div>';
-  html+='<button onclick="addDialogueRow('+idx+')" style="padding:6px 10px;margin-top:4px;font-size:11px;background:var(--accent-soft);color:var(--accent);border:none;border-radius:6px;cursor:pointer;font-weight:700;">+ 대사 추가</button>';
+  html+='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">';
+  html+='<button onclick="addDialogueRow('+idx+')" style="padding:6px 10px;font-size:11px;background:var(--accent-soft);color:var(--accent);border:none;border-radius:6px;cursor:pointer;font-weight:700;">+ 대사 추가</button>';
+  html+='<button onclick="aiAddDialogue('+idx+')" style="padding:6px 10px;font-size:11px;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">✨ AI 대사 추가</button>';
+  html+='</div>';
   html+='<div style="font-size:10px;color:var(--muted);margin-top:4px;">💡 대사 총 합쳐서 10초 분량 (한국어 말하는 속도 기준 약 45-60자)</div>';
   html+='</div>';
 
@@ -1110,17 +1113,91 @@ function escapeHtmlAttr(s){
   return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function addDialogueRow(idx){
+function addDialogueRow(idx,prefilledSpeaker,prefilledLine){
   const wrap=document.getElementById('dialoguesEdit_'+idx);
   if(!wrap)return;
   const di=wrap.children.length;
   const row=document.createElement('div');
   row.style.cssText='display:flex;gap:4px;margin-bottom:6px;';
   row.setAttribute('data-di',di);
-  row.innerHTML='<input type="text" placeholder="이름" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_speaker">'+
-    '<input type="text" placeholder="대사" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_line">'+
+  const sp=(prefilledSpeaker||'').replace(/"/g,'&quot;');
+  const ln=(prefilledLine||'').replace(/"/g,'&quot;');
+  row.innerHTML='<input type="text" placeholder="이름" value="'+sp+'" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_speaker">'+
+    '<input type="text" placeholder="대사" value="'+ln+'" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px;background:var(--bg);color:var(--text);" class="edit_line">'+
     '<button onclick="this.parentElement.remove()" style="padding:4px 8px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;">✕</button>';
   wrap.appendChild(row);
+}
+
+async function aiAddDialogue(idx){
+  if(!getApiKey()){showErr('API 키를 먼저 입력해주세요!');return}
+  const s=S.scenes[idx];
+  if(!s)return;
+
+  // 현재 입력된 대사들 수집 (이미 입력한 것)
+  const existingRows=document.querySelectorAll('#dialoguesEdit_'+idx+' > div');
+  const existing=[];
+  existingRows.forEach(r=>{
+    const sp=r.querySelector('.edit_speaker')?.value?.trim();
+    const ln=r.querySelector('.edit_line')?.value?.trim();
+    if(sp||ln)existing.push({speaker:sp||'',line:ln||''});
+  });
+
+  // 현재 입력된 사건/위치 (사용자가 편집 중일 수 있음)
+  const currentEvent=document.getElementById('edit_event_'+idx)?.value||s.event||'';
+  const currentLocation=document.getElementById('edit_location_'+idx)?.value||s.location||'';
+  const currentTitle=document.getElementById('edit_title_'+idx)?.value||s.title||'';
+
+  showLoading('✨ AI 대사 생성 중...','Scene 맥락에 맞는 자연스러운 대사를 추가하고 있어요.');
+
+  try{
+    // 등장 가능한 캐릭터 후보
+    const charPool=[];
+    if(S.movieMeta?.protagonist?.name)charPool.push(S.movieMeta.protagonist.name);
+    (S.movieMeta?.supporting||[]).forEach(c=>{if(c.name)charPool.push(c.name);});
+    const existingNames=existing.map(d=>d.speaker).filter(Boolean);
+
+    const sys=`너는 영화 시나리오 작가다. 주어진 Scene에 자연스럽게 어울리는 짧은 한국어 대사 한 줄을 추가한다.
+
+📌 규칙:
+1. 한국어 대사 1줄만 생성 (15-30자)
+2. 화자(speaker)는 등장인물 중 한 명 — 가능하면 아직 말하지 않은 캐릭터 우선
+3. Scene의 분위기/사건/감정에 자연스럽게 어울리는 반응
+4. 이미 있는 대사들과 흐름이 맞도록 (반복/중복 금지)
+5. 너무 평범한 "응", "그래" 같은 짧은 한 단어 대사 금지
+6. 액션/감정이 살아있는 대사 (예: "조심해!", "여기 위험해!")
+
+📦 출력 JSON (다른 설명/마커 절대 금지):
+{"speaker":"이름","line":"한국어 대사"}`;
+
+    const user=`[영화 컨텍스트]
+${S.movieMeta?.title?'제목: '+S.movieMeta.title+'\n':''}${S.movieMeta?.world?'세계관: '+S.movieMeta.world+'\n':''}등장인물: ${charPool.join(', ')||'주인공'}
+
+[Scene ${s.num}: ${currentTitle}]
+위치: ${currentLocation}
+사건: ${currentEvent}
+감정: ${s.emotion||''}
+
+[이미 있는 대사]
+${existing.length>0?existing.map(d=>`${d.speaker}: "${d.line}"`).join('\n'):'(없음 — 첫 대사 생성)'}
+
+⬆️ 위 Scene에 어울리는 짧은 한국어 대사 1줄 추가. ${existingNames.length>0?'아직 말하지 않은 캐릭터 우선.':''} JSON만.`;
+
+    const r=await callAI(sys,user,500);
+    const d=robustParseJSON(r);
+    hideLoading();
+
+    if(d.speaker || d.line){
+      addDialogueRow(idx,d.speaker||'',d.line||'');
+    }else{
+      addDialogueRow(idx);
+      showErr('AI가 대사를 만들지 못했어요. 빈 칸이 추가되었습니다.');
+    }
+  }catch(e){
+    hideLoading();
+    console.error('[AI 대사 생성 에러]',e);
+    addDialogueRow(idx);
+    showErr('AI 대사 생성 실패: '+e.message+' (빈 칸을 추가했어요)');
+  }
 }
 
 function saveSceneEdits(idx,genPromptAfter){
@@ -1340,17 +1417,21 @@ Duration: 10 seconds
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📦 출력 JSON:
+📦 출력 JSON (반드시 이 형식 — prompt_flow는 단일 문자열!):
 {
-  "prompt_flow": "..."
+  "prompt_flow": "Subject: A young Korean woman...\\nAction: Stumbles through her shaking apartment...\\nScene: Modern Seoul apartment...\\nStyle: Cinematic realistic...\\nCamera: Handheld shaky tracking shot\\nAudio: Korean dialogue (\\"지진이야!\\"), rumbling tremors\\nDuration: 10 seconds"
 }
 
-⚠️ JSON 엄격 규칙:
+⚠️ JSON 엄격 규칙 (반드시 지켜야 함):
 1. valid JSON만 (앞뒤 설명/코드블록 마커 금지)
-2. 쌍따옴표("...")만, 홑따옴표 금지
-3. 프롬프트 내부 쌍따옴표는 \\" 로 이스케이프
-4. 문자열 안 실제 줄바꿈 금지 (\\n 사용)
-5. trailing comma 금지`;
+2. **prompt_flow의 값은 반드시 단일 문자열(string)** — 절대 객체나 중첩 구조 금지!
+3. 절대 이렇게 쓰지 말 것: "prompt_flow": { "Subject": "...", "Action": "..." }  ❌
+4. 반드시 이렇게 쓸 것: "prompt_flow": "Subject: ...\\nAction: ...\\nScene: ..."  ✅
+5. Subject/Action/Scene/Style/Camera/Audio/Duration 섹션은 모두 **하나의 문자열 안에** \\n 줄바꿈으로 연결
+6. 쌍따옴표("...")만, 홑따옴표 금지
+7. 프롬프트 내부 쌍따옴표는 \\" 로 이스케이프
+8. 문자열 안 실제 줄바꿈 금지 (\\n 사용)
+9. trailing comma 금지`;
 
     const user=`[영화 컨텍스트]
 제목: ${S.movieMeta?.title||''}
@@ -1371,6 +1452,36 @@ ${s.narration?'내레이션: '+s.narration:''}
 
     const r=await callAI(sys,user,2500);
     const d=robustParseJSON(r);
+
+    // prompt_flow가 객체로 온 경우 문자열로 변환 (방어 코드)
+    if(d.prompt_flow && typeof d.prompt_flow==='object'){
+      const obj=d.prompt_flow;
+      const sections=[];
+      ['Subject','Action','Scene','Style','Camera','Audio','Duration','subject','action','scene','style','camera','audio','duration'].forEach(key=>{
+        if(obj[key]!==undefined&&obj[key]!==null){
+          const label=key.charAt(0).toUpperCase()+key.slice(1).toLowerCase();
+          let val=obj[key];
+          if(typeof val==='object')val=JSON.stringify(val);
+          sections.push(label+': '+String(val));
+        }
+      });
+      // 위 키에 없는 다른 필드도 추가
+      Object.keys(obj).forEach(k=>{
+        const lower=k.toLowerCase();
+        if(!['subject','action','scene','style','camera','audio','duration'].includes(lower)){
+          let val=obj[k];
+          if(typeof val==='object')val=JSON.stringify(val);
+          sections.push(k+': '+String(val));
+        }
+      });
+      d.prompt_flow=sections.join('\n');
+      console.log('[Movie] prompt_flow를 객체→문자열로 변환:',d.prompt_flow);
+    }
+    // 그래도 문자열이 아니면 강제 변환
+    if(d.prompt_flow!==undefined && typeof d.prompt_flow!=='string'){
+      d.prompt_flow=String(d.prompt_flow);
+    }
+
     s.prompts=d;
     s._generating=false;
     hideLoading();
@@ -1428,7 +1539,20 @@ function showSceneModal(s,idx){
     '</div>';
 
   const p=s.prompts||{};
-  html+='<div class="platform-section"><span class="platform-tag tag-flow">🟢 FLOW / VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(p.prompt_flow||'')+'</pre></div>';
+  // prompt_flow가 객체인 경우에도 문자열로 변환해서 표시 (이중 방어)
+  let flowText=p.prompt_flow||'';
+  if(typeof flowText==='object'){
+    const sections=[];
+    Object.keys(flowText).forEach(k=>{
+      let val=flowText[k];
+      if(typeof val==='object')val=JSON.stringify(val);
+      sections.push(k+': '+String(val));
+    });
+    flowText=sections.join('\n');
+  }else if(typeof flowText!=='string'){
+    flowText=String(flowText);
+  }
+  html+='<div class="platform-section"><span class="platform-tag tag-flow">🟢 FLOW / VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(flowText)+'</pre></div>';
 
   // SRT 자막 카드
   const srtText=generateSceneSRT(s);
