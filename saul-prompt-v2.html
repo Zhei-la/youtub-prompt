@@ -330,8 +330,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="dialogue-box">
     <div class="sec-label">⏱️ 대본 길이</div>
     <div class="chips" id="durChips" style="margin-bottom:14px;">
-      <div class="chip active" data-val="10" onclick="selDur(this)">⚡ 10초</div>
-      <div class="chip" data-val="30" onclick="selDur(this)">🎬 30초</div>
+      <div class="chip active" data-val="7" onclick="selDur(this)">⚡ 7초</div>
     </div>
     <div class="dialogue-btns">
       <button class="btn-sm" onclick="autoDialogue()">✨ AI 대본 생성</button>
@@ -1262,7 +1261,7 @@ const DIALOGUE_TONE = {
 };
 
 // ═══ STATE ═══
-const S={country:'kr',concept:'tip',obj:null,objEn:null,objJp:null,sit:null,sitAI:null,mood:null,dur:'10',voice:'adult_m'};
+const S={country:'kr',concept:'tip',obj:null,objEn:null,objJp:null,sit:null,sitAI:null,mood:null,dur:'7',voice:'adult_m'};
 let lastScriptKR='',lastScriptJP='',lastScriptEN='';
 let currentScriptLang='native';
 let usedScripts=[];
@@ -1411,6 +1410,157 @@ function selVoice(el){
 }
 
 // ═══ AI 랜덤 — 카테고리별 ═══
+// ═══ 추천 사물 풀 (실제 일상 빈도 높은 사물만) ═══
+const HIGH_RELATABLE_OBJECT_POOL = {
+  kr: {
+    home: [
+      {kr:'🧊 냉장고', en:'refrigerator'},
+      {kr:'🌀 세탁기', en:'washing machine'},
+      {kr:'🍚 전기밥솥', en:'rice cooker'},
+      {kr:'🚰 싱크대', en:'kitchen sink'},
+      {kr:'🔥 전자레인지', en:'microwave'},
+      {kr:'❄️ 에어컨', en:'air conditioner'},
+      {kr:'🧹 청소기', en:'vacuum cleaner'},
+      {kr:'🛏️ 침대', en:'bed'},
+      {kr:'🛌 이불', en:'blanket'},
+      {kr:'🧴 샴푸통', en:'shampoo bottle'},
+      {kr:'🪥 칫솔', en:'toothbrush'},
+      {kr:'🚿 샤워기', en:'shower head'},
+      {kr:'🧻 화장지 롤', en:'toilet paper roll'},
+      {kr:'🗑️ 쓰레기통', en:'trash can'},
+      {kr:'🧦 양말', en:'socks'},
+      {kr:'👕 빨래바구니', en:'laundry basket'},
+      {kr:'🔌 충전기', en:'phone charger'},
+      {kr:'📱 스마트폰', en:'smartphone'},
+      {kr:'🪞 거울', en:'mirror'},
+      {kr:'🍳 프라이팬', en:'frying pan'},
+      {kr:'🧽 수세미', en:'kitchen sponge'},
+      {kr:'🚽 변기', en:'toilet'},
+      {kr:'🧺 건조대', en:'drying rack'}
+    ],
+    work: [
+      {kr:'💻 노트북', en:'work laptop'},
+      {kr:'⌨️ 키보드', en:'office keyboard'},
+      {kr:'🖱️ 마우스', en:'computer mouse'},
+      {kr:'☕ 커피잔', en:'coffee mug'},
+      {kr:'🪑 사무용 의자', en:'office chair'},
+      {kr:'🖥️ 모니터', en:'computer monitor'},
+      {kr:'📇 명함', en:'business card'},
+      {kr:'🪪 사원증', en:'employee ID badge'},
+      {kr:'🖨️ 프린터', en:'office printer'},
+      {kr:'📎 서류 클립', en:'paper clip'},
+      {kr:'📑 회의 자료', en:'meeting documents'},
+      {kr:'📧 이메일 받은편지함', en:'email inbox'},
+      {kr:'👜 출퇴근 가방', en:'commuter bag'},
+      {kr:'🥤 텀블러', en:'tumbler'},
+      {kr:'📞 사무실 전화기', en:'office phone'},
+      {kr:'🧃 탕비실 커피머신', en:'office coffee machine'},
+      {kr:'📆 탁상 달력', en:'desk calendar'},
+      {kr:'🗂️ 파일철', en:'document folder'},
+      {kr:'🧾 영수증', en:'receipt'},
+      {kr:'🛗 엘리베이터', en:'office elevator'}
+    ]
+  },
+  jp: {
+    home: [
+      {kr:'🍱 편의점 도시락', en:'convenience store bento', jp:'コンビニ弁当'},
+      {kr:'🍙 오니기리', en:'onigiri', jp:'おにぎり'},
+      {kr:'🍜 컵라면', en:'cup ramen', jp:'カップラーメン'},
+      {kr:'🧊 냉장고', en:'refrigerator', jp:'冷蔵庫'},
+      {kr:'🌀 세탁기', en:'washing machine', jp:'洗濯機'},
+      {kr:'🍚 전기밥솥', en:'Japanese rice cooker', jp:'炊飯器'},
+      {kr:'🔥 전자레인지', en:'microwave', jp:'電子レンジ'},
+      {kr:'📟 에어컨 리모컨', en:'air conditioner remote', jp:'エアコンのリモコン'},
+      {kr:'🛁 욕조', en:'bathtub', jp:'お風呂'},
+      {kr:'🚿 샤워기', en:'shower head', jp:'シャワー'},
+      {kr:'🧻 화장지 롤', en:'toilet paper roll', jp:'トイレットペーパー'},
+      {kr:'🗑️ 분리수거 봉투', en:'garbage sorting bag', jp:'ゴミ袋'},
+      {kr:'🚲 자전거', en:'mamachari bicycle', jp:'ママチャリ'},
+      {kr:'🛌 후톤 이불', en:'futon bedding', jp:'布団'},
+      {kr:'🧴 샴푸통', en:'shampoo bottle', jp:'シャンプーボトル'},
+      {kr:'🪥 칫솔', en:'toothbrush', jp:'歯ブラシ'},
+      {kr:'🧺 빨래바구니', en:'laundry basket', jp:'洗濯カゴ'},
+      {kr:'🧽 수세미', en:'kitchen sponge', jp:'スポンジ'},
+      {kr:'🥢 젓가락', en:'chopsticks', jp:'箸'}
+    ],
+    work: [
+      {kr:'🚃 통근 전철', en:'packed commuter train', jp:'満員電車'},
+      {kr:'🔴 도장', en:'personal seal hanko', jp:'ハンコ'},
+      {kr:'📋 회의 자료', en:'meeting documents', jp:'会議資料'},
+      {kr:'📠 팩스기', en:'fax machine', jp:'FAX'},
+      {kr:'💻 노트북', en:'work laptop', jp:'ノートPC'},
+      {kr:'⌨️ 키보드', en:'office keyboard', jp:'キーボード'},
+      {kr:'🖱️ 마우스', en:'computer mouse', jp:'マウス'},
+      {kr:'☕ 커피잔', en:'coffee mug', jp:'コーヒーカップ'},
+      {kr:'🥤 자판기 커피', en:'vending machine coffee', jp:'自販機コーヒー'},
+      {kr:'👔 넥타이', en:'necktie', jp:'ネクタイ'},
+      {kr:'🪪 사원증', en:'employee ID badge', jp:'社員証'},
+      {kr:'👜 출근 가방', en:'commuter bag', jp:'通勤バッグ'},
+      {kr:'📎 서류 클립', en:'paper clip', jp:'クリップ'},
+      {kr:'🖨️ 프린터', en:'office printer', jp:'プリンター'},
+      {kr:'📑 품의서', en:'approval document', jp:'稟議書'},
+      {kr:'🍺 회식 잔', en:'nomikai beer glass', jp:'飲み会のジョッキ'},
+      {kr:'📆 탁상 달력', en:'desk calendar', jp:'卓上カレンダー'}
+    ]
+  }
+};
+
+// ═══ 이상한 사물 필터 ═══
+function isBadGeneratedObjectName(name){
+  const badWords = [
+    '행운','마법','무지개','요정','천사','악마','꿈','별빛',
+    '판타지','전설','신비','감성','행성','유니콘','보석함',
+    '크리스탈','왕관','마법봉','타임머신','마술','요술',
+    'magic','fantasy','rainbow','crystal','unicorn','fairy','angel','demon'
+  ];
+  const n = String(name||'').toLowerCase().replace(/\s/g,'');
+  return badWords.some(w => n.includes(w.toLowerCase()));
+}
+
+function normalizeGeneratedObjects(items, country, groupKey){
+  const pool = HIGH_RELATABLE_OBJECT_POOL[country]?.[groupKey] || [];
+
+  const result = [];
+  for(const item of items||[]){
+    const kr = item.kr || '';
+    const en = item.en || '';
+    const jp = item.jp || '';
+    if(!kr || !en) continue;
+    if(isBadGeneratedObjectName(kr) || isBadGeneratedObjectName(en) || isBadGeneratedObjectName(jp)) continue;
+    result.push(item);
+  }
+
+  // 결과 부족 시 추천 풀에서 보충
+  const used = new Set(result.map(x=>x.kr));
+  for(const p of pool){
+    if(result.length >= 8) break;
+    if(!used.has(p.kr)){
+      result.push(p);
+      used.add(p.kr);
+    }
+  }
+
+  return result.slice(0,8);
+}
+
+// ═══ 일본어 대본 딱딱함 체크 ═══
+function looksTooFormalJapanese(text){
+  const formalPatterns = [
+    /してください/g,
+    /しましょう/g,
+    /適切ではありません/g,
+    /正しい使い方/g,
+    /使用方法/g,
+    /おすすめします/g,
+    /重要です/g
+  ];
+  const hits = formalPatterns.reduce((sum,re)=>{
+    const m = String(text||'').match(re);
+    return sum + (m?m.length:0);
+  },0);
+  return hits >= 2;
+}
+
 async function aiRandomObjGroup(groupKey){
   if(!getApiKey()){
     showErr('API 키를 먼저 입력하고 저장해주세요. (상단 🔑 입력란)');
@@ -1439,9 +1589,16 @@ async function aiRandomObjGroup(groupKey){
 
     const already = Array.from(document.querySelectorAll('#group-'+groupKey+' .chip')).map(c=>c.dataset.kr).join(', ');
 
+    // 추천 풀 텍스트 생성
+    const pool = HIGH_RELATABLE_OBJECT_POOL[S.country][groupKey] || [];
+    const poolText = pool.map(x => {
+      if(S.country === 'jp') return `${x.kr} / ${x.jp||''} / ${x.en}`;
+      return `${x.kr} / ${x.en}`;
+    }).join('\n');
+
     const r = await callAI(
-      '너는 '+countryDesc+' 일상 사물 큐레이터다. 반드시 JSON만 반환. 설명·주석·코드블록 금지.\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語"}]}\n\n** 필수 규칙 **\n1. '+categoryDesc+' 에 해당하는 사물만 생성.\n2. 절대 카테고리 외 엉뚱한 사물 넣지 말 것 ("행운양말", "무지개", "마법봉" 같은 것 금지)\n3. 실제로 "사물의 참견" 컨셉(사물이 사람에게 잔소리/꿀팁)이 재미있게 성립하는 사물만\n4. 공감도 높고 영상 소재로 쓰기 좋은 사물 우선',
-      '카테고리: '+groupTitle+' ('+categoryDesc+')\n\n이 카테고리에 속하는, '+countryDesc+' 사람들이 일상에서 공감할 만한 사물 6개 생성. 이모지 포함.\n\n이미 선택지에 있는 것들 (중복 금지): '+already+'\n\nJSON만 출력.'
+      '너는 '+countryDesc+' 일상 사물 큐레이터다. 반드시 JSON만 반환. 설명·주석·코드블록 금지.\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語"}]}\n\n** 절대 규칙 **\n1. '+categoryDesc+' 에 해당하는 사물만 생성.\n2. 아래 추천 사물 풀에서 우선 선택해라. 새로 만들더라도 이 풀과 같은 수준의 일상 빈도/공감도를 가진 사물만 허용한다.\n3. **금지 사물**: 행운양말, 마법봉, 무지개, 요정, 천사, 악마, 꿈, 별빛, 판타지, 감성소품, 추상물, 장식품, 희귀템, 유니콘, 크리스탈, 마술, 요술 등 절대 금지\n4. 너무 귀엽기만 하고 생활 공감이 약한 물건 금지\n5. 실제 사람이 매일 쓰거나 자주 마주치는 사물만 허용 (주 3회 이상 접하는 사물)\n6. "그 사물이 사람에게 잔소리하면 웃긴가?" 기준 통과해야 함\n7. '+countryDesc+' 문화권에서 실제로 흔한 사물만\n\n** 추천 사물 풀 (이 수준의 일상성 유지) **\n'+poolText,
+      '카테고리: '+groupTitle+' ('+categoryDesc+')\n\n추천 풀에서 우선 선택하거나, 같은 수준의 공감도 높은 사물 6개 생성. 이모지 포함.\n\n이미 있는 것 (중복 금지): '+already+'\n\nJSON만 출력.'
     );
     let cleaned = r.replace(/```json|```/g,'').trim();
     const m = cleaned.match(/\{[\s\S]*\}/);
@@ -1450,9 +1607,20 @@ async function aiRandomObjGroup(groupKey){
     if(!d.items || !Array.isArray(d.items) || d.items.length===0){
       throw new Error('응답 형식 오류');
     }
+
+    // 🛡️ 필터 적용 — 이상한 사물 제거 + 부족하면 풀에서 보충
+    const normalizedItems = normalizeGeneratedObjects(d.items, S.country, groupKey);
+
+    // 이미 있는 것 제외
+    const existingKrSet = new Set(Array.from(document.querySelectorAll('#group-'+groupKey+' .chip')).map(c=>c.dataset.kr));
+    const finalItems = normalizedItems.filter(o=>{
+      const krWithEmoji = '✨ '+(o.kr||'');
+      return !existingKrSet.has(krWithEmoji) && !existingKrSet.has(o.kr);
+    });
+
     const targetGroup = document.getElementById('group-'+groupKey);
     if(targetGroup){
-      d.items.forEach(o=>{
+      finalItems.forEach(o=>{
         const kr = o.kr || o.en || '사물';
         const en = o.en || o.kr;
         const jp = o.jp || o.en || o.kr;
@@ -1465,7 +1633,9 @@ async function aiRandomObjGroup(groupKey){
         c.onclick = ()=>selObj('✨ '+kr, en, jp);
         targetGroup.appendChild(c);
       });
-      targetGroup.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+      if(targetGroup.lastElementChild){
+        targetGroup.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
     }
   } catch(e){
     console.error('AI 랜덤 오브젝트 에러:', e);
@@ -1614,37 +1784,25 @@ async function genDialogue(regen){
 
   // 꿀팁 컨셉 레퍼런스 (Objects Talk Back 실제 스타일)
   const TIP_REFS_KR = {
-    30: `[예시1 - 세탁기] "잠깐, 너 지금 지퍼 열고 나 돌리려는 거야? 야 그 금속 이빨이 얼마나 날카로운 줄 알아? 네 실크 블라우스, 니 좋아하는 스웨터, 다 내 안에서 갈기갈기 긁히는 중이거든. 30분이면 천이 보풀 지경 돼. 세탁 전에 지퍼는 무조건 끝까지 올려. 벨크로 찍찍이도 마찬가지고. 3초면 되는 거를 안 해서 옷 한 벌 날리지 마."
-
-[예시2 - 에어컨] "너 필터 언제 청소했어? 기억 안 나지? 1년 지나면 먼지가 1cm 두께로 쌓여. 그게 네 호흡기로 직통이야. 전기세도 30퍼센트 더 나오고. 필터 빼서 미지근한 물에 세제로 10분만 담가. 월에 한 번. 그거 하나로 전기세도, 니 폐도 지켜져."`,
-    10: `[예시1 - 세탁기] "지퍼 안 채우고 나 돌리지 마! 네 옷이 안에서 갈기갈기 긁혀. 3초면 되는데 왜 안 해?"
+    7: `[예시1 - 세탁기] "지퍼 안 채우고 나 돌리지 마! 네 옷이 안에서 갈기갈기 긁혀. 3초면 되는데 왜 안 해?"
 
 [예시2 - 냉장고] "뜨거운 거 식히지도 않고 넣지 마. 내 모터 과부하로 전기세만 늘어. 미지근하게 식힌 뒤에 넣어."`
   };
 
   const COMPLAINT_REFS_KR = {
-    30: `[예시1 - 쓰레기통] "야 진짜, 나 여기 버젓이 있는데 왜 굳이 바닥에 던지냐? 세 걸음이야 세 걸음. 그것도 못 걷냐? 어제는 심지어 내 옆에 떨어뜨려 놓고 그냥 갔잖아. 내가 네 엄마냐? 내가 줍냐? 내가 너 대신 분리수거 해주냐? 제발 좀, 버릴 때는 내 안에 정확히 넣어달라고. 이게 어려운 일이야?"
-
-[예시2 - 싱크대] "아니 3일째야 3일째. 저 그릇들이 언제부터 거기 있었는지 기억도 안 나. 물기는 말랐고 음식물은 굳었고 냄새는 진동해. 넌 옆방에서 배달앱 뒤지고 있고. 나 좀 봐줘. 한 번에 싹 씻는 거 5분이야. 쌓아두면 30분이야. 왜 굳이 네가 힘든 길을 택하는데?"`,
-    10: `[예시1 - 리모컨] "아니 또 나 어디 뒀어? 소파 쿠션 밑 여기 있잖아! 5번째야 오늘."
+    7: `[예시1 - 리모컨] "아니 또 나 어디 뒀어? 소파 쿠션 밑 여기 있잖아! 5번째야 오늘."
 
 [예시2 - 쓰레기통] "나 바로 옆에 있는데 바닥에 버리는 거 뭐냐? 내가 서운하다."`
   };
 
   const TIP_REFS_JP = {
-    30: `[例1 - 洗濯機] "ちょっと待って、ファスナー開けたまま洗おうとしてる？あの金属の歯がどれだけ鋭いか知ってる？君のシルクブラウスも、お気に入りのセーターも、中で引き裂かれてるんだよ。30分で毛玉だらけになる。洗う前にファスナーは絶対上まで締めて。マジックテープも同じ。3秒でできることをサボって服を一枚ダメにしないで。"
-
-[例2 - エアコン] "フィルター最後に掃除したのいつ？覚えてないでしょ。1年経つとホコリが1センチ積もる。それが君の呼吸器に直行してる。電気代も3割増し。フィルター外してぬるま湯で10分浸けるだけ。月1回で十分。これだけで電気代も肺も守れる。"`,
-    10: `[例1 - 洗濯機] "ファスナー締めずに回さないで！中で服が引き裂かれる。3秒でできるのになんでやらないの？"
+    7: `[例1 - 洗濯機] "ファスナー締めずに回さないで！中で服が引き裂かれる。3秒でできるのになんでやらないの？"
 
 [例2 - 冷蔵庫] "熱いもの冷まさずに入れないで。モーター過負荷で電気代だけ上がる。ぬるくしてから入れて。"`
   };
 
   const COMPLAINT_REFS_JP = {
-    30: `[例1 - ゴミ箱] "ねぇ、私ここにちゃんといるのに、なんでわざわざ床に投げるの？三歩よ三歩。それも歩けないの？昨日なんて私の横に落として行ったでしょ。私があなたのお母さん？私が拾うの？お願いだから、私の中にちゃんと入れて。これって難しいこと？"
-
-[例2 - ゴミ分別] "月曜日は燃えるゴミ、火曜は資源ゴミ、水曜は燃えないゴミ。そんなに難しい？あなた昨日プラスチック燃えるゴミに入れたよね。収集員さんが取っていかなかったの見た？恥ずかしいよ本当に。"`,
-    10: `[例1 - リモコン] "また私どこ置いたの？クッションの下！今日5回目だよ！"
+    7: `[例1 - リモコン] "また私どこ置いたの？クッションの下！今日5回目だよ！"
 
 [例2 - ゴミ箱] "私すぐ隣にいるのに床に捨てるって何？傷つくよ。"`
   };
@@ -1655,50 +1813,26 @@ async function genDialogue(regen){
 
   // 구조 강제
   const structureKR = isTip
-    ? (S.dur==='30'
-      ? `【필수 구조 - 30초 꿀팁】
-① 문제 지적 (2문장): "너 지금 ○○하고 있지? 그거 왜 그러는 줄 알아?" 식으로 독자의 행동을 직접 꼬집기
-② 경고 + 구체적 부작용 (2~3문장): "이러면 내 ○○가 망가져" + 숫자/기간/현상 명시 ("1년이면 ○cm 쌓여", "전기세 30% 증가", "섬유가 ○시간 안에 손상")
-③ 구체적 해결책 (2~3문장): 누구나 바로 따라할 수 있는 단순 행동 2~3개. 모호한 조언 금지.
-총 7~8문장. 매 문장이 정보를 담아야 함.`
-      : `【필수 구조 - 10초 꿀팁】
+    ? `【필수 구조 - 7초 꿀팁】
 ① 문제 지적 (1문장): 독자의 잘못된 행동 직접 콕 집음
 ② 부작용 (1문장): 구체적 결과 ("뭐가 어떻게 망가진다")
 ③ 해결책 (1문장): 바로 할 수 있는 행동 하나
-총 3문장. 영양가 없는 문장 쓰지 말 것.`)
-    : (S.dur==='30'
-      ? `【필수 구조 - 30초 민폐】
-① 상황 실시간 중계 (2문장): "지금 너 뭐하냐?" 식으로 현재 진행 중인 민폐 행동을 묘사
-② 반복되는 짜증 포인트 나열 (3문장): 구체적인 과거 사례, 숫자 ("3일째야", "다섯 번째야")
-③ 직설적 한탄/요청 (2~3문장): 친구가 진심으로 짜증내듯이
-총 7~8문장. 비유·미사여구 금지, 구체적 현실 묘사만.`
-      : `【필수 구조 - 10초 민폐】
+총 3문장. 영양가 없는 문장 쓰지 말 것.`
+    : `【필수 구조 - 7초 민폐】
 ① 현재 상황 (1문장): "야 너 지금 뭐함"
 ② 짜증 포인트 (1~2문장): 구체적으로
-총 2~3문장. 직설적으로.`);
+총 2~3문장. 직설적으로.`;
 
   const structureJP = isTip
-    ? (S.dur==='30'
-      ? `【必須構造 - 30秒ライフハック】
-① 問題指摘 (2文): 視聴者の行動を直接ツッコむ
-② 警告+具体的な副作用 (2~3文): 数字・期間・現象を明示 (「1年で○cm積もる」「電気代30%増」)
-③ 具体的な解決策 (2~3文): 誰でもすぐ真似できる行動2~3個。曖昧な助言禁止。
-合計7~8文。各文が情報を持つこと。`
-      : `【必須構造 - 10秒ライフハック】
+    ? `【必須構造 - 10秒ライフハック】
 ① 問題指摘 (1文)
 ② 副作用 (1文): 具体的に
 ③ 解決策 (1文)
-合計3文。`)
-    : (S.dur==='30'
-      ? `【必須構造 - 30秒マナー指摘】
-① 実況描写 (2文): 今起きてる行動を描写
-② 繰り返される苛立ちポイント (3文): 具体例、数字
-③ 直接的な愚痴/要求 (2~3文)
-合計7~8文。比喩・美辞麗句禁止。`
-      : `【必須構造 - 10秒マナー指摘】
+合計3文。`
+    : `【必須構造 - 10秒マナー指摘】
 ① 現状 (1文)
 ② 苛立ち (1~2文)
-合計2~3文。`);
+合計2~3文。`;
 
   // 금지 사항 강제
   const BAN_RULES_KR = `
@@ -1737,6 +1871,44 @@ async function genDialogue(regen){
   // ═════════════════════════════════════════════════
   // 최종 시스템 프롬프트
   // ═════════════════════════════════════════════════
+  const JP_TONE_RULES = `
+
+【🚨 日本語タメ口・ツッコミ口調 絶対ルール】
+あなたは日本向けショート動画の台本作家です。
+文法的に正しいだけでなく、日本人が見て自然に笑える「生活感のあるツッコミ口調」で書いてください。
+
+✅ 必須ルール:
+- 韓国語の반말(タメ口)を直訳しない
+- 自然な日本語のタメ口で書く
+- 友達にツッコむようなテンポ
+- 説教くさくしすぎない
+- 生活感のある言い方にする
+- 1文は短く
+- SNSショート動画向け
+- 説明文ではなく、喋っているセリフにする
+
+❌ 絶対禁止:
+- 「〜してください」「〜しましょう」 のような硬い表現
+- 너무 정중한 です/ます 남발
+- 説明文っぽい長い文
+- 「これは正しい使い方ではありません」
+- 「使用方法を守ってください」
+- 「あなたの行動は適切ではありません」
+- 「この商品をおすすめします」
+
+✅ 良いトーン例:
+- ちょっと待って、それはさすがに雑すぎ
+- またそれやってるの？ほんと学ばないね
+- いやいや、そこに入れたらダメでしょ
+- それ、あとで自分が困るやつだから
+- もうさ、何回言えば伝わるの
+
+📌 コンセプト別トーン:
+${isTip
+  ? '- ライフハック: 「知らないと損するよ」「それ、実は逆効果」「こうした方がラク」みたいな自然な気づきトーン'
+  : '- マナー指摘/愚痴: 「ちょっと待って」「いやそれはない」「またやってる」「ほんと勘弁して」みたいな共感ツッコミ'}
+`;
+
   const systemPrompt = isJP
     ? `あなたは日本のTikTok/Instagram Reels/YouTube Shorts で再生数100万超を連発する「物が話す」ショート動画の専門台本作家だ。
 
@@ -1749,11 +1921,13 @@ ${isTip ? structureJP : structureJP}
 【口調】${styleTone}
 ${culturalJP}
 ${BAN_RULES_JP}
+${JP_TONE_RULES}
 
 【出力形式】
 - 日本語の台本本文のみ出力 (説明・前置き・コメント一切なし)
 - 物が一人称で話す
-- 視聴者が「保存したい」「コメントしたい」と感じる情報密度で`
+- 視聴者が「保存したい」「コメントしたい」と感じる情報密度で
+- 必ず自然なタメ口・ツッコミ口調で書く`
     : `너는 한국 유튜브 쇼츠/인스타 릴스에서 조회수 100만 넘기는 "사물이 말하는" 영상 전문 대본 작가다.
 
 【참고: 실제로 시청자가 "저장!" "댓글!" 하게 만드는 대본 예시】
@@ -1783,23 +1957,47 @@ ${BAN_RULES_KR}
     ? `物: ${S.objJp||S.objEn||S.obj}
 状況: ${S.sitAI||S.sit}
 コンセプト: ${isTip?'ライフハック/警告 (具体的な情報)':'愚痴/マナー指摘 (共感)'}
-長さ: ${S.dur==='30'?'30秒':'10秒'}
+長さ: ${'7秒'}
 
 この物が「${S.sitAI||S.sit}」という状況について一人称で話す台本を、参考例のレベルで生成。${avoid}${continuationHint}`
     : `사물: ${S.obj}
 상황: ${S.sitAI||S.sit}
 컨셉: ${isTip?'꿀팁/경고 (구체적 정보)':'민폐 지적/한탄 (공감)'}
-길이: ${S.dur==='30'?'30초':'10초'}
+길이: ${'7초'}
 
 이 사물이 "${S.sitAI||S.sit}" 이라는 상황에 대해 1인칭으로 말하는 대본을, 위 참고 예시 수준의 정보 밀도로 생성해줘.${avoid}${continuationHint}`;
 
   try {
     console.log('[genDialogue] callAI 호출 직전');
-    const txt=await callAI(systemPrompt, userPrompt);
+    let txt=await callAI(systemPrompt, userPrompt);
     console.log('[genDialogue] callAI 성공, 길이:', txt.length);
     if(!txt || txt.trim().length===0){
       throw new Error('AI가 빈 응답을 반환함. API 키 또는 쿼터 확인.');
     }
+
+    // 🔁 일본어 대본이 너무 딱딱하면 한 번만 재작성
+    if(isJP && looksTooFormalJapanese(txt)){
+      console.log('[genDialogue] 일본어 대본 너무 딱딱함 — 자연스러운 タメ口로 재작성');
+      try {
+        const rewriteSys = `この台本は少し説明っぽくて硬いです。
+日本のSNSショート動画向けに、もっと自然なタメ口・ツッコミ口調に直してください。
+意味は保ちつつ、説明文ではなく喋り言葉にしてください。
+
+❌ 禁止: 「〜してください」「〜しましょう」「適切ではありません」「使用方法」「おすすめします」のような硬い表現
+✅ 必須: 友達にツッコむようなタメ口、短い文、生活感のある自然な言い方
+
+出力は台本だけ。説明文や前置きは一切なし。`;
+        const rewriteUser = `元の台本:\n"""\n${txt.trim()}\n"""\n\nこれを自然な日本語のタメ口・ツッコミ口調に書き直してください。台本本文のみ出力。`;
+        const rewritten = await callAI(rewriteSys, rewriteUser);
+        if(rewritten && rewritten.trim().length > 0){
+          txt = rewritten.trim();
+          console.log('[genDialogue] 재작성 완료');
+        }
+      } catch(e){
+        console.warn('[genDialogue] 재작성 실패, 원본 사용:', e);
+      }
+    }
+
     document.getElementById('dialogue').value=txt.trim();
     document.getElementById('dialogue').placeholder='주제 선택 후 AI 대본 생성 클릭';
     usedScripts.push(txt.trim());
@@ -1843,8 +2041,8 @@ async function generate(){
       if(S.country==='jp'){
         // 일본어 대본 → 한국어 번역 (본인 확인용)
         scriptTrans = await callAI(
-          '너는 일본어 숏폼 영상 대본을 한국어로 자연스럽게 번역하는 번역가다. 설명 없이 번역 결과만 출력. 말투의 뉘앙스, 일본식 표현, 텐션을 살려서 자연스러운 한국어 구어체로 옮겨라.',
-          '일본어 대본:\n'+script+'\n\n자연스러운 한국어 구어체로 번역.'
+          '너는 일본 숏폼 영상 대본을 한국 쇼츠 시청자가 자연스럽게 들리는 한국어로 옮기는 번역가다. 설명 없이 번역 결과만 출력.\n\n핵심 규칙:\n- 일본어 특유의 タメ口, ツッコミ, 생활감 있는 농담을 한국어 반말 개그톤으로 자연스럽게 옮겨라\n- 직역 절대 금지\n- 한국 쇼츠/릴스에서 자연스럽게 들리는 말투로 옮겨라\n- 정중한 표현 (~합니다, ~하세요)는 한국어 반말로 (~해, ~지)\n- 일본식 츳코미 ("ちょっと待って" → "야 잠깐", "またやってる" → "또 시작이네")\n- 한국 사람이 일상에서 말하는 자연스러운 톤 유지',
+          '일본어 대본:\n'+script+'\n\n한국 쇼츠 반말 개그톤으로 자연스럽게 번역.'
         );
         // 영어도
         scriptEN = await callAI(
