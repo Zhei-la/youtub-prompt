@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.2</span></div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.5</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -199,7 +199,45 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
   </div>
 </div>
 
-<button class="big-btn" id="genScriptBtn" onclick="genScript()">✨ 1분 대본 생성 (6 Scene × 10초)</button>
+<!-- 5단계: 대본 요청문 만들기 (ChatGPT용) -->
+<div style="margin-top:14px;padding:14px;background:linear-gradient(135deg,#dbeafe,#e0e7ff);border-radius:12px;border:2px dashed #6366f1;">
+  <div style="font-size:14px;font-weight:900;color:#3730a3;margin-bottom:6px;">📋 대본 요청문 만들기</div>
+  <div style="font-size:11px;color:#4338ca;margin-bottom:10px;line-height:1.6;">
+    위 옵션 (장르 + 주제 + 분위기 + 비주얼 스타일)을 선택하면 아래 버튼으로 대본 요청문이 자동 생성됩니다.<br>
+    💡 <b>여기서 만든 요청문을 ChatGPT에 붙여넣으면 더 좋은 대본을 만들 수 있어요!</b><br>
+    👉 복사 → ChatGPT에 붙여넣기 → 대본 받기 → 아래 "📝 스토리 넣기" 박스에 붙여넣기 → 영화 만들기!
+  </div>
+  <button onclick="generateGPTRequest()" style="width:100%;padding:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(99,102,241,0.3);">
+    📋 대본 요청문 만들기
+  </button>
+  <div id="gptRequestBox" style="display:none;margin-top:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+      <span style="font-size:12px;font-weight:700;color:#3730a3;">📋 아래 텍스트를 복사해서 ChatGPT에 붙여넣으세요</span>
+      <div style="display:flex;gap:6px;">
+        <button onclick="copyGPTRequest(this)" style="padding:6px 12px;background:#3730a3;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📋 복사</button>
+        <button onclick="openChatGPT()" style="padding:6px 12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">🚀 ChatGPT 열기</button>
+      </div>
+    </div>
+    <textarea id="gptRequestText" readonly style="width:100%;min-height:200px;padding:12px;border-radius:8px;border:1px solid #6366f1;background:#eef2ff;color:#1e1b4b;font-size:12px;font-family:inherit;resize:vertical;line-height:1.6;"></textarea>
+  </div>
+</div>
+
+<!-- 6단계: 스토리/대본 직접 넣기 -->
+<div style="margin-top:14px;padding:14px;background:linear-gradient(135deg,#fef3c7,#fed7aa);border-radius:12px;border:2px dashed #f59e0b;">
+  <div style="font-size:14px;font-weight:900;color:#7c2d12;margin-bottom:6px;">📝 스토리 넣기</div>
+  <div style="font-size:11px;color:#92400e;margin-bottom:8px;line-height:1.6;">
+    이미 대본/스토리가 있다면 여기에 붙여넣으세요. AI가 그 내용 그대로 6개 Scene + 영상 프롬프트로 만들어드립니다!<br>
+    💡 위 "📋 대본 요청문 만들기"로 ChatGPT에서 받은 대본을 여기 붙여넣으면 <b>훨씬 좋은 영화</b>가 만들어져요!<br>
+    예: 짧은 소설, 썰, 일기, 시나리오, ChatGPT가 만든 대본 등
+  </div>
+  <textarea id="customScreenplay" placeholder="여기에 대본/스토리/줄거리 붙여넣기...&#10;&#10;예시:&#10;'어느 비 오는 날 저녁, 택시기사 김씨는 마지막 손님을 태웠다. 그 손님은 5년 전 헤어진 첫사랑이었다. 둘은 오래된 이야기를 나누며 서로의 안부를 묻는다. 마지막에 김씨는 ''이번 요금은 안 받겠습니다''라고 말한다.'" style="width:100%;min-height:140px;padding:10px;border-radius:8px;border:1px solid #d97706;background:#fffbeb;color:#7c2d12;font-size:13px;font-family:inherit;resize:vertical;line-height:1.5;"></textarea>
+  <div style="display:flex;gap:6px;margin-top:8px;">
+    <button onclick="useScreenplay()" style="flex:1;padding:10px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:8px;font-size:13px;font-weight:900;cursor:pointer;">📝 이 스토리로 영화 만들기</button>
+    <button onclick="clearScreenplay()" style="padding:10px 14px;background:#fef3c7;color:#92400e;border:1px solid #d97706;border-radius:8px;font-size:12px;cursor:pointer;">🗑️ 비우기</button>
+  </div>
+</div>
+
+<button class="big-btn" id="genScriptBtn" onclick="genScript()" style="margin-top:14px;">✨ 1분 대본 생성 (6 Scene × 10초)</button>
 
 <div class="summary-box" id="summaryBox"></div>
 
@@ -694,6 +732,52 @@ function addCustomTopic(){
   document.getElementById('customTopic').value='';
 }
 
+function useScreenplay(){
+  const text=document.getElementById('customScreenplay').value.trim();
+  if(!text){
+    showErr('대본이 비어있습니다. 먼저 대본을 붙여넣어주세요.');
+    return;
+  }
+  if(text.length<20){
+    showErr('대본이 너무 짧습니다. 최소 20자 이상 입력해주세요.');
+    return;
+  }
+  // 주제로 등록 (한 줄 요약)
+  const summary=text.length>30?text.substring(0,30)+'...':text;
+  S.topic='[직접 작성한 대본] '+summary;
+  S.topicDesc='사용자가 직접 입력한 대본';
+  S.customScreenplay=text;
+
+  // UI 업데이트
+  const wrap=document.getElementById('topicChips');
+  // 기존 active 제거
+  wrap.querySelectorAll('.chip.active').forEach(c=>c.classList.remove('active'));
+  // 새 chip 추가
+  const c=document.createElement('div');
+  c.className='chip active';
+  c.style.cssText='background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-weight:900;';
+  c.textContent='📝 직접 작성: '+summary;
+  wrap.insertBefore(c,wrap.firstChild);
+
+  done('s2');act('s3');updateSummary();
+
+  // 성공 메시지
+  const ta=document.getElementById('customScreenplay');
+  ta.style.borderColor='#10b981';
+  ta.style.background='#dcfce7';
+  setTimeout(()=>{
+    ta.style.borderColor='#d97706';
+    ta.style.background='#fffbeb';
+  },1500);
+}
+
+function clearScreenplay(){
+  if(confirm('대본을 비우시겠습니까?')){
+    document.getElementById('customScreenplay').value='';
+    S.customScreenplay='';
+  }
+}
+
 function selMood(el){
   document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
@@ -718,6 +802,129 @@ function updateSummary(){
   if(S.visualLabel)p.push('비주얼: <b>'+S.visualLabel+'</b>');
   if(S.scenes&&S.scenes.length>0)p.push('Scene: <b>'+S.scenes.length+'개 ('+(S.scenes.length*10)+'초)</b>');
   document.getElementById('summaryBox').innerHTML=p.length?p.join(' · '):'선택한 옵션이 여기에 표시됩니다.';
+}
+
+function generateGPTRequest(){
+  if(!S.genre){alert('1단계에서 장르를 먼저 선택해주세요!');return}
+  if(!S.topic){alert('2단계에서 주제를 선택하거나 직접 입력해주세요!');return}
+  if(!S.mood){alert('3단계에서 분위기를 선택해주세요!');return}
+  if(!S.visual){alert('4단계에서 비주얼 스타일을 선택해주세요!');return}
+
+  const visualText = {
+    cinematic: '실사 영화 (Korean drama/movie 스타일, 진짜 배우들, photorealistic)',
+    anime: '애니메이션 (고퀄리티 일본 애니/판타지 일러스트, 타이탄클래스 스타일)',
+    pixar3d: '픽사 3D (Disney/Pixar 3D 애니, 둥근 얼굴/큰 눈/귀여운 비율)'
+  }[S.visual] || S.visualLabel;
+
+  const moodDetail = {
+    epic: '웅장하고 서사적인 분위기, 큰 스케일, 영웅적',
+    emotional: '감성적이고 잔잔한 분위기, 따뜻한 인간 드라마',
+    dark: '어둡고 무거운 분위기, 진중한 톤, 우울감',
+    hopeful: '희망찬 따뜻한 분위기, 긍정적 결말',
+    mystery: '미스터리 음산한 분위기, 호기심 자극',
+    action: '액션 긴박감, 빠른 템포, 스릴',
+    romantic: '로맨틱 설렘, 달콤한 감정선',
+    surreal: '초현실 몽환적, 꿈같은 느낌',
+    comedy: '코미디 유쾌한 분위기, 재밌는 상황',
+    thriller: '스릴러 긴장감, 손에 땀 쥐는 전개'
+  }[S.mood] || S.moodLabel;
+
+  const request =
+'다음 조건에 맞는 1분짜리 영화 대본을 작성해주세요.\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'🎬 영화 정보\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'• 장르: '+S.genre+'\n'+
+'• 주제: '+S.topic+(S.topicDesc?'\n  ('+S.topicDesc+')':'')+'\n'+
+'• 분위기/톤: '+moodDetail+'\n'+
+'• 비주얼 스타일: '+visualText+'\n'+
+'• 러닝타임: 1분 (60초)\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'📐 작성 규칙\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'1. 1분 = 6개 씬 × 10초로 구성 (씬1, 씬2, ..., 씬6)\n'+
+'2. 각 씬은 정확히 10초 분량 (00:00~00:10, 00:10~00:20, ...)\n'+
+'3. 각 씬마다 컷 구성을 시간으로 분할 (0~3초, 3~7초, 7~10초)\n'+
+'4. 대사는 한국어 60-90자 (10초 분량)\n'+
+'5. 후킹 → 전개 → 클리프행어 구조\n'+
+'6. 캐릭터 일관성 (같은 사람 = 같은 외형/이름)\n'+
+'7. 한국 이름 사용 (서연, 지훈, 현우, 수민 등)\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'📦 출력 형식 (반드시 이대로!)\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'# 🎬 1분 영화 대본\n'+
+'## 제목\n'+
+'[영화 제목]\n\n'+
+'## 기본 정보\n'+
+'장르: [장르]\n'+
+'주제: [주제]\n'+
+'분위기: [분위기]\n'+
+'비주얼 스타일: [스타일]\n\n'+
+'## 씬1. 00:00~00:10\n'+
+'장면:\n'+
+'[10초 안의 구체적 장면 묘사]\n\n'+
+'컷 구성:\n'+
+'- 0~3초: [첫 번째 컷의 화면]\n'+
+'- 3~7초: [두 번째 컷의 화면]\n'+
+'- 7~10초: [세 번째 컷의 화면]\n\n'+
+'행동:\n'+
+'[캐릭터의 구체적 행동]\n\n'+
+'대사:\n'+
+'[캐릭터]: "..."\n\n'+
+'사운드:\n'+
+'[효과음/배경음/음악]\n\n'+
+'자막:\n'+
+'[캐릭터]: "..."\n\n'+
+'## 씬2. 00:10~00:20\n'+
+'... (위와 동일 형식, 씬6까지 6개)\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'위 형식 그대로 1분 영화 대본을 작성해주세요.\n'+
+'완성된 대본을 영화 도구의 "📝 스토리 넣기" 박스에 붙여넣으면 자동으로 6개 Scene 영상 프롬프트가 만들어집니다!';
+
+  document.getElementById('gptRequestText').value = request;
+  document.getElementById('gptRequestBox').style.display = 'block';
+
+  // 박스로 스크롤
+  setTimeout(()=>{
+    document.getElementById('gptRequestBox').scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function copyGPTRequest(btn){
+  const text = document.getElementById('gptRequestText').value;
+  if(!text){alert('먼저 요청문을 만들어주세요!');return}
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      flashGPTBtn(btn,'✅ 복사 완료!');
+    }).catch(()=>{
+      fallbackGPTCopy(text,btn);
+    });
+  }else{
+    fallbackGPTCopy(text,btn);
+  }
+}
+
+function fallbackGPTCopy(text,btn){
+  const ta = document.getElementById('gptRequestText');
+  ta.select();
+  try{document.execCommand('copy');flashGPTBtn(btn,'✅ 복사 완료!');}
+  catch(e){alert('복사 실패. 수동으로 텍스트 영역에서 복사해주세요.');}
+}
+
+function flashGPTBtn(btn,msg){
+  if(!btn)return;
+  const orig = btn.innerHTML;
+  btn.innerHTML = msg;
+  btn.style.background = '#10b981';
+  setTimeout(()=>{
+    btn.innerHTML = orig;
+    btn.style.background = '#3730a3';
+  },1800);
+}
+
+function openChatGPT(){
+  window.open('https://chat.openai.com/','_blank');
 }
 
 async function genScript(){
@@ -858,6 +1065,9 @@ NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.
       "emotion":"감정 톤 (한글)",
       "dialogue":[{"speaker":"이름","line":"한국어 대사 (3-5초 분량)"}],
       "narration":"내레이션 (있으면, 없으면 빈 문자열)",
+      "cut_structure":"컷 구성 (대본에 있으면 그대로 — 예: '0-3초: 고가도로 전경, 3-7초: SUV 클로즈업, 7-10초: 남자의 시선')",
+      "sound":"사운드 (대본에 있으면 그대로 — 예: '천둥소리, 타이어 마찰음, 아이의 발버둥 소리')",
+      "subtitle":"자막 (대본에 있으면 그대로, 보통은 dialogue와 동일)",
       "visual_description":"이 Scene의 영상 시각 묘사 (영어, 10초 분량, 구체적 액션/카메라/조명)"
     }
   ]
@@ -880,6 +1090,57 @@ ${currentStyle}
 주제: ${S.topic}
 ${S.topicDesc?'주제 설명: '+S.topicDesc:''}
 분위기: ${S.moodLabel}
+${S.customScreenplay?`
+
+📝📝📝 **사용자가 입력한 대본 — 이 대본을 100% 그대로 사용하세요** 📝📝📝
+"""
+${S.customScreenplay}
+"""
+
+⚠️⚠️⚠️ **대본 사용 절대 규칙 (반드시 지켜야 함)**:
+
+1. **씬 매핑 규칙**:
+   - 위 대본에 "씬1, 씬2, ..." 또는 "Scene 1, 2..." 가 있으면 → 그대로 1:1 매핑
+   - 6개 씬이 있으면 → 6개 Scene으로
+   - 씬이 6개가 아니면 → 자연스럽게 6개로 재분할 (시간 흐름 따라)
+   - 씬 구분 없는 줄글 → 시간/사건 변화 기준 6개로 분할
+
+2. **각 씬의 모든 정보 보존**:
+   - "장면" 또는 "Scene 설명" → location 필드에 반영
+   - "행동" 또는 사건 묘사 → event 필드에 풍부하게 반영
+   - "대사" → dialogue 배열에 그대로 (speaker:line 형식)
+   - "나레이션" → narration 필드
+   - 감정/분위기 → emotion 필드
+
+3. **컷 구성 정보 보존 (있다면)**:
+   - "컷 구성: 0~3초 ... 3~7초 ... 7~10초" 같은 시간 마커가 있으면
+   - event 필드에 그 컷 분할을 그대로 반영
+   - 예: "0-3초 고가도로 전경, 3-7초 SUV 뒷좌석 클로즈업, 7-10초 남자의 시선 클로즈업"
+   - 이렇게 적으면 나중에 Flow 영상 프롬프트 만들 때 그대로 Multi-Cut으로 변환됨!
+
+4. **사운드 정보 보존**:
+   - "사운드:" 항목이 있으면 → event 또는 별도 필드 추가
+   - 예: "사운드: 천둥소리, 타이어 마찰음, 아이의 발버둥 소리"
+   - 추후 Flow Audio 섹션에 그대로 사용
+
+5. **자막 정보 보존**:
+   - "자막:" 항목은 dialogue와 동일하게 처리
+   - 자막이 dialogue와 다르면 추가 dialogue로 처리
+
+6. **캐릭터 정보 추출**:
+   - 대본 등장인물을 분석해서 protagonist, supporting 자동 추출
+   - 대본에 "남자, 딸, 납치범" 등 역할만 있으면 → 한국 이름 자동 부여 (서연, 지훈, 현우 등)
+   - 단, 대본에 이미 이름이 있으면 그대로 사용
+
+7. **스토리/대사 변경 절대 금지**:
+   - 대본에 있는 대사는 한 글자도 바꾸지 말 것
+   - 사건 순서 변경 금지
+   - 새 캐릭터 추가 금지
+   - 대본에 없는 내용 절대 추가 금지
+   - 대본을 충실히 영상 데이터로 변환하기만 할 것
+
+🎬 위 대본을 위 규칙에 따라 6 Scene JSON으로 변환. 대본에 충실하게!
+`:''}
 
 1분 (6 Scene × 10초) 대본 생성. JSON만.`;
 
@@ -1440,12 +1701,15 @@ ${styleGuide}
 - ❌ 간단: "subway station in chaos"
 - ✅ 풍부함: "Underground subway platform, fluorescent lights flickering and casting strobing shadows, concrete walls cracking, dust falling from the ceiling, panicked commuters running in all directions, loose papers and bags scattered on the platform, cool blue-gray color palette with red emergency lights pulsing"
 
-▶ Style (비주얼 스타일 — 영화 레퍼런스 포함):
+▶ Style (비주얼 스타일 — 영화 레퍼런스 포함, AI 티 제거):
 - 시네마틱 미학 키워드 (예: "anamorphic lens", "film grain", "Kodachrome color")
 - 영화 레퍼런스 (예: "Bong Joon-ho cinematography style", "like 'Train to Busan'")
 - 후처리 (예: "cinematic color grading", "teal and orange palette", "high contrast")
+- **"NOT AI-generated look" 명시 권장** — AI 매끈함 방지!
+- **포토리얼 키워드 필수**: "photorealistic skin texture, visible pores, natural imperfections"
 - ❌ 간단: "cinematic realistic"
-- ✅ 풍부함: "Cinematic realistic, 35mm anamorphic lens, shallow depth of field, teal-orange color grading, slight film grain, high contrast, Korean disaster film aesthetic like 'Train to Busan' or 'Concrete Utopia', moody atmospheric lighting"
+- ✅ 풍부함 (액션): "Cinematic realistic, photorealistic skin with visible pores, 35mm anamorphic lens, shallow depth of field, teal-orange color grading, slight film grain, high contrast, Korean disaster film aesthetic like 'Train to Busan' or 'Concrete Utopia', moody atmospheric lighting, NOT AI-generated look — feels like real cinematography"
+- ✅ 풍부함 (감성): "Cinematic realistic, photorealistic skin texture with natural imperfections, soft natural lighting, Korean drama aesthetic like 'My Liberation Notes' or 'Our Beloved Summer', 35mm film grain, gentle color grading, intimate documentary feel, NOT AI-generated look"
 
 ▶ Camera (카메라 워크 — 영화감독처럼):
 - 카메라 움직임 종류 (handheld, tracking, dolly, crane, gimbal)
@@ -1503,14 +1767,24 @@ Duration: 10 seconds
 - 각 cut은 시각적으로 명확히 다른 샷 사이즈/앵글
 - 2-3 cut 권장 (한 컷당 약 3-5초)
 
-✅ 좋은 예시 (지진 Scene):
-"Action: [0-3s] First, an extreme close-up of her eyes widening in shock as a low rumble begins, her ponytail trembling. [3-6s] Then cut to a wide shot of the Seoul intersection — the tall billboard violently swaying, debris starting to fall, panicked pedestrians beginning to scatter. [6-10s] Finally, a medium tracking shot following her as she sprints across the street, her arm sweeping in a 'follow me' gesture, dust filling the air."
+✅ 좋은 예시 (지진 Scene — 액션):
+"Action: [0-3s] First, an extreme close-up of the SAME young woman's eyes widening in shock as a low rumble begins, her ponytail trembling. [3-6s] Then cut to a wide shot of the SAME woman in the SAME Seoul intersection — the tall billboard violently swaying, debris starting to fall around her. [6-10s] Finally, a medium tracking shot following the SAME woman as she sprints across the street, her arm sweeping in a 'follow me' gesture, dust filling the air."
+
+✅ 좋은 예시 (감성 영화 Scene — 차분한 분위기):
+"Action: [0-4s] First, a medium shot of the SAME middle-aged Korean man sitting in his taxi driver's seat, gently holding his phone to his ear, a soft expression on his face as he listens. [4-7s] Then a close-up of the SAME man's face, still in the SAME driver's seat — his eyes glisten slightly as he speaks softly into the phone. [7-10s] Finally, a side profile of the SAME man in the SAME position, lowering the phone slowly, gazing through the windshield at the rainy street outside."
+
+→ 핵심: **the SAME man, the SAME driver's seat, the SAME position** 반복 명시!
+→ 감성 영화에서도 cut 전환 OK, 단 캐릭터/위치는 유지
 
 ✅ Camera 섹션도 다중 샷 명시:
 "Camera: Multi-shot cinematic composition — extreme close-up transitions to wide establishing shot, then to handheld tracking shot following the subject"
+또는 (감성 영화용):
+"Camera: Gentle multi-shot composition — medium shot to intimate close-up to soft side profile, all centered on the same subject"
 
 ✅ Style에 multi-shot 강조:
 "Style: Multi-shot cinematic film editing, professional cut transitions, anamorphic lens, teal-orange color grading, Korean disaster film aesthetic"
+또는 (감성 영화용):
+"Style: Multi-shot intimate cinematic editing, soft cut transitions, warm muted color palette, Korean drama aesthetic like 'My Liberation Notes'"
 
 🎙️ **대사 ↔ 컷 매칭 절대 규칙 (영상 어색함 방지)**:
 - 대사가 적으면 영상이 멈춘 듯 어색함! 한국 영화처럼 대사 풍부하게!
@@ -1546,10 +1820,135 @@ Duration: 10 seconds
 ❌ 나쁜 예시 (대사 없이):
 "Action: [0-3s] close-up of face. [3-6s] she runs. [6-10s] looks back." — 침묵이 길어 어색
 
+🚨🚨 **캐릭터 + 공간 일관성 절대 규칙 (매우 매우 중요 — 영상 망치는 1순위 원인!)**:
+
+❌ Flow가 자주 망치는 패턴:
+- Cut 1: 남자가 운전석에 앉아있음
+- Cut 2: 갑자기 여자로 바뀌어 뒤돌아 앉아있음 ← 말이 안 됨!
+- Cut 3: 또 다른 사람이 등장 ← 영상 완전 망함!
+
+✅ **반드시 지켜야 할 것** — Action 섹션에 **각 컷마다 동일성 명시**:
+
+1. **같은 캐릭터** (성별/외형/의상) — 모든 cut에서 동일
+2. **같은 공간/위치** — 한 Scene 내에서 같은 장소 유지
+3. **포즈 변화는 자연스러운 연속 동작만** — 갑자기 다른 자세로 점프 금지
+4. **시점 변화는 카메라 각도만** (캐릭터가 움직이는 게 아님)
+
+📌 **각 cut마다 "the same X" 표현 필수**:
+✅ 좋은 예 (택시 운전수 시나리오):
+"Action: 
+[0-3s] First, a close-up of the SAME middle-aged Korean taxi driver in his 50s sitting in the driver's seat, his hands gripping the steering wheel tightly while talking on the phone with growing concern.
+[3-6s] Then cut to a wider angle of the SAME man in the SAME driver's seat — he glances at the rearview mirror, his expression turning serious as he sets the phone down.
+[6-10s] Finally, a side profile of the SAME man still in the driver's seat, his eyes fixed on the road ahead, gripping the wheel with both hands as he drives forward."
+
+→ **같은 사람** (the same middle-aged Korean taxi driver)
+→ **같은 위치** (the same driver's seat)
+→ **자연스러운 동작** (전화 받기 → 백미러 보기 → 운전)
+
+❌ 나쁜 예 (대장이 본 영상처럼 됨):
+"Action: 
+[0-3s] A man drives a taxi while on the phone.
+[3-6s] A woman sits looking at her phone.   ← 완전 다른 캐릭터!
+[6-10s] Someone steps out of the car."     ← 또 다른 사람!
+
+→ AI가 매 컷마다 다른 사람을 생성해버림!
+
+🎬 **카메라 변화 vs 캐릭터 변화 구분**:
+✅ Cut 변화 = **카메라 앵글만** 변화 (close-up → wide → side)
+❌ Cut 변화 = 캐릭터/장소가 바뀜 (절대 금지!)
+
+📐 **Subject 섹션도 강화** — 한 사람만 명시:
+✅ "Subject: A SINGLE middle-aged Korean man in his 50s, taxi driver, navy uniform, weathered face, tired eyes — only this character throughout the scene"
+❌ "Subject: A man" → 너무 단순, AI가 자유 해석
+
 🎯 캐릭터 일관성 (반드시 유지):
-- 한 프롬프트 안의 모든 cut에서 **같은 캐릭터** 등장
-- 같은 외형 (머리, 옷, 체격)
-- Subject 묘사를 풍부하게 한 번만 (모든 cut에 적용)
+- 한 프롬프트 안의 모든 cut에서 **같은 캐릭터** 등장 (성별/연령/외형/의상)
+- **같은 공간 유지** (운전석이면 계속 운전석)
+- Subject 묘사를 풍부하게 한 번만 (모든 cut에 적용됨)
+- 새 캐릭터가 등장한다면 반드시 명시: "the man's wife enters the frame"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎭🎭🎭 **진짜 사람처럼 자연스러운 영상 절대 규칙 (AI 티 안 나게 — 매우 중요!)**:
+
+❌ AI 영상 티 나는 패턴 (절대 피해야 함):
+- 너무 완벽한 자세 (마네킹같음)
+- 동작이 너무 정확하고 기계적
+- 표정이 정지되어 있음
+- 호흡/깜빡임 없음
+- 너무 매끈한 피부/머리카락 (CGI 같음)
+- 카메라가 너무 안정적 (삼각대 고정 느낌)
+
+✅ **진짜 사람 같이 만드는 디테일** (반드시 프롬프트에 포함):
+
+1. **미세 움직임 (micro-movements)** — 사람은 절대 정지 안함:
+   - "subtle eye blinks" (자연스러운 눈 깜빡임)
+   - "slight head movements" (미세한 고개 움직임)
+   - "gentle breathing motion, chest rising and falling" (자연스러운 호흡)
+   - "small hand fidgeting" (손 무의식적 움직임)
+   - "lips slightly parting" (입술 살짝 벌림)
+   - "occasional swallowing" (가끔 침 삼킴)
+
+2. **불완전함 (imperfection — 사람다움)**:
+   - "slightly disheveled hair" (살짝 흐트러진 머리)
+   - "natural skin texture with subtle imperfections, pores visible" (자연스러운 피부 결, 모공)
+   - "imperfect posture, slightly slouched" (완벽하지 않은 자세)
+   - "tired bags under eyes" (눈 밑 다크서클)
+   - "stray hair strands" (흘러내린 머리카락)
+   - "slightly wrinkled clothing" (살짝 구겨진 옷)
+
+3. **자연스러운 표정 변화** — 마네킹 표정 절대 금지:
+   - "subtle expression shifts" (미세한 표정 변화)
+   - "eyes softly drifting" (시선이 부드럽게 움직임)
+   - "small smile forming naturally" (자연스럽게 미소 짓기)
+   - "genuine emotion in the eyes" (진심 어린 감정)
+   - "micro-expressions" (미세 표정)
+
+4. **실제 촬영 느낌 (cinematography)** — AI 매끈함 제거:
+   - "natural lighting with subtle shadows" (자연 조명)
+   - "subtle camera shake — feels like real handheld" (실제 핸드헬드 느낌)
+   - "slight depth of field with soft background blur" (자연스러운 심도)
+   - "real-world physics in clothing and hair movement" (실제 물리)
+   - "imperfect framing — slightly off-center, like real cinematographer" (실제 촬영가)
+   - "slight lens imperfection — vignetting, subtle chromatic aberration" (렌즈 결함)
+   - "natural film grain texture" (자연스러운 필름 입자)
+
+5. **환경의 살아있는 디테일** — 죽은 배경 금지:
+   - "background ambient activity" (배경에 다른 사람들 미세 움직임)
+   - "subtle dust particles in light beams" (햇빛 속 먼지 입자)
+   - "natural air movement in fabrics" (옷이 자연스럽게 움직임)
+   - "ambient room tone" (자연스러운 방의 소리)
+   - "soft environmental sound" (배경 소리 풍부)
+
+📝 **종합 좋은 예시 (자연스러움 + 일관성 둘 다 — 어떤 장르든 적용)**:
+
+"Subject: A SINGLE middle-aged Korean man in his 50s, taxi driver, navy uniform slightly wrinkled, weathered face with subtle wrinkles around the eyes, slightly tired bags under eyes, natural skin texture with visible pores, stray gray hairs at the temples — only this ONE character throughout the entire scene
+
+Action: 
+[0-4s] First, a medium shot of the SAME man sitting in the driver's seat, gently holding his phone to his ear with his right hand. His expression softens slightly as he listens, with subtle eye blinks every few seconds and natural breathing motion in his chest. His left hand rests on the steering wheel, fingers occasionally adjusting their grip.
+[4-7s] Then a close-up of the SAME man's face, still in the SAME driver's seat — his eyes glisten subtly with emerging emotion as a small genuine smile forms slowly at the corner of his mouth. A stray hair strand moves gently with his slow nodding. His swallows once.
+[7-10s] Finally, a side profile of the SAME man in the SAME position, lowering the phone slowly with a slightly trembling hand. He gazes through the windshield, his shoulders rising and falling gently with natural breathing. A single tear forms at the corner of his eye.
+
+Scene: Inside a taxi cab in Seoul, soft late afternoon golden light filtering through the windshield, dust particles visible floating in the light beams, subtle reflections on the dashboard, blurred city traffic visible outside the window with people walking in the background, natural ambient atmosphere, slightly worn interior with personal items hinting at his life
+
+Style: Cinematic realistic, photorealistic skin texture with visible pores and natural imperfections, natural lighting like real photography, Korean drama aesthetic like 'My Liberation Notes' or 'Our Beloved Summer', 35mm film grain, soft natural color grading, intimate documentary feel — NOT AI-generated look
+
+Camera: Gentle multi-shot composition centered on the SAME subject — medium shot to intimate close-up to soft side profile. Subtle handheld feel as if shot by a real cinematographer, slight imperfect framing for authenticity, very subtle camera shake mimicking organic human movement
+
+Audio: Korean dialogue spoken softly with natural breath sounds and subtle voice trembles, gentle ambient room tone, distant city traffic, soft fabric rustling, subtle hum of taxi engine, occasional swallowing sounds
+
+Duration: 10 seconds"
+
+🎯 **핵심 키워드 (반드시 포함시킬 것)**:
+- "the SAME [character]" (캐릭터 유지)
+- "the SAME [seat/position/location]" (위치 유지)
+- "subtle, natural, gentle" (자연스러움)
+- "photorealistic, real cinematographer" (AI 티 제거)
+- "imperfect, slightly" (불완전함 = 사람다움)
+- "subtle eye blinks, breathing motion" (생체 반응)
+- "natural skin texture, pores visible" (피부 사실성)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ JSON 엄격 규칙:
 1. valid JSON만, 앞뒤 설명/코드블록 마커 금지
@@ -1573,6 +1972,11 @@ ${S.movieMeta?.supporting?.length?'조연: '+S.movieMeta.supporting.map(sp=>sp.n
 대사: ${(s.dialogue||[]).map(d=>d.speaker+':"'+d.line+'"').join(' / ')}
 ${s.narration?'내레이션: '+s.narration:''}
 시각 묘사: ${s.visual_description||''}
+${s.cut_structure?'컷 구성 (이 시간 마커를 그대로 Action에 반영!): '+s.cut_structure:''}
+${s.sound?'사운드 (이 사운드를 Audio 섹션에 그대로 반영!): '+s.sound:''}
+${s.subtitle?'자막: '+s.subtitle:''}
+
+${(s.cut_structure||s.sound)?'⚠️ 위에 컷 구성과 사운드 정보가 명시되어 있습니다. Action 섹션에 시간 마커 [0-3s], [3-7s], [7-10s] 그대로 사용하고, Audio 섹션에 사운드 정보를 그대로 반영하세요!':''}
 
 ⬆️ 위 Scene을 Flow/Veo용 10초 영상 프롬프트로 변환. JSON만.`;
 
@@ -1733,10 +2137,15 @@ function showSceneModal(s,idx){
   }
 
   if(imageText || flowText){
-    // 헤더
-    html+='<div style="background:linear-gradient(135deg,#a855f7,#ec4899);color:white;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:13px;font-weight:700;">'+
+    // 헤더 + 한번에 복사 버튼
+    html+='<div style="background:linear-gradient(135deg,#a855f7,#ec4899);color:white;padding:10px 14px;border-radius:10px;margin-bottom:8px;font-size:13px;font-weight:700;">'+
       '🎬 Flow 10초 영상 1개 = 2-3 cut 자연스럽게 전환 (크레딧 효율 최적화)'+
     '</div>';
+
+    // 한번에 전체 복사 버튼 (큰 버튼)
+    html+='<button onclick="copySceneAll('+idx+',this)" style="width:100%;padding:14px;margin-bottom:14px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(16,185,129,0.3);">'+
+      '📋 Scene '+s.num+' 전체 한번에 복사 (이미지 + 영상 + 자막)'+
+    '</button>';
 
     // 이미지 프롬프트
     if(imageText){
@@ -2019,6 +2428,89 @@ function generateSceneSRT(scene){
   });
   return lines.join('\n');
 }
+function copySceneAll(idx,btn){
+  const scene=S.scenes[idx];
+  if(!scene){alert('Scene 정보가 없습니다.');return}
+  const p=scene.prompts||{};
+
+  // 객체→문자열 헬퍼
+  const toStr=(val)=>{
+    if(!val)return '';
+    if(typeof val==='string')return val;
+    if(typeof val==='object'){
+      const sections=[];
+      Object.keys(val).forEach(k=>{
+        let v=val[k];
+        if(typeof v==='object')v=JSON.stringify(v);
+        sections.push(k+': '+String(v));
+      });
+      return sections.join('\n');
+    }
+    return String(val);
+  };
+
+  let imageText=toStr(p.prompt_image||'');
+  let flowText=toStr(p.prompt_flow||'');
+  if(p.shots && Array.isArray(p.shots) && p.shots.length>0){
+    if(!imageText)imageText=toStr(p.shots[0].prompt_image||'');
+    if(!flowText)flowText=toStr(p.shots[0].prompt_flow||'');
+  }
+  const srtText=generateSceneSRT(scene)||'';
+
+  const title=S.movieMeta?.title||'영화';
+  const sceneTitle=scene.title||scene.location||'';
+
+  // 한번에 복사할 통합 텍스트
+  const combined=
+    '════════════════════════════════════\n'+
+    '🎬 '+title+' - Scene '+scene.num+'\n'+
+    (sceneTitle?'📍 '+sceneTitle+'\n':'')+
+    '⏱️ '+(idx*10)+'s → '+((idx+1)*10)+'s\n'+
+    '════════════════════════════════════\n\n'+
+    '🖼️ [이미지 프롬프트] (Midjourney/Nano Banana용)\n'+
+    '────────────────────────────────────\n'+
+    imageText+'\n\n'+
+    '🎥 [Flow/Veo 영상 프롬프트] (10초 Multi-Cut)\n'+
+    '────────────────────────────────────\n'+
+    flowText+'\n\n'+
+    '📝 [SRT 자막] (캡컷/프리미어 자동 인식)\n'+
+    '────────────────────────────────────\n'+
+    srtText+'\n';
+
+  // 클립보드 복사
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(combined).then(()=>{
+      flashCopyOK(btn,'✅ Scene '+scene.num+' 전체 복사 완료!');
+    }).catch(()=>{
+      fallbackCopy(combined,btn,scene.num);
+    });
+  }else{
+    fallbackCopy(combined,btn,scene.num);
+  }
+}
+
+function fallbackCopy(text,btn,sceneNum){
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.cssText='position:fixed;left:-9999px;top:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  try{document.execCommand('copy');flashCopyOK(btn,'✅ Scene '+sceneNum+' 전체 복사 완료!');}
+  catch(e){alert('복사 실패. 수동으로 복사해주세요.');}
+  document.body.removeChild(ta);
+}
+
+function flashCopyOK(btn,msg){
+  if(!btn)return;
+  const orig=btn.innerHTML;
+  btn.innerHTML=msg;
+  btn.style.background='linear-gradient(135deg,#059669,#047857)';
+  setTimeout(()=>{
+    btn.innerHTML=orig;
+    btn.style.background='linear-gradient(135deg,#10b981,#059669)';
+  },1800);
+}
+
 function downloadSceneSRT(idx){
   const scene=S.scenes[idx];
   if(!scene){alert('Scene 정보가 없습니다.');return;}
@@ -2059,6 +2551,7 @@ function saveScript(){
     id, title, seriesName,
     savedAt:new Date().toISOString(),
     genre:S.genre, topic:S.topic, mood:S.moodLabel,
+    customScreenplay:S.customScreenplay||'',
     visual:S.visual, visualLabel:S.visualLabel,
     movieMeta:S.movieMeta, scenes:S.scenes
   };
@@ -2077,6 +2570,7 @@ function loadScript(id){
   const r=list.find(x=>x.id===id);
   if(!r){alert('대본을 찾을 수 없습니다.');return}
   S.genre=r.genre;S.topic=r.topic;S.moodLabel=r.mood;
+  S.customScreenplay=r.customScreenplay||'';
   S.visual=r.visual||r.movieMeta?.visual||'cinematic';
   S.visualLabel=r.visualLabel||r.movieMeta?.visualLabel||'📸 실사 영화';
   S.movieMeta=r.movieMeta;S.scenes=r.scenes||[];S.scriptId=r.id;
@@ -2174,4 +2668,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
