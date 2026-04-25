@@ -14,100 +14,130 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #fafafa;
+  --bg: #ffffff;
+  --surface: #f8f8f8;
   --card: #ffffff;
-  --card-soft: #f5f5f5;
-  --border: #e5e5e5;
-  --text: #1a1a1f;
-  --sub: #4a4a50;
-  --muted: #8a8a92;
-  --accent: #e11d48;
-  --accent-soft: #fce7ec;
-  --ok: #10b981;
+  --card-soft: #f2f2f2;
+  --border: #e0e0e0;
+  --border2: #c8c8c8;
+  --text: #0a0a0a;
+  --sub: #555;
+  --muted: #999;
+  --accent: #000000;
+  --accent-soft: #f0f0f0;
+  --ok: #16a34a;
+  --warn: #d97706;
 }
 body.dark {
-  --bg: #0e0e11;
-  --card: #1a1a1f;
-  --card-soft: #22222a;
-  --border: #2a2a30;
-  --text: #e8e8ec;
-  --sub: #b0b0b8;
-  --muted: #70707a;
-  --accent: #f43f5e;
-  --accent-soft: #3a1522;
+  --bg: #0a0a0a;
+  --surface: #111;
+  --card: #1a1a1a;
+  --card-soft: #1f1f1f;
+  --border: #2a2a2a;
+  --border2: #3a3a3a;
+  --text: #f0f0f0;
+  --sub: #aaa;
+  --muted: #666;
+  --accent: #ffffff;
+  --accent-soft: #1f1f1f;
   --ok: #34d399;
+  --warn: #fbbf24;
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Noto Sans KR', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   margin: 0;
   padding: 20px 14px 100px;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.25s, color 0.25s;
   -webkit-font-smoothing: antialiased;
+  font-weight: 400;
 }
 .container { max-width: 720px; margin: 0 auto; }
-.topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+  padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
 .title {
   font-weight: 900;
-  font-size: 24px;
-  background: linear-gradient(135deg, #e11d48, #f59e0b);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: clamp(20px, 3.5vw, 26px);
   letter-spacing: -0.5px;
+  color: var(--text);
 }
 .dark-toggle {
   background: var(--card);
-  border: 1px solid var(--border);
-  width: 40px; height: 40px;
+  border: 1px solid var(--border2);
+  width: 38px; height: 38px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+}
+.dark-toggle:hover {
+  background: var(--accent);
+  color: var(--bg);
 }
 .apikey-bar {
   display: flex; gap: 8px; align-items: center;
   padding: 12px 14px;
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
 }
 .apikey-bar input {
   flex: 1;
   padding: 8px 10px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
+  font-family: monospace;
+  outline: none;
 }
+.apikey-bar input:focus { border-color: var(--accent); }
 .apikey-bar button {
   padding: 8px 14px;
   background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
+  color: var(--bg);
+  border: 1.5px solid var(--accent);
+  border-radius: 7px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
 }
-#apiKeyStatus { font-size: 11px; color: var(--muted); margin-top: 4px; display: block; }
+.apikey-bar button:nth-of-type(2) {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+#apiKeyStatus {
+  font-size: 11px; color: var(--muted);
+  margin-top: 4px; display: block;
+}
 
 .step {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 16px;
   margin-bottom: 14px;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.25s;
 }
-.step.active { opacity: 1; }
-.step.done {
+.step.active {
   opacity: 1;
+  pointer-events: all;
+}
+.step.done {
+  opacity: 0.85;
+  pointer-events: all;
   border-color: var(--accent);
 }
 .step-hd {
@@ -116,61 +146,73 @@ body {
   flex-wrap: wrap;
 }
 .step-num {
-  width: 28px; height: 28px;
+  width: 26px; height: 26px;
   border-radius: 50%;
-  background: var(--card-soft);
+  border: 1.5px solid var(--border2);
+  background: transparent;
   color: var(--sub);
   display: flex; align-items: center; justify-content: center;
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
 }
 .step.active .step-num,
 .step.done .step-num {
   background: var(--accent);
-  color: white;
+  color: var(--bg);
+  border-color: var(--accent);
 }
 .step-title { flex: 1; font-weight: 700; font-size: 15px; }
 .step-actions { display: flex; gap: 6px; }
 .btn-sm {
   padding: 6px 11px;
-  background: var(--card-soft);
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
   color: var(--text);
+  font-family: inherit;
+  transition: all 0.15s;
 }
-.btn-sm:hover { background: var(--accent-soft); }
+.btn-sm:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
 
 .chips {
   display: flex; flex-wrap: wrap; gap: 6px;
 }
 .chip {
   padding: 7px 12px;
-  background: var(--card-soft);
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 18px;
   cursor: pointer;
   font-size: 13px;
   user-select: none;
   transition: all 0.15s;
+  color: var(--text);
 }
-.chip:hover { border-color: var(--accent); }
+.chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
 .chip.active {
   background: var(--accent);
-  color: white;
+  color: var(--bg);
   border-color: var(--accent);
   font-weight: 700;
 }
 
 .sec-label {
-  font-size: 11px;
-  color: var(--sub);
+  font-size: 10px;
+  color: var(--muted);
   font-weight: 700;
   margin: 10px 0 6px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.2px;
 }
 
 .input-row {
@@ -181,19 +223,23 @@ body {
   padding: 8px 10px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
   color: var(--text);
   font-size: 13px;
+  font-family: inherit;
+  outline: none;
 }
+.input-row input:focus { border-color: var(--accent); }
 .input-row button {
   padding: 8px 12px;
   background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 8px;
+  color: var(--bg);
+  border: 1.5px solid var(--accent);
+  border-radius: 7px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
 }
 
 textarea {
@@ -382,6 +428,7 @@ body.dark .err-msg { background: #3a1f1f; border-color: #553333; color: #fcc; }
 </div>
 <div id="apiKeyStatus">API 키를 먼저 저장해주세요.</div>
 
+
 <div class="err-msg" id="errMsg"></div>
 
 <!-- S1: 카테고리 -->
@@ -518,6 +565,29 @@ body.dark .err-msg { background: #3a1f1f; border-color: #553333; color: #fcc; }
   </div>
   <div style="margin-top:10px;font-size:11px;color:var(--muted);">
     💡 '혼합' 선택 시 AI가 컷마다 가장 어울리는 스타일을 자동으로 선택해요 (밈, 실사, 일러스트 등 섞어서)
+  </div>
+</div>
+
+<!-- 🎨 캐릭터 시트 + 이미지 생성 외부 링크 -->
+<div style="margin:14px 0;padding:16px;background:var(--surface);border-radius:12px;border:1px solid var(--border);">
+  <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:8px;letter-spacing:-0.3px;">🎨 캐릭터 시트 + 이미지 만들러 가기</div>
+  <div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:12px;">
+    <b style="color:var(--text);">썰툰 만드는 추천 흐름</b><br>
+    1. 아래 <b>캐릭터 고정 시트</b>로 주인공 외형 확정<br>
+    2. 캐릭터 시트로 <b>플라워(Flow)에서 이미지 생성</b><br>
+    3. 만든 이미지를 <b>쇼츠리믹스 → 썰툰 자동생성</b>에 넣어서 영상 완성<br>
+    4. 또는 이 도구에서 만든 컷별 프롬프트로 직접 이미지 생성
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <a href="https://chatgpt.com/g/g-69ecc1e33710819180edef4e547c5f66-kaerigteo-siteu-mandeulgi" target="_blank" rel="noopener" style="flex:1;min-width:180px;padding:11px;background:var(--accent);color:var(--bg);text-decoration:none;text-align:center;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--accent);">
+      🎭 캐릭터 시트 만들기
+    </a>
+    <a href="https://labs.google/fx/ko/tools/flow" target="_blank" rel="noopener" style="flex:1;min-width:180px;padding:11px;background:transparent;color:var(--text);text-decoration:none;text-align:center;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--text);">
+      🎨 플라워(Flow) 가기
+    </a>
+  </div>
+  <div style="margin-top:10px;padding:10px 12px;background:var(--card-soft);border-radius:8px;font-size:11px;color:var(--sub);line-height:1.6;border-left:3px solid var(--accent);">
+    💡 <b>완성 후</b> — 만든 이미지를 <b>쇼츠리믹스 → 썰툰 자동생성</b>에 넣으면 영상으로 자동 변환됩니다.
   </div>
 </div>
 
@@ -1087,7 +1157,7 @@ NEVER use words like: photorealistic, 3D rendered, anime (Japanese), cel-shaded 
       "group_id": 1,
       "cut_nums": [1, 2],  // 이 그룹에 속하는 컷 번호들
       "image_type": "photo | pixar | anime | emoji | webtoon",  // 이 이미지 타입 (5가지 중 하나만)
-      "image_prompt": "영어 이미지 생성 프롬프트. ⚠️ 절대 중요: (1) 선택한 image_type의 MANDATORY style keywords를 반드시 프롬프트 첫 부분과 끝에 모두 포함할 것. NEVER 키워드는 절대 쓰지 말 것. (2) 프롬프트 맨 앞에 반드시 '⚠️ IF A REFERENCE IMAGE IS ATTACHED: You MUST follow the reference image EXACTLY — same character appearance, same outfit, same facial features, same art style. Do NOT change the character based on the text prompt if an image is provided. Use the attached image as the ABSOLUTE source of truth for appearance. The text below only describes the SCENE/ACTION, not the character's look.' 문구 포함할 것. 장면/표정/분위기/구도 포함. 끝에 'vertical 9:16 composition, no text overlays' 추가",
+      "image_prompt": "영어 이미지 생성 프롬프트. ⚠️ 절대 중요: (1) 선택한 image_type의 MANDATORY style keywords를 반드시 프롬프트 첫 부분과 끝에 모두 포함할 것. NEVER 키워드는 절대 쓰지 말 것. (2) 참조 이미지가 있으면 자연스럽게 언급: 'Based on the attached reference image, maintain the character's appearance and art style as shown.' (MUST, ABSOLUTE 같은 강제어는 필터 차단 위험이 있어 사용 금지). (3) 실존 인물로 오해될 이름 금지 — 한국 유명인 이름(지수/지민/유재석 등) 영문으로 쓰지 말고 'a young woman', 'the protagonist' 같은 일반 묘사로 대체. (4) 장면/표정/분위기/구도 포함. 끝에 'vertical 9:16 composition, no text overlays' 추가",
       "style_check": "이 프롬프트가 선택된 스타일을 확실히 반영하는지 한 줄 자체 체크 (예: '픽사 3D 키워드 6개 포함, 실사/애니 금지어 제외 확인')",
       "tip": "이 이미지를 실제 영상에 쓸 때 팁 (한국어 1줄)"
     }
