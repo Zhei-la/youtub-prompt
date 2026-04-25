@@ -1358,6 +1358,13 @@ function renderScenes(){
     const firstDialog=(s.dialogue&&s.dialogue.length>0)?s.dialogue[0]:null;
     const dSpeaker=firstDialog?(firstDialog.speaker||firstDialog.name||''):'';
     const dLine=firstDialog?(firstDialog.line||firstDialog.text||firstDialog.dialogue||''):'';
+
+    // 추가 정보 미리보기 (컷/카메라/사운드)
+    const extraInfo=[];
+    if(s.cut_structure)extraInfo.push('🎬 '+escapeHtml(s.cut_structure.substring(0,50)+(s.cut_structure.length>50?'...':'')));
+    if(s.camera)extraInfo.push('📹 '+escapeHtml(s.camera.substring(0,40)+(s.camera.length>40?'...':'')));
+    if(s.sound)extraInfo.push('🔊 '+escapeHtml(s.sound.substring(0,40)+(s.sound.length>40?'...':'')));
+
     card.innerHTML=
       '<div class="scene-card-hd">'+
         '<span class="scene-badge">Scene '+s.num+'</span>'+
@@ -1366,6 +1373,7 @@ function renderScenes(){
       '</div>'+
       '<div class="scene-event">'+escapeHtml(s.event||'')+'</div>'+
       (firstDialog?'<div class="scene-dialog-preview"><b>'+escapeHtml(dSpeaker)+':</b> "'+escapeHtml(dLine)+'"</div>':'')+
+      (extraInfo.length>0?'<div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6;background:var(--card-soft);padding:6px 8px;border-radius:6px;">'+extraInfo.join('<br>')+'</div>':'')+
       '<div class="scene-cta">'+(s.prompts?'✅ Multi-Cut 프롬프트 생성됨 — 클릭해서 보기':'🎬 클릭해서 Multi-Cut 프롬프트 생성 (10초)')+'</div>';
     card.onclick=()=>openScene(idx);
     grid.appendChild(card);
@@ -1441,6 +1449,30 @@ function showSceneEditModal(idx){
   html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
   html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">📣 나레이션 (선택)</div>';
   html+='<input type="text" id="edit_narration_'+idx+'" value="'+escapeHtmlAttr(s.narration||'')+'" placeholder="없으면 비워두세요" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);box-sizing:border-box;">';
+  html+='</div>';
+
+  // 컷 구성 (선택)
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">🎬 컷 구성 (선택 — 영상 프롬프트에 자동 반영됨)</div>';
+  html+='<textarea id="edit_cut_'+idx+'" placeholder="예: 0-3초: 와이드 샷, 3-7초: 클로즈업, 7-10초: 트래킹 샷&#10;없으면 비워두세요 (AI가 알아서 분할)" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);min-height:50px;box-sizing:border-box;resize:vertical;">'+escapeHtml(s.cut_structure||'')+'</textarea>';
+  html+='</div>';
+
+  // 카메라 (선택)
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">📹 카메라 (선택)</div>';
+  html+='<input type="text" id="edit_camera_'+idx+'" value="'+escapeHtmlAttr(s.camera||'')+'" placeholder="예: 핸드헬드 트래킹 샷, 와이드 → 클로즈업, 슬로모션" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);box-sizing:border-box;">';
+  html+='</div>';
+
+  // 사운드 (선택)
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">🔊 사운드 / 음악 (선택)</div>';
+  html+='<textarea id="edit_sound_'+idx+'" placeholder="예: 천둥소리, 타이어 마찰음, 웅장한 오케스트라 음악 상승&#10;없으면 비워두세요" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);min-height:50px;box-sizing:border-box;resize:vertical;">'+escapeHtml(s.sound||'')+'</textarea>';
+  html+='</div>';
+
+  // 자막/엔딩 텍스트 (선택)
+  html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
+  html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">📝 자막 / 엔딩 텍스트 (선택)</div>';
+  html+='<textarea id="edit_subtitle_'+idx+'" placeholder="대사 외 추가로 화면에 띄울 텍스트 (예: 영화 제목, 부제, 카피)&#10;없으면 비워두세요" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);min-height:50px;box-sizing:border-box;resize:vertical;">'+escapeHtml(s.subtitle||'')+'</textarea>';
   html+='</div>';
 
   // 액션 버튼
@@ -1555,6 +1587,10 @@ function saveSceneEdits(idx,genPromptAfter){
   s.location=document.getElementById('edit_location_'+idx)?.value||s.location;
   s.event=document.getElementById('edit_event_'+idx)?.value||s.event;
   s.narration=document.getElementById('edit_narration_'+idx)?.value||'';
+  s.cut_structure=document.getElementById('edit_cut_'+idx)?.value||'';
+  s.camera=document.getElementById('edit_camera_'+idx)?.value||'';
+  s.sound=document.getElementById('edit_sound_'+idx)?.value||'';
+  s.subtitle=document.getElementById('edit_subtitle_'+idx)?.value||'';
 
   // 대사 수집
   const rows=document.querySelectorAll('#dialoguesEdit_'+idx+' > div');
@@ -2050,10 +2086,11 @@ ${S.movieMeta?.supporting?.length?'조연: '+S.movieMeta.supporting.map(sp=>sp.n
 ${s.narration?'내레이션: '+s.narration:''}
 시각 묘사: ${s.visual_description||''}
 ${s.cut_structure?'컷 구성 (이 시간 마커를 그대로 Action에 반영!): '+s.cut_structure:''}
+${s.camera?'카메라 (이 카메라 워크를 Camera 섹션에 그대로 반영!): '+s.camera:''}
 ${s.sound?'사운드 (이 사운드를 Audio 섹션에 그대로 반영!): '+s.sound:''}
-${s.subtitle?'자막: '+s.subtitle:''}
+${s.subtitle?'자막/엔딩 텍스트: '+s.subtitle:''}
 
-${(s.cut_structure||s.sound)?'⚠️ 위에 컷 구성과 사운드 정보가 명시되어 있습니다. Action 섹션에 시간 마커 [0-3s], [3-7s], [7-10s] 그대로 사용하고, Audio 섹션에 사운드 정보를 그대로 반영하세요!':''}
+${(s.cut_structure||s.sound||s.camera)?'⚠️ 위에 컷 구성/카메라/사운드 정보가 명시되어 있습니다. Action 섹션에 시간 마커 [0-3s], [3-7s], [7-10s] 그대로 사용, Camera 섹션에 카메라 워크 반영, Audio 섹션에 사운드 정보를 그대로 반영하세요!':''}
 
 ⬆️ 위 Scene을 Flow/Veo용 10초 영상 프롬프트로 변환. JSON만.`;
 
