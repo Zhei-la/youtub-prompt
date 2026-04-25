@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 생성 <span style="opacity:0.5;font-size:11px;">v2.1</span></div>
+    <div class="subtitle">10초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v3.0</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -206,6 +206,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div id="scenesWrap" style="display:none;margin-top:20px;">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
     <h3 style="margin:0;font-size:16px;flex:1;">🎬 Scene (클릭하면 프롬프트 생성)</h3>
+    <button class="btn-sm" onclick="downloadFullMovieSRT()" style="background:#f59e0b;color:white;border:none;">📄 전체 SRT</button>
     <button class="btn-sm" onclick="saveScript()" style="background:var(--accent);color:white;border:none;">💾 저장</button>
     <button class="btn-sm" onclick="regenScript()">🔄 새로</button>
   </div>
@@ -1379,8 +1380,20 @@ ${s.narration?'내레이션: '+s.narration:''}
   }catch(e){
     s._generating=false;
     hideLoading();
+    console.error('[Scene 프롬프트 생성 에러]',e);
+    console.error('[스택트레이스]',e.stack);
     overlay.classList.add('show');
-    content.innerHTML='<h3>❌ 프롬프트 생성 실패</h3><p style="color:#c33;font-size:13px;">'+escapeHtml(e.message)+'</p><div style="display:flex;gap:6px;margin-top:12px;"><button class="btn-sm" onclick="closeModal();openScene('+idx+')">🔄 다시 시도</button><button class="btn-sm" onclick="closeModal()">닫기</button></div>';
+    const errMsg=e.message||String(e);
+    const errStack=(e.stack||'').split('\n').slice(0,4).join('\n');
+    content.innerHTML='<h3>❌ 프롬프트 생성 실패</h3>'+
+      '<p style="color:#c33;font-size:13px;font-weight:700;">'+escapeHtml(errMsg)+'</p>'+
+      '<details style="margin-top:8px;font-size:11px;color:#666;"><summary style="cursor:pointer;">🔍 기술 정보 (F12 콘솔에도 출력됨)</summary>'+
+      '<pre style="background:#f5f5f5;padding:8px;border-radius:6px;font-size:10px;white-space:pre-wrap;overflow-x:auto;margin-top:6px;">'+escapeHtml(errStack)+'</pre>'+
+      '</details>'+
+      '<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">'+
+        '<button class="btn-sm" onclick="closeModal();openScene('+idx+')">🔄 다시 시도</button>'+
+        '<button class="btn-sm" onclick="closeModal()">닫기</button>'+
+      '</div>';
   }
 }
 
@@ -1417,6 +1430,34 @@ function showSceneModal(s,idx){
   const p=s.prompts||{};
   html+='<div class="platform-section"><span class="platform-tag tag-flow">🟢 FLOW / VEO · 10초</span><button class="copy-btn" onclick="copyText(this,`mflow`)">📋 복사</button><pre id="mflow">'+escapeHtml(p.prompt_flow||'')+'</pre></div>';
 
+  // SRT 자막 카드
+  const srtText=generateSceneSRT(s);
+  if(srtText){
+    html+='<div class="platform-section" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;margin-top:12px;padding:12px;border-radius:10px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'+
+        '<span style="font-size:12px;font-weight:900;color:#78350f;">📝 Scene '+s.num+' 자막 SRT (캡컷 자동 인식)</span>'+
+        '<div style="display:flex;gap:6px;">'+
+          '<button class="copy-btn" style="position:static;background:#78350f;color:#fff;" onclick="copyText(this,\'msrt_'+idx+'\')">📋 복사</button>'+
+          '<button class="copy-btn" style="position:static;background:#10b981;color:#fff;" onclick="downloadSceneSRT('+idx+')">📄 다운로드</button>'+
+        '</div>'+
+      '</div>'+
+      '<pre id="msrt_'+idx+'" style="background:#fffbeb;color:#78350f;font-size:11px;max-height:220px;overflow:auto;">'+escapeHtml(srtText)+'</pre>'+
+      '<div style="font-size:10px;color:#78350f;margin-top:4px;">💡 .srt 파일 → 캡컷/프리미어에 가져오기 → 10초 Scene에 시간 자동 매칭!</div>'+
+    '</div>';
+  }
+
+  // SRT 자막 섹션
+  const srtContent=generateSceneSRT(s);
+  if(srtContent){
+    html+='<div class="platform-section" style="margin-top:12px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;">';
+    html+='<span class="platform-tag" style="background:#f59e0b;color:white;">📝 자막 SRT · 캡컷/프리미어 자동 인식</span>';
+    html+='<button class="copy-btn" onclick="copyText(this,`msrt_'+idx+'`)">📋 복사</button>';
+    html+='<button class="copy-btn" style="right:70px;background:#10b981;" onclick="downloadSRT('+idx+')">📄 다운로드</button>';
+    html+='<pre id="msrt_'+idx+'" style="background:#fffbeb;color:#78350f;font-size:12px;">'+escapeHtml(srtContent)+'</pre>';
+    html+='<div style="font-size:10px;color:#78350f;padding:4px 8px;">💡 .srt 파일 → 캡컷/프리미어/다빈치 가져오기 → 시간 자동 매칭!</div>';
+    html+='</div>';
+  }
+
   html+='<div style="margin-top:14px;display:flex;gap:6px;"><button class="btn-sm" onclick="regenPrompts('+idx+')">🔄 프롬프트 재생성</button><button class="btn-sm" onclick="closeModal()">닫기</button></div>';
 
   content.innerHTML=html;
@@ -1440,6 +1481,220 @@ function copyText(btn,id){
     setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied')},1500);
   });
 }
+// ═══════ SRT 자막 생성 ═══════
+function formatSRTTime(seconds){
+  const h=Math.floor(seconds/3600).toString().padStart(2,'0');
+  const m=Math.floor((seconds%3600)/60).toString().padStart(2,'0');
+  const s=Math.floor(seconds%60).toString().padStart(2,'0');
+  const ms=Math.floor((seconds-Math.floor(seconds))*1000).toString().padStart(3,'0');
+  return h+':'+m+':'+s+','+ms;
+}
+
+// 단일 Scene의 SRT 생성 (0초 기준, 10초 분량)
+function generateSceneSRT(s){
+  const dialogues=s.dialogue||[];
+  const validDialogues=dialogues.filter(d=>d&&(d.line||d.text||d.dialogue));
+  if(validDialogues.length===0)return '';
+
+  const narration=s.narration||'';
+  const totalDuration=10;
+
+  // 나레이션이 있으면 첫 2-3초에 배치
+  let lines=[];
+  let currentTime=0;
+
+  if(narration){
+    lines.push({
+      start:0,
+      end:2.5,
+      text:'('+narration+')'
+    });
+    currentTime=2.5;
+  }
+
+  // 남은 시간을 대사 수로 나누기
+  const remainingTime=totalDuration-currentTime;
+  const perDialogue=remainingTime/validDialogues.length;
+
+  validDialogues.forEach((d,i)=>{
+    const sp=d.speaker||d.name||'';
+    const ln=d.line||d.text||d.dialogue||'';
+    const startTime=currentTime+(i*perDialogue);
+    const endTime=Math.min(startTime+perDialogue,totalDuration);
+    lines.push({
+      start:startTime,
+      end:endTime,
+      text:(sp?sp+': ':'')+ln
+    });
+  });
+
+  return lines.map((l,i)=>{
+    return (i+1)+'\n'+formatSRTTime(l.start)+' --> '+formatSRTTime(l.end)+'\n'+l.text;
+  }).join('\n\n');
+}
+
+// 전체 영화(모든 Scene) 통합 SRT
+function generateFullMovieSRT(){
+  const scenes=S.scenes||[];
+  let lines=[];
+  let idx=1;
+
+  scenes.forEach((s,sceneIdx)=>{
+    const sceneStart=sceneIdx*10;
+    const dialogues=s.dialogue||[];
+    const validDialogues=dialogues.filter(d=>d&&(d.line||d.text||d.dialogue));
+    if(validDialogues.length===0)return;
+
+    const narration=s.narration||'';
+    let currentTime=sceneStart;
+    const totalDuration=10;
+
+    if(narration){
+      lines.push({
+        idx:idx++,
+        start:sceneStart,
+        end:sceneStart+2.5,
+        text:'('+narration+')'
+      });
+      currentTime=sceneStart+2.5;
+    }
+
+    const remainingTime=(sceneStart+totalDuration)-currentTime;
+    const perDialogue=remainingTime/validDialogues.length;
+
+    validDialogues.forEach((d,i)=>{
+      const sp=d.speaker||d.name||'';
+      const ln=d.line||d.text||d.dialogue||'';
+      const startTime=currentTime+(i*perDialogue);
+      const endTime=Math.min(startTime+perDialogue,sceneStart+totalDuration);
+      lines.push({
+        idx:idx++,
+        start:startTime,
+        end:endTime,
+        text:(sp?sp+': ':'')+ln
+      });
+    });
+  });
+
+  return lines.map(l=>{
+    return l.idx+'\n'+formatSRTTime(l.start)+' --> '+formatSRTTime(l.end)+'\n'+l.text;
+  }).join('\n\n');
+}
+
+function downloadSRT(idx){
+  const s=S.scenes[idx];
+  if(!s){showErr('Scene을 찾을 수 없습니다');return}
+  const srt=generateSceneSRT(s);
+  if(!srt){showErr('자막으로 만들 대사가 없습니다');return}
+  const title=(S.movieMeta?.title||'movie').replace(/[^\w가-힣]+/g,'_');
+  const filename=title+'_scene_'+s.num+'.srt';
+  downloadTextFile(srt,filename);
+}
+
+function downloadFullMovieSRT(){
+  const srt=generateFullMovieSRT();
+  if(!srt){showErr('자막으로 만들 대사가 없습니다');return}
+  const title=(S.movieMeta?.title||'movie').replace(/[^\w가-힣]+/g,'_');
+  const filename=title+'_full.srt';
+  downloadTextFile(srt,filename);
+}
+
+function downloadTextFile(content,filename){
+  // BOM 추가 (UTF-8 한국어 호환성)
+  const blob=new Blob(['\ufeff'+content],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ═══ Scene별 SRT 자막 생성 (캡컷용) ═══
+function srtTextToChunks(text){
+  if(!text||!text.trim())return [];
+  const clean=text.replace(/\s+/g,' ').trim();
+  const sentences=clean.split(/(?<=[.!?…])\s+/g).filter(s=>s.trim());
+  const chunks=[];
+  sentences.forEach(sent=>{
+    const s=sent.trim();if(!s)return;
+    const words=s.split(/(\s+)/g).filter(w=>w&&w.trim());
+    let buf='';
+    words.forEach(w=>{
+      if((buf+' '+w).trim().length>8&&buf.trim()){chunks.push(buf.trim());buf=w;}
+      else{buf=buf?buf+' '+w:w;}
+    });
+    if(buf.trim())chunks.push(buf.trim());
+  });
+  return chunks.filter(c=>c&&c.trim());
+}
+function srtFormatTime(sec){
+  const h=Math.floor(sec/3600).toString().padStart(2,'0');
+  const m=Math.floor((sec%3600)/60).toString().padStart(2,'0');
+  const s=Math.floor(sec%60).toString().padStart(2,'0');
+  const ms=Math.floor((sec-Math.floor(sec))*1000).toString().padStart(3,'0');
+  return h+':'+m+':'+s+','+ms;
+}
+function generateSceneSRT(scene){
+  if(!scene)return '';
+  const totalDur=10;
+  const dialogues=scene.dialogue||[];
+  const narration=scene.narration||'';
+
+  // 모든 청크 (speaker 포함)
+  const allChunks=[];
+  dialogues.forEach(d=>{
+    if(!d)return;
+    const sp=d.speaker||d.name||'';
+    const ln=d.line||d.text||d.dialogue||'';
+    if(!ln.trim())return;
+    const chunks=srtTextToChunks(ln);
+    chunks.forEach((c,i)=>{
+      const txt=(sp&&i===0)?sp+': '+c:c;
+      allChunks.push({text:txt,charLen:c.length});
+    });
+  });
+  // 나레이션 추가
+  if(narration&&narration.trim()){
+    const nChunks=srtTextToChunks(narration);
+    nChunks.forEach(c=>allChunks.push({text:'('+c+')',charLen:c.length}));
+  }
+
+  if(!allChunks.length)return '';
+
+  const totalChars=allChunks.reduce((s,c)=>s+c.charLen,0);
+  let currentTime=0;
+  const lines=[];
+  allChunks.forEach((chunk,i)=>{
+    const ratio=chunk.charLen/totalChars;
+    let dur=totalDur*ratio;
+    dur=Math.max(0.6,Math.min(2.5,dur));
+    if(i===allChunks.length-1){dur=totalDur-currentTime;if(dur<0.6)dur=0.6;}
+    const end=Math.min(totalDur,currentTime+dur);
+    lines.push((i+1)+'\n'+srtFormatTime(currentTime)+' --> '+srtFormatTime(end)+'\n'+chunk.text+'\n');
+    currentTime=end;
+  });
+  return lines.join('\n');
+}
+function downloadSceneSRT(idx){
+  const scene=S.scenes[idx];
+  if(!scene){alert('Scene 정보가 없습니다.');return;}
+  const srt=generateSceneSRT(scene);
+  if(!srt){alert('자막이 없습니다. 대사나 나레이션을 먼저 추가해주세요.');return;}
+  const blob=new Blob(['\uFEFF'+srt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const title=(S.movieMeta?.title||'movie').replace(/[^\w가-힣ㄱ-ㅎ]+/g,'_').substring(0,20);
+  a.download=title+'_scene'+scene.num+'.srt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function escapeHtml(s){
   if(s===null||s===undefined)return '';
   if(typeof s!=='string')s=String(s);
@@ -1578,3 +1833,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
