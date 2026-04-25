@@ -189,12 +189,14 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
   </div>
   <div class="chips" id="visualChips">
     <div class="chip active" data-val="cinematic" data-label="📸 실사 영화" onclick="selVisual(this)">📸 실사 영화</div>
-    <div class="chip" data-val="anime" data-label="🌸 애니메이션" onclick="selVisual(this)">🌸 애니메이션</div>
+    <div class="chip" data-val="webtoon" data-label="📖 한국 웹툰" onclick="selVisual(this)">📖 한국 웹툰</div>
+    <div class="chip" data-val="anime" data-label="🌸 일본 애니" onclick="selVisual(this)">🌸 일본 애니</div>
     <div class="chip" data-val="pixar" data-label="🎬 픽사 3D" onclick="selVisual(this)">🎬 픽사 3D</div>
   </div>
   <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6;">
     💡 <b>📸 실사 영화</b>: 일반인 분위기의 자연스러운 인물 (실제 배우/연예인 X)<br>
-    💡 <b>🌸 애니메이션</b>: 고퀄리티 판타지 일러스트 (타이탄클래스/일본 라노벨 스타일)<br>
+    💡 <b>📖 한국 웹툰</b>: 네이버/카카오 웹툰 스타일 (여신강림, 신의 탑 같은 깔끔한 디지털 라인)<br>
+    💡 <b>🌸 일본 애니</b>: Studio Ghibli/Makoto Shinkai 스타일 (셀쉐이딩, 큰 눈)<br>
     💡 <b>🎬 픽사 3D</b>: Disney/Pixar 3D 애니, 둥근 얼굴 · 큰 눈 · 귀여운 비율
   </div>
 
@@ -855,9 +857,10 @@ function generateGPTRequest(){
   if(!S.visual){alert('4단계에서 비주얼 스타일을 선택해주세요!');return}
 
   const visualText = {
-    cinematic: '실사 영화 (Korean drama/movie 스타일, 진짜 배우들, photorealistic)',
-    anime: '애니메이션 (고퀄리티 일본 애니/판타지 일러스트, 타이탄클래스 스타일)',
-    pixar3d: '픽사 3D (Disney/Pixar 3D 애니, 둥근 얼굴/큰 눈/귀여운 비율)'
+    cinematic: '실사 영화 (사진같은 photorealistic 스타일, 일반인 묘사, 실존 인물 이름 절대 사용 금지)',
+    webtoon: '한국 웹툰 (네이버/카카오 웹툰 스타일, 여신강림/신의 탑 같은 깔끔한 디지털 라인, 파스텔 셀쉐이딩, 키 큰 슬림한 비율)',
+    anime: '일본 애니 (Studio Ghibli/Makoto Shinkai 스타일, 너의 이름은/지브리 같은 셀쉐이딩, 반짝이는 큰 눈)',
+    pixar: '픽사 3D (Disney/Pixar 3D 애니, 인사이드 아웃/토이스토리 같은 둥근 얼굴/큰 눈/귀여운 비율)'
   }[S.visual] || S.visualLabel;
 
   const moodDetail = {
@@ -973,20 +976,25 @@ async function genScript(){
     };
 
     const visualStyleMap = {
-      cinematic: `REALISTIC LIVE-ACTION KOREAN FILM STYLE.
-Visual keywords: "photorealistic cinematic film, Korean drama/movie aesthetic, real actors with natural Korean facial features, professional DSLR cinematography, 35mm film grain, natural lighting, shallow depth of field, authentic human skin texture, realistic hair and fabrics, documentary-quality realism, like Parasite or Squid Game visual style".
-CHARACTERS: Must look like real Korean actors/actresses (ref. actor profile photos).
-NEVER: anime, 3D cartoon, Pixar, illustrated, drawn.`,
+      cinematic: `REALISTIC LIVE-ACTION FILM STYLE (NON-CELEBRITY ORDINARY KOREAN PEOPLE).
+Visual keywords: "photorealistic cinematic film, Korean drama/movie aesthetic, ordinary non-celebrity Korean people with natural everyday facial features, realistic skin texture with subtle imperfections and visible pores, professional DSLR cinematography, 35mm film grain, natural lighting, shallow depth of field, authentic everyday human appearance, documentary-quality realism, grounded realistic faces, NOT celebrity, NOT famous actor, NOT idol".
+CHARACTERS: Must look like ordinary realistic Korean people you would see on the street — NOT famous actors, NOT K-pop idols, NOT celebrities. Use generic realistic descriptions only.
+NEVER: anime, 3D cartoon, Pixar, illustrated, drawn, celebrity-like, idol-like, famous actor, real actor names, K-pop idol look, like [name].`,
 
-      anime: `HIGH-QUALITY ANIME/FANTASY ILLUSTRATION STYLE (Korean webtoon/Japanese LN aesthetic).
-Visual keywords: "detailed anime illustration, semi-realistic painted anime style, dramatic fantasy character art, intricate costume details, glowing magical effects, cinematic lighting with rim light, sharp anime facial features with large expressive eyes, flowing detailed hair, elegant fantasy outfits (like '타이탄클래스' or Korean light novel illustrations), painterly shading, vibrant but deep color palette, dynamic composition".
-CHARACTERS: Look like fantasy game/light novel character artwork — intricate armor/clothing, dramatic poses, beautiful detailed faces.
-NEVER: photorealistic photo, 3D render, Pixar cartoon, simple flat anime.`,
+      webtoon: `KOREAN WEBTOON STYLE (Naver/Kakao webtoon, 네이버웹툰 스타일).
+Visual keywords: "Korean webtoon illustration, clean thin digital lineart, soft pastel coloring with cell shading, typical Korean webtoon character proportions (tall slim figures, pretty refined features, large eyes, elegant nose), gentle gradient skin tone, smooth digital coloring, webtoon panel composition, like '여신강림' (True Beauty) / '신의 탑' (Tower of God) / '외모지상주의' / '사냥개들' / '나혼자만 레벨업' digital illustration style, clean lines, light watercolor-like shadows, vertical scroll webtoon aesthetic, 2D digital art".
+CHARACTERS: Korean webtoon style — slim tall body proportions, beautiful pretty refined faces with large soft eyes, smooth detailed hair, modern clean clothing, gentle expressions. NOT Japanese anime cel-shading.
+NEVER: photorealistic photo, 3D render, Pixar cartoon, Japanese anime cel-shading, celebrity-like, real actor.`,
+
+      anime: `JAPANESE ANIME STYLE (Studio Ghibli / Makoto Shinkai aesthetic).
+Visual keywords: "Japanese anime illustration, cel-shaded 2D animation style, large sparkling anime eyes with detailed highlights, sharp anime lineart, flat cel-shading with clear color boundaries, expressive anime hair (flowing or spiky), detailed anime facial features, Studio Ghibli or Makoto Shinkai aesthetic, like '너의 이름은' (Your Name) / '천기의 아이' (Weathering with You) / '센과 치히로의 행방불명' (Spirited Away) / '하울의 움직이는 성' (Howl's Moving Castle) visual style, vibrant anime colors, clean anime lineart, dramatic lighting, 2D flat animation".
+CHARACTERS: Japanese anime style with iconic large sparkling eyes, detailed hair strands, expressive face, cel-shaded coloring. Distinctly Japanese anime — NOT Korean webtoon.
+NEVER: photorealistic photo, 3D render, Pixar cartoon, Korean webtoon (different style), celebrity-like, real actor.`,
 
       pixar: `DISNEY/PIXAR 3D ANIMATION STYLE.
-Visual keywords: "Pixar-quality 3D animated film, stylized 3D character with oversized round head, large expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, vibrant saturated colors, smooth 3D surfaces, Disney/Pixar movie aesthetic like Inside Out/Encanto/Zootopia, adorable character design with simplified cartoon features, high-quality CGI rendering".
-CHARACTERS: Super cute 3D cartoon style — big heads, tiny bodies, huge eyes, soft rounded features.
-NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions.`
+Visual keywords: "Pixar-quality 3D animated film, stylized 3D character with oversized round head, large expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, vibrant saturated colors, smooth 3D surfaces, Disney/Pixar movie aesthetic like Inside Out / Encanto / Zootopia / Toy Story / Up / Coco / Soul, adorable character design with simplified cartoon features, high-quality CGI rendering, 3D rendered characters, cinematic Pixar lighting, smooth 3D animation".
+CHARACTERS: Super cute 3D cartoon style — big heads, tiny bodies, huge expressive eyes, soft rounded features. Stylized 3D cartoon, NOT realistic, NOT celebrity-based.
+NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions, celebrity-like, real actor, Korean webtoon.`
     };
     const currentStyle=visualStyleMap[S.visual]||visualStyleMap.cinematic;
 
@@ -1727,9 +1735,10 @@ async function generateScenePrompts(idx){
   try{
     // 비주얼 스타일 가이드
     const visualStyleMap={
-      cinematic:`REALISTIC LIVE-ACTION KOREAN FILM. MANDATORY: "photorealistic cinematic, Korean drama aesthetic, real actors, 35mm film, natural lighting, DSLR quality". NEVER: anime, cartoon, 3D render, illustrated.`,
-      anime:`HIGH-QUALITY ANIME FANTASY ILLUSTRATION. MANDATORY: "detailed anime illustration, semi-realistic painted anime style, fantasy character art, intricate costumes, dramatic lighting, rim light, large expressive anime eyes, flowing hair, Korean webtoon/Japanese LN aesthetic like '타이탄클래스', vibrant deep colors". NEVER: photo, photorealistic, 3D CGI, Pixar.`,
-      pixar:`PIXAR 3D ANIMATION. MANDATORY: "Pixar-quality 3D animated film, oversized round head, huge expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, Disney/Pixar aesthetic like Inside Out/Encanto, adorable 3D cartoon". NEVER: photorealistic, anime 2D, realistic human proportions.`
+      cinematic:`REALISTIC LIVE-ACTION KOREAN FILM (NON-CELEBRITY). MANDATORY: "photorealistic cinematic, Korean drama aesthetic, ordinary non-celebrity Korean people, natural skin texture with imperfections, 35mm film grain, natural lighting, DSLR cinematography quality, documentary-style realism, grounded everyday faces". NEVER: anime, cartoon, 3D render, illustrated, celebrity-like, K-pop idol look, famous actor, real actor names, like [name].`,
+      webtoon:`KOREAN WEBTOON STYLE (네이버/카카오 웹툰). MANDATORY: "Korean webtoon illustration (네이버웹툰 스타일), clean thin digital lineart, soft pastel coloring with cell shading, tall slim Korean webtoon proportions, large soft eyes, refined pretty features, gentle gradient skin tone, smooth detailed hair, modern clean clothing, like '여신강림' (True Beauty) / '신의 탑' (Tower of God) / '외모지상주의' / '나혼자만 레벨업' digital illustration, vertical scroll webtoon aesthetic, 2D digital art, light watercolor-like shadows". NEVER: photo, photorealistic, 3D render, Japanese anime cel-shading (different style), Pixar, celebrity-like.`,
+      anime:`JAPANESE ANIME STYLE (Studio Ghibli / Makoto Shinkai). MANDATORY: "Japanese anime illustration, cel-shaded 2D animation style, large sparkling anime eyes with detailed highlights, sharp anime lineart, flat cel-shading with clear color boundaries, expressive anime hair (flowing or spiky), Studio Ghibli or Makoto Shinkai aesthetic like '너의 이름은' (Your Name) / '천기의 아이' / '센과 치히로' / '하울의 움직이는 성', vibrant anime colors, dramatic anime lighting, 2D flat animation". NEVER: photo, photorealistic, 3D render, Pixar, Korean webtoon (different style), celebrity-like.`,
+      pixar:`PIXAR 3D ANIMATION. MANDATORY: "Pixar-quality 3D animated film, stylized 3D rendered character, oversized round head, huge expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, vibrant saturated colors, smooth 3D surfaces, Disney/Pixar aesthetic like Inside Out / Encanto / Zootopia / Toy Story / Up / Coco / Soul, adorable 3D cartoon design, high-quality CGI". NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions, celebrity-like, Korean webtoon.`
     };
     const visualStyleKey=S.movieMeta?.visual||S.visual||'cinematic';
     const styleGuide=visualStyleMap[visualStyleKey];
@@ -2099,12 +2108,16 @@ ${s.camera?'카메라 (이 카메라 워크를 Camera 섹션에 그대로 반영
 ${s.sound?'사운드 (이 사운드를 Audio 섹션에 그대로 반영!): '+s.sound:''}
 ${s.subtitle?'자막/엔딩 텍스트: '+s.subtitle:''}
 
-🚫 인물 이름 절대 차단 규칙:
-- 실존 역사 인물 이름 절대 사용 금지: 세종, 이순신, 정조, 영조, 광해군, 연산군, Sejong, Yi Sun-sin 등
-- 실제 배우/연예인 이름 절대 금지: 아이유, 차은우, 이병헌, 마동석, IU, BTS 멤버, 블랙핑크 멤버 등
-- "Sejong-like", "looks like [name]", "celebrity-like" 등 비교 표현 금지
-- Subject 섹션에는 캐릭터를 일반인으로만 묘사: "A young Korean royal in his early 30s with..." (이름 명시 X)
-- 한국어 대사에서는 가공의 이름만 사용 가능 (이미 영화 메타에 정해진 이름)
+🚫🚫🚫 실존 인물/유명인 이름 절대 차단 (Flow 정책 위반 방지) 🚫🚫🚫:
+- 실존 역사 인물 이름 절대 사용 금지: 세종, 이순신, 정조, 영조, 광해군, 연산군, Sejong, Yi Sun-sin, King Sejong 등
+- 실제 배우/연예인/아이돌 이름 절대 금지: 아이유, 차은우, 이병헌, 마동석, 김수현, 송강호, IU, BTS, BLACKPINK, 블랙핑크 멤버, NewJeans 멤버, 정국, 지수, 지민, 제니, 리사, 로제 등
+- 영문 표기로도 금지: Jisoo, Jimin, Jennie, Lisa, Rose, IU, V, Jungkook, Suga, RM 등
+- "Sejong-like", "looks like Lee Min-ho", "celebrity-like", "K-pop idol look", "famous actor" 등 비교 표현 절대 금지
+- Subject 섹션에는 일반인 묘사만: "A young ordinary Korean man in his early 30s with..." (이름 X, "actor" 단어 X)
+- "real actors", "Korean actors" 표현도 금지 — "ordinary Korean people", "non-celebrity" 사용
+- 영화 메타의 가공 이름은 한국어 대사에서만 사용 (영문 변환 시 일반 묘사로)
+- Subject/Character 묘사는 항상 "a young Korean man/woman" 같은 일반 표현으로 시작
+- 가공 이름이 실존 인물과 비슷하면 (예: "지민" → "Jimin") 영문은 일반 묘사로 대체
 
 ${(s.cut_structure||s.sound||s.camera||s.character_desc)?'⚠️ 위에 컷 구성/카메라/사운드/인물 묘사 정보가 명시되어 있습니다. 각 섹션에 그대로 반영하세요!':''}
 
@@ -2798,3 +2811,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
