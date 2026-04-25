@@ -1469,6 +1469,13 @@ function showSceneEditModal(idx){
   html+='<textarea id="edit_sound_'+idx+'" placeholder="예: 천둥소리, 타이어 마찰음, 웅장한 오케스트라 음악 상승&#10;없으면 비워두세요" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);font-size:13px;background:var(--bg);color:var(--text);min-height:50px;box-sizing:border-box;resize:vertical;">'+escapeHtml(s.sound||'')+'</textarea>';
   html+='</div>';
 
+  // 인물 묘사 (선택) — 매우 중요!
+  html+='<div style="background:linear-gradient(135deg,#fef3c7,#fed7aa);padding:12px;border-radius:10px;margin-bottom:12px;border:2px dashed #f59e0b;">';
+  html+='<div style="font-size:11px;color:#7c2d12;font-weight:900;margin-bottom:4px;">👤 이 Scene의 인물 묘사 (영상 프롬프트에 그대로 반영됨)</div>';
+  html+='<div style="font-size:10px;color:#92400e;margin-bottom:6px;line-height:1.5;">⚠️ 실존 인물/배우 이름 금지! 일반인으로 자세히 묘사하세요.<br>예: "30대 초반의 일반인 한국 남성, 부드러운 얼굴형, 깊은 눈빛, 단정한 검은 머리, 짙은 인디고 색 도포..."</div>';
+  html+='<textarea id="edit_character_desc_'+idx+'" placeholder="비워두면 영화 메타의 주인공 묘사가 자동 사용됨&#10;직접 입력하면 이 묘사가 우선 사용됨" style="width:100%;padding:8px;border-radius:6px;border:1px solid #d97706;background:#fffbeb;color:#7c2d12;font-size:13px;min-height:60px;box-sizing:border-box;resize:vertical;font-family:inherit;line-height:1.5;">'+escapeHtml(s.character_desc||'')+'</textarea>';
+  html+='</div>';
+
   // 자막/엔딩 텍스트 (선택)
   html+='<div style="background:var(--card-soft);padding:12px;border-radius:10px;margin-bottom:12px;">';
   html+='<div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px;">📝 자막 / 엔딩 텍스트 (선택)</div>';
@@ -1591,6 +1598,7 @@ function saveSceneEdits(idx,genPromptAfter){
   s.camera=document.getElementById('edit_camera_'+idx)?.value||'';
   s.sound=document.getElementById('edit_sound_'+idx)?.value||'';
   s.subtitle=document.getElementById('edit_subtitle_'+idx)?.value||'';
+  s.character_desc=document.getElementById('edit_character_desc_'+idx)?.value||'';
 
   // 대사 수집
   const rows=document.querySelectorAll('#dialoguesEdit_'+idx+' > div');
@@ -2085,12 +2093,20 @@ ${S.movieMeta?.supporting?.length?'조연: '+S.movieMeta.supporting.map(sp=>sp.n
 대사: ${(s.dialogue||[]).map(d=>d.speaker+':"'+d.line+'"').join(' / ')}
 ${s.narration?'내레이션: '+s.narration:''}
 시각 묘사: ${s.visual_description||''}
+${s.character_desc?'👤 인물 묘사 (이 묘사를 Subject 섹션에 100% 그대로 반영! 다른 묘사 추가 금지): '+s.character_desc:''}
 ${s.cut_structure?'컷 구성 (이 시간 마커를 그대로 Action에 반영!): '+s.cut_structure:''}
 ${s.camera?'카메라 (이 카메라 워크를 Camera 섹션에 그대로 반영!): '+s.camera:''}
 ${s.sound?'사운드 (이 사운드를 Audio 섹션에 그대로 반영!): '+s.sound:''}
 ${s.subtitle?'자막/엔딩 텍스트: '+s.subtitle:''}
 
-${(s.cut_structure||s.sound||s.camera)?'⚠️ 위에 컷 구성/카메라/사운드 정보가 명시되어 있습니다. Action 섹션에 시간 마커 [0-3s], [3-7s], [7-10s] 그대로 사용, Camera 섹션에 카메라 워크 반영, Audio 섹션에 사운드 정보를 그대로 반영하세요!':''}
+🚫 인물 이름 절대 차단 규칙:
+- 실존 역사 인물 이름 절대 사용 금지: 세종, 이순신, 정조, 영조, 광해군, 연산군, Sejong, Yi Sun-sin 등
+- 실제 배우/연예인 이름 절대 금지: 아이유, 차은우, 이병헌, 마동석, IU, BTS 멤버, 블랙핑크 멤버 등
+- "Sejong-like", "looks like [name]", "celebrity-like" 등 비교 표현 금지
+- Subject 섹션에는 캐릭터를 일반인으로만 묘사: "A young Korean royal in his early 30s with..." (이름 명시 X)
+- 한국어 대사에서는 가공의 이름만 사용 가능 (이미 영화 메타에 정해진 이름)
+
+${(s.cut_structure||s.sound||s.camera||s.character_desc)?'⚠️ 위에 컷 구성/카메라/사운드/인물 묘사 정보가 명시되어 있습니다. 각 섹션에 그대로 반영하세요!':''}
 
 ⬆️ 위 Scene을 Flow/Veo용 10초 영상 프롬프트로 변환. JSON만.`;
 
