@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1131,83 +1132,87 @@ async function generate(){
 
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
-  // 🔒 캐릭터 고정 규칙 (영상) — 얼굴/팔이 새로 생기거나 위치가 바뀌는 문제 방지
-  const identityAndLimbVideoLock =
-    '🔒 IDENTITY + LIMB LOCK — MUST FOLLOW THROUGHOUT ALL FRAMES 🔒\n' +
-    'The uploaded reference image is the character anchor. Preserve the exact same single face: same eyes, nose, mouth, expression, proportions, face location, and object surface attachment. Do NOT create a new face or reinterpret the face.\n' +
-    'There must be exactly ONE face only, in the exact same location as the reference image. No second face, no face appearing on another surface, no duplicated face, no floating face, no face morphing.\n' +
-    'There must be exactly TWO arms only. Preserve the same arm attachment logic from the source image. Arms may move slightly, but their root points must stay locked to the same object area.\n' +
-    'For sink/faucet characters specifically: arms must remain attached only to the sink/faucet area. Do NOT let arms grow from dishes, bowls, windows, background, countertop, water, sponge, empty air, or random surfaces.\n' +
-    'No extra arms, no extra hands, no floating limbs, no disconnected hands, no wrong limb placement, no mutated anatomy.\n' +
-    'Use subtle motion only: small mouth movement, slight eyebrow/eye expression, and tiny arm gestures from the fixed attachment points. Avoid large gestures that cause identity drift or limb regeneration.\n' +
-    'Camera must remain mostly static. No strong rotation, no big angle change, no zoom that reframes the face/arms into a new design.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+  // 🪣 사물별 분노 트리거 상황 + 풍부한 환경 역동성
+  const getAngrySituationalAction = (objKey, objEn) => {
+    const lo = (objEn||'').toLowerCase();
+    const ko = (objKey||'').toLowerCase();
+    if(lo.includes('air conditioner')||ko.includes('에어컨'))
+      return {action:'a sweltering hot room scene, the air conditioner struggles with a clogged dusty filter, weak airflow barely coming out, while ignored', ambient:'dust-clogged filter visible, weak sputtering airflow, vent louvers barely moving, mold spots on the surface, red error indicator blinking, room visibly hot with heat shimmer, dust falling out instead of cool air'};
+    if(lo.includes('fan')||ko.includes('선풍기'))
+      return {action:'fan struggling to spin with dust caked on blades, weak weakly rotating', ambient:'dust visibly caked on blades, blades rotating weakly, indicator dim, slight rattling'};
+    if(lo.includes('sink')||lo.includes('faucet')||ko.includes('싱크')||ko.includes('수전'))
+      return {action:'dirty dishes piled high, stagnant murky water in the basin, food residue everywhere', ambient:'water dripping slowly from clogged drain, dishes shifting under their own weight, stagnant water rippling, fly hovering nearby, food residue floating'};
+    if(lo.includes('washing machine')||ko.includes('세탁기'))
+      return {action:'overstuffed laundry crammed inside, drum struggling, lint everywhere', ambient:'laundry tumbling chaotically, lint flying out, machine vibrating violently, water sloshing, error light blinking, soap residue oozing'};
+    if(lo.includes('refrigerator')||lo.includes('fridge')||ko.includes('냉장고'))
+      return {action:'door left open with food spilling out, expired containers visible, mess inside', ambient:'cold air leaking wastefully, items teetering and falling, light flickering, condensation pooling, expired food visible, magnets falling off, smell visualized'};
+    if(lo.includes('microwave')||ko.includes('전자레인지'))
+      return {action:'food splattered all over the inside, dirty interior never cleaned', ambient:'splatter caked inside, light flickering yellow, tray spinning slowly with food residue, smoke wisp, error beeping'};
+    if(lo.includes('toilet')||ko.includes('변기'))
+      return {action:'lid up, mess and stains around the rim, an unflushed scene', ambient:'water still swirling slightly, faint stink lines wafting up, lid bobbing, toilet paper scattered, fly nearby'};
+    if(lo.includes('shower')||ko.includes('샤워'))
+      return {action:'mineral buildup, hair clogging the drain, water spraying weakly with attitude', ambient:'sputtering water in uneven spray, hair clog visible at drain, droplets, soap scum on tiles, weak weak steam'};
+    if(lo.includes('vacuum')||ko.includes('청소기'))
+      return {action:'tangled hair in the brush, clogged hose, dust everywhere ignored', ambient:'visible dust clouds NOT being sucked, hose flexing weakly, hair tangled in brush, indicator blinking red, wheels barely rolling'};
+    if(lo.includes('rice cooker')||ko.includes('밥솥'))
+      return {action:'crusted leftover rice inside from days ago, neglected appearance', ambient:'weak weak steam, condensation, indicator dim, rice crust visible, lid handle dirty'};
+    if(lo.includes('frying pan')||lo.includes('pan')||ko.includes('프라이팬'))
+      return {action:'burnt food stuck on, oil mess everywhere, never washed', ambient:'thick smoke rising, oil splatter mess, food crusting hard, fire alarm hint'};
+    if(lo.includes('trash')||ko.includes('쓰레기'))
+      return {action:'overflowing with garbage, lid stuck open, items spilling out', ambient:'stink lines wafting up, items spilling chaotically, flies buzzing actively, plastic crinkling, juice leaking'};
+    if(lo.includes('chair')||ko.includes('의자'))
+      return {action:'crumbs and stains on the seat, hair stuck in wheels, neglected', ambient:'wheels squeaking loudly, fabric flexing, debris settling, springs creaking, food residue visible'};
+    if(lo.includes('keyboard')||ko.includes('키보드'))
+      return {action:'crumbs and food bits between keys, sticky residue on the surface', ambient:'crumbs visible between keys, sticky residue gleaming, dust thick, key stuck pressed, RGB lights flickering weakly'};
+    return {action:'a messy/neglected situation triggering the anger', ambient:'visible neglect — dust, smell lines, debris, dim flickering indicator, environmental signs of frustration'};
+  };
+  const situ = getAngrySituationalAction(S.obj, S.objEn);
 
   const videoPrompt =
-    '⚠️⚠️ ABSOLUTE CRITICAL RULE — REFERENCE IMAGE IS THE SINGLE SOURCE OF TRUTH ⚠️⚠️\n' +
-    'YOU MUST use the uploaded image as the EXACT first frame of this video.\n' +
-    'DO NOT change, modify, reinterpret, or redesign ANY visual element from the uploaded image.\n' +
-    'The character design, face shape, face expression starting pose, body proportions, colors, textures, lighting, background composition, camera angle, and ALL visual details MUST match the uploaded image 100%.\n' +
-    'If the text description below conflicts with the uploaded image, ALWAYS follow the image — the image wins.\n' +
-    'This is Image-to-Video with MAXIMUM reference fidelity. The final video must look like the uploaded image came alive and started moving — NOT a reinterpretation.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-    identityAndLimbVideoLock +
-    'Animate this character with angry upper-body movement.\n' +
-    'The character is yelling: "' + dialogue + '"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
-    'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
-    'Gestures naturally match the tone and flow of the dialogue:\n' +
-    'pointing one finger directly at the camera when accusing,\n' +
-    'raising both open palms in a "why would you do that" gesture\n' +
-    'when expressing frustration or disbelief.\n' +
-    'Gestures should feel reactive and conversational, not mechanical or repetitive.\n' +
-    'Mouth opens and closes as if speaking angrily.\n' +
-    'Eyebrows furrow deeply, eyes bulge with rage.\n' +
-    'The character stays grounded — no floating or jumping.\n' +
-    'Camera mostly static with a slight zoom-in.\n' +
-    'Exaggerated, Pixar-style animation.\n' +
-    (functionReveal ? '🚫🚫🚫 CRITICAL: ONE FACE ONLY — NO FACE DUPLICATION 🚫🚫🚫\n' +
-      'The uploaded reference image shows ONE character with ONE single face in ONE specific location. Throughout the entire animation, there must be ONLY THIS ONE FACE — the exact same face in the exact same location as in the reference image.\n' +
-      '\n' +
-      '❌ FORBIDDEN (these are CRITICAL errors that ruin the video):\n' +
-      '   - Do NOT generate a second face anywhere else (not on the wall, not on the door, not on the side, not popping out, not floating)\n' +
-      '   - Do NOT create a duplicate face on any object or surface around the character\n' +
-      '   - Do NOT make the face appear multiple times during the animation\n' +
-      '   - Do NOT let a face emerge, protrude, or grow out of walls, doors, cabinets, or any surface\n' +
-      '   - Do NOT generate additional characters, heads, or faces beyond the single one in the reference\n' +
-      '   - Do NOT clone, mirror, or split the face\n' +
-      '\n' +
-      '✅ REQUIRED:\n' +
-      '   - Exactly ONE face, in the ONE location shown in the reference image, throughout ALL frames\n' +
-      '   - If the face-bearing part moves or rotates out of view, the face disappears with it — do NOT replace it with a new face elsewhere\n' +
-      '   - If the object opens (like a fridge door or cabinet), only the part WITHOUT the face moves; the part WITH the face stays perfectly still\n' +
-      '   - Surrounding surfaces (walls, floor, background) MUST remain plain and faceless\n' +
-      '\n' +
-      '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal happens naturally during dialogue, synced with the words, WHILE PRESERVING THE SINGLE-FACE RULE ABOVE.\n' +
-      '\n' +
-      'Detailed face preservation rules:\n' +
-      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. Never duplicate, clone, or re-generate the face anywhere else. NO second face appearing next to, above, below, or on any part of the object or background.\n' +
-      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): identify which section the face is on, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
-      '3. If the face-bearing part must move or open, the face moves naturally WITH that part. If rotation takes the face out of view, the face simply disappears with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
-      '4. No new character, head, or face should appear that was not in the original uploaded image. The only character is the object itself with its single original face. Walls, background, ambient objects all stay faceless.\n' +
-      '5. NEGATIVE: multiple faces, duplicate face, face on wall, face on door, face emerging from surface, cloned face, twin face, split face, mirror face, second character, extra head, additional faces.\n' : '') +
-    (fnMotion ? 'Surrounding ambient details add a sense of life: '+fnMotion+', along with subtle environmental motion. Keep these visible but not distracting from the talking character.\n' : '') +
-    'Audio: angry adult Korean voice with scolding tone.\n' +
-    'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
-    'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
-    'No roaring, no monster sounds, no creature sounds.\n' +
-    'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
-    'The character\'s face must remain as the object —\n' +
-    'The character\'s face must remain as the object —\n' +
-    'do NOT replace or morph into a real human face.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '🔒 FINAL REMINDER: The uploaded image is the LAW. Every pixel of visual design MUST come from it. The text above only describes MOTION and AUDIO — NOT visual appearance. Use Image-to-Video mode with MAXIMUM reference fidelity. Failing to match the uploaded image is a CRITICAL error.';
+'Use the uploaded reference image as the EXACT first frame and identity anchor.\n\n' +
+'Preserve the original object exactly: same object structure, same proportions, same materials, same colors, same face design, same arm attachment points, and same environment style.\n\n' +
+'Create a 7-second short vertical video with two connected scenes.\n\n' +
+'Scene 1 (0-3s):\n' +
+'Show the messy/neglected situation that triggers the rage: ' + situ.action + '.\n' +
+'The object is in its environment showing visible signs of being mistreated. Use subtle camera movement only.\n\n' +
+'Scene 2 (3-7s):\n' +
+'The object explodes with anger and yells this Korean line VERBATIM (do not translate, do not paraphrase, keep 반말 as 반말):\n' +
+'"' + dialogue + '"\n' +
+'Performance tone: angry, scolding, exasperated.\n\n' +
+'Identity rules:\n' +
+'- Keep only ONE character identity.\n' +
+'- If the face is visible, keep the EXACT same face from the reference image.\n' +
+'- If the face is occluded by motion, props, hands, or camera angle, keep it occluded.\n' +
+'- Never generate a new face.\n' +
+'- Never create an alternate face, secondary face, or replacement face.\n' +
+'- Do not force face visibility.\n\n' +
+'Mouth/voice:\n' +
+'- When the face is visible, use subtle angry mouth movement (eyebrows furrow, mouth opens with rage).\n' +
+'- When the face is hidden or occluded, the voice can continue without visible mouth animation.\n\n' +
+'Motion rules:\n' +
+'- Subtle, natural angry motion. Object stays grounded and stable.\n' +
+'- Exactly two arms only, attached at the same original positions.\n' +
+'- Gestures may include pointing finger at camera or raising palms in "why would you do that" — but root points stay locked.\n' +
+'- No extra arms, no floating limbs, no detached hands, no morphing.\n\n' +
+'Natural action priority:\n' +
+'- Match action to dialogue meaning.\n' +
+'- Show the messy situation before facial acting.\n' +
+'- If facial visibility conflicts with natural action, prioritize the natural action.\n\n' +
+'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
+situ.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
+'Audio:\n' +
+'- Angry adult Korean voice with scolding tone, natural and conversational.\n' +
+'- Clear and dry sound. No echo, no reverb.\n' +
+'- No background music, no BGM, no soundtrack.\n' +
+'- No captions or text on screen.\n\n' +
+'Style:\n' +
+'Pixar-like 3D animation, exaggerated angry expressions, stable composition, vertical 9:16.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
   // SRT 자막 생성
-  const srtText=generateSingleSceneSRT(dialogue,10);
+  const srtText=generateSingleSceneSRT(dialogue,7);
   if(srtText){
     document.getElementById('srtOut').textContent=srtText;
     document.getElementById('srtCard').style.display='block';
