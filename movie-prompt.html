@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">7초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.8 🎤 화자락</span></div>
+    <div class="subtitle">7초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v5.0 🔁 자동연결</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -2122,6 +2122,34 @@ Duration: 7 seconds"
     const protagonistDesc = S.movieMeta?.protagonist?.desc||'';
     const supportingList = S.movieMeta?.supporting||[];
     
+    // 🔁 이전 Scene 컨텍스트 자동 추출 (Scene 2부터 자동 이어쓰기)
+    const prevScene = idx > 0 ? S.scenes[idx-1] : null;
+    const prevPrevScene = idx > 1 ? S.scenes[idx-2] : null;  // 더 멀리도
+    
+    let continuityContext = '';
+    if(prevScene){
+      const prevDialogues = (prevScene.dialogue||[]).map(d=>`${d.speaker}: "${d.line}"`).join(' / ');
+      continuityContext = `
+
+🔁🔁🔁 이전 Scene 자동 이어쓰기 컨텍스트 🔁🔁🔁
+이번 Scene ${s.num}은 이전 Scene의 **연속**입니다. 캐릭터/배경/감정 흐름을 그대로 이어받으세요.
+
+[직전 Scene ${prevScene.num}: ${prevScene.title||''}]
+- 위치: ${prevScene.location||''}
+- 사건: ${prevScene.event||''}
+- 감정: ${prevScene.emotion||''}
+- 대사: ${prevDialogues || '(없음)'}
+${prevPrevScene ? `\n[그 이전 Scene ${prevPrevScene.num}]\n- 사건: ${prevPrevScene.event||''}` : ''}
+
+⚠️ 이번 Scene 작성 규칙 (자동 이어쓰기):
+- 등장인물의 외형/의상/머리스타일은 이전 Scene과 100% 동일하게 유지
+- 같은 위치라면 같은 배경/조명/소품 유지 (다른 위치면 자연스러운 이동 동선)
+- 감정 흐름 자연스럽게 연결 (이전 감정 → 이번 감정)
+- 캐릭터 관계 유지 (이전 Scene에서 사장-손님이면 이번에도 사장-손님)
+- "Continuing from the previous scene" 같은 자연스러운 시간/공간 연결성 표현
+- Flow Ingredients에 같은 캐릭터 시트 업로드해도 일관성 유지되도록 외형 묘사 정확히 반복`;
+    }
+
     // 화자별 정보 매핑
     const speakerLines = dialogueArr.map(d=>{
       let speakerInfo = d.speaker;
@@ -2141,6 +2169,7 @@ Duration: 7 seconds"
 주인공: ${protagonistName} — ${protagonistDesc}
 ${supportingList.length?'조연: '+supportingList.map(sp=>sp.name+' ('+sp.desc+')').join(', '):''}
 비주얼 톤: ${S.movieMeta?.visual_style||''}
+${continuityContext}
 
 [이번 Scene ${s.num} (7초)]
 위치: ${s.location}
@@ -2309,8 +2338,21 @@ function showSceneModal(s,idx){
   const timeStart=idx*7;
   const timeEnd=(idx+1)*7;
 
-  let html='<h3>🎬 Scene '+s.num+': '+escapeHtml(s.title||'')+'</h3>';
+  let html='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">'+
+    '<h3 style="margin:0;">🎬 Scene '+s.num+': '+escapeHtml(s.title||'')+'</h3>'+
+    '<button onclick="document.getElementById(\'modalOverlay\').classList.remove(\'show\');setTimeout(()=>showSceneEditModal('+idx+'),100)" style="padding:8px 14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:8px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;">✏️ Scene 내용 수정</button>'+
+  '</div>';
   html+='<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⏱️ '+timeStart+'s → '+timeEnd+'s · 📍 '+escapeHtml(s.location||'')+' · 감정: '+escapeHtml(s.emotion||'')+'</div>';
+  
+  // 🔁 Scene 2부터: 자동 이어쓰기 안내
+  if(idx > 0){
+    const prevScene = S.scenes[idx-1];
+    html+='<div style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:1px solid #3b82f6;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#1e3a8a;line-height:1.6;">'+
+      '<b>🔁 자동 이어쓰기 활성화됨</b><br>'+
+      '이번 Scene은 <b>Scene '+prevScene.num+' ('+escapeHtml(prevScene.title||'')+')</b>의 연속으로 작성됩니다.<br>'+
+      '→ 캐릭터 외형/관계/감정 흐름이 이전 Scene 그대로 유지됩니다 ✅'+
+    '</div>';
+  }
   html+='<div style="background:var(--card-soft);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"><b>🎬 사건:</b> '+escapeHtml(s.event||'')+'</div>';
 
   if((s.dialogue||[]).length){
@@ -2398,13 +2440,11 @@ function showSceneModal(s,idx){
         '<div style="background:#fef3c7;border:1px dashed #f59e0b;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#78350f;font-weight:700;">✏️ 아래 박스 직접 수정 가능! 대사 추가/감정 변경/디테일 자유롭게 수정 → [📋 복사]로 수정된 내용 그대로 복사</div>'+
         '<textarea id="mflow" oninput="updateScenePrompt('+idx+',\'flow\',this.value)" style="width:100%;min-height:280px;background:#fff;color:#065f46;font-size:12px;padding:10px;border:2px solid #10b981;border-radius:6px;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box;outline:none;">'+escapeHtml(flowText)+'</textarea>'+
         '<div style="font-size:10px;color:#065f46;margin-top:6px;">💡 [0-2s], [2-5s], [5-7s] 시간 마커가 컷 전환 만들어요. Audio 섹션에 대사 추가하려면 따옴표로 감싸기: "안녕하세요"</div>'+
-        '<div style="background:#fee2e2;border:2px solid #ef4444;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:#7f1d1d;line-height:1.6;">'+
-          '<div style="font-weight:900;color:#991b1b;margin-bottom:4px;">🎬 Flow 확장(이어만들기) 사용 시 일관성 유지법</div>'+
-          '1. Flow에서 7초 영상 만든 뒤 [확장] 버튼 누를 때<br>'+
-          '2. 확장 프롬프트 박스에 <b>화자 + 캐릭터 외형</b>을 다시 명시!<br>'+
-          '<span style="background:#fff;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:10px;">예: "Continue with the SAME male cafe owner in his 30s wearing a navy apron — he says in Korean: \'다음 대사\'"</span><br>'+
-          '3. 확장 시 화자가 안 바뀌도록 <b>"the SAME [성별] [역할]"</b> 키워드 필수!<br>'+
-          '4. 대사가 있으면 무조건 누가 말하는지 (he/she/the male owner/the female customer 등) 명시'+
+        '<div style="background:#fee2e2;border:2px solid #ef4444;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#7f1d1d;line-height:1.7;">'+
+          '<div style="font-weight:900;color:#991b1b;margin-bottom:6px;font-size:13px;">⚠️ Flow [확장] 버튼 누를 때 주의!</div>'+
+          '확장 시 캐릭터/화자가 바뀔 수 있어요.<br>'+
+          '→ <b>확장 입력창에 같은 인물 정보를 다시 적어야 함!</b><br><br>'+
+          '<button onclick="copyExtensionTemplate('+idx+',this)" style="width:100%;padding:8px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📋 확장용 템플릿 복사하기 (Flow 확장창에 붙여넣기)</button>'+
         '</div>'+
       '</div>';
     }
@@ -2486,6 +2526,51 @@ function updateScenePrompt(idx, kind, value){
     if(kind==='image') s.prompts.prompt_image = value;
     else if(kind==='flow') s.prompts.prompt_flow = value;
   }
+}
+
+// Flow 확장(이어만들기) 버튼용 템플릿 자동 생성 + 복사
+function copyExtensionTemplate(idx, btn){
+  const scene = S.scenes && S.scenes[idx];
+  if(!scene){alert('Scene 정보 없음');return}
+
+  const dialogues = scene.dialogue || [];
+  const protagonist = S.movieMeta?.protagonist || {};
+  const supporting = S.movieMeta?.supporting || [];
+
+  // 등장인물 정보 영문화
+  const charLines = [];
+  // 주인공
+  if(protagonist.name){
+    charLines.push(`the SAME ${protagonist.desc||'main character'}`);
+  }
+  // 조연
+  supporting.forEach(sp=>{
+    if(sp.name) charLines.push(`the SAME ${sp.desc||sp.name}`);
+  });
+
+  // 대사가 있으면 화자별로
+  let dialogText = '';
+  if(dialogues.length > 0){
+    const lines = dialogues.map(d=>{
+      const speakerInfo = d.speaker===protagonist.name 
+        ? `the SAME ${protagonist.desc||'protagonist'}`
+        : (supporting.find(s=>s.name===d.speaker) 
+            ? `the SAME ${supporting.find(s=>s.name===d.speaker).desc}`
+            : d.speaker);
+      return `${speakerInfo} says in Korean: "${d.line}"`;
+    }).join('. Then ');
+    dialogText = `\n\nDialogue: ${lines}.`;
+  }
+
+  const template = `Continue the scene with ${charLines.join(' and ')}. Keep the EXACT same characters from the previous video — same gender, same age, same outfit, same face, same position. The action continues naturally.${dialogText}\n\nAudio: Korean dialogue spoken by native Korean voice actors. ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent.`;
+
+  navigator.clipboard.writeText(template).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨! Flow 확장창에 붙여넣으세요';
+    setTimeout(()=>{btn.textContent=orig},2500);
+  }).catch(()=>{
+    alert('복사 실패 — 직접 복사해주세요:\n\n'+template);
+  });
 }
 // ═══════ SRT 자막 생성 ═══════
 function formatSRTTime(seconds){
