@@ -1921,61 +1921,77 @@ async function generate(){
   const moodLabel = (S.mood && MOODS[S.mood]) ? MOODS[S.mood].label : (isTip?'설명':'짜증');
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
+  // 🪣 사물별 자연스러운 상황 + 풍부한 환경 역동성
+  const getBmemeSituationalAction = (objKey, objEn) => {
+    const lo = (objEn||'').toLowerCase();
+    const ko = (objKey||'').toLowerCase();
+    if(lo.includes('air conditioner')||ko.includes('에어컨'))
+      return {action:'a stuffy hot room scene, the air conditioner powers on with a soft beep, LED indicator lights up, vent louvers tilt and start swinging, cool visible airflow streams out', ambient:'visible cool airflow streaming out, vent louvers oscillating, curtain drifting in the breeze, dust swirling in cool air, LED display blinking, papers fluttering, cool mist spreading'};
+    if(lo.includes('fan')||ko.includes('선풍기'))
+      return {action:'fan blades start spinning, head oscillating, blowing visible airflow', ambient:'fan blades blurring with rotation, visible air streams, hair/curtain/papers flapping, head turning rhythmically'};
+    if(lo.includes('sink')||lo.includes('faucet')||ko.includes('싱크')||ko.includes('수전'))
+      return {action:'faucet turns on, water flows into the basin, dishes get rinsed', ambient:'water flowing in steady stream, droplets splashing, water swirling in basin, sponge floating, soap suds bubbling, water reflections shimmering'};
+    if(lo.includes('washing machine')||ko.includes('세탁기'))
+      return {action:'laundry placed inside, door closes, drum starts spinning', ambient:'laundry tumbling visibly through glass door, water sloshing, soap bubbles forming, slight body vibration, control lights blinking'};
+    if(lo.includes('refrigerator')||lo.includes('fridge')||ko.includes('냉장고'))
+      return {action:'fridge door opens, interior light turns on, cool mist drifts out', ambient:'door swinging open, interior LED glowing, cold mist billowing, drink bottles clinking, condensation droplets, magnets trembling'};
+    if(lo.includes('microwave')||ko.includes('전자레인지'))
+      return {action:'a bowl placed inside, door closes, buttons beep, interior light glows, turntable rotating', ambient:'turntable rotating slowly, interior light glowing yellow-orange, warm steam visible, countdown blinking, food bubbling, condensation on door window'};
+    if(lo.includes('toilet')||ko.includes('변기'))
+      return {action:'lid lifts, water flushes with a swirl', ambient:'water swirling powerfully, lid bobbing, splash droplets, ripples settling, tank refilling'};
+    if(lo.includes('shower')||ko.includes('샤워'))
+      return {action:'shower turns on, water sprays in wide pattern, steam fills bathroom', ambient:'water spraying fine droplets, steam clouds rising, condensation on tiles, mirror fogging, water flowing down drain'};
+    if(lo.includes('vacuum')||ko.includes('청소기'))
+      return {action:'vacuum moves across dusty floor, sucking up debris', ambient:'dust particles sucked in, hose flexing, dust clouds visible, indicator blinking, wheels rolling, brush rotating'};
+    if(lo.includes('rice cooker')||ko.includes('밥솥'))
+      return {action:'rice cooker lid opens with hiss of steam, fluffy rice visible', ambient:'thick steam billowing, condensation droplets, indicator glowing, rice grains steaming, water vapor rising'};
+    if(lo.includes('frying pan')||lo.includes('pan')||ko.includes('프라이팬'))
+      return {action:'oil heats up, food sizzling and bubbling, spatula moving', ambient:'oil splattering, food sizzling actively, smoke rising, spatula stirring, steam wafting, oil droplets dancing'};
+    if(lo.includes('trash')||ko.includes('쓰레기'))
+      return {action:'lid lifts, items thrown in', ambient:'lid bobbing, items settling, faint stink lines, plastic bag rustling, fly buzzing'};
+    return {action:'a natural everyday situation matching the dialogue meaning', ambient:'subtle environmental motion bringing the scene to life — light shifts, dust particles, gentle airflow, surface reflections'};
+  };
+  const situ = getBmemeSituationalAction(S.obj, S.objEn);
+  const isJP = S.country==='jp';
+
   const videoPrompt =
-    '⚠️⚠️ ABSOLUTE CRITICAL RULE — REFERENCE IMAGE IS THE SINGLE SOURCE OF TRUTH ⚠️⚠️\n' +
-    'YOU MUST use the uploaded image as the EXACT first frame of this video.\n' +
-    'DO NOT change, modify, reinterpret, or redesign ANY visual element from the uploaded image.\n' +
-    'The character design, face shape, face expression starting pose, body proportions, colors, textures, lighting, background composition, camera angle, and ALL visual details MUST match the uploaded image 100%.\n' +
-    'If the text description below conflicts with the uploaded image, ALWAYS follow the image — the image wins.\n' +
-    'This is Image-to-Video with MAXIMUM reference fidelity. The final video must look like the uploaded image came alive and started moving — NOT a reinterpretation.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-    'Animate this character with upper-body movement showing the following emotion: ' + moodLabel + '.\n' +
-    'The character is speaking: "'+scriptOriginal+'"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form (존댓말), do not paraphrase.\n' +
-    (moodFace ? 'Facial expression throughout the clip: '+moodFace+'.\n' : '') +
-    (moodPerformEN ? 'Performance tone: '+moodPerformEN+'.\n' : '') +
-    'Movements are slow and deliberate — avoid anything too fast or chaotic.\n' +
-    'Gestures naturally match the tone and flow of the dialogue — hand movements, finger points, palm raises that feel reactive and conversational, not mechanical or repetitive.\n' +
-    'Mouth opens and closes naturally in sync with the spoken words.\n' +
-    'The character stays grounded — no floating or jumping.\n' +
-    'Camera mostly static with a slight zoom-in.\n' +
-    'Style: '+styleTpl.note+' — preserve the EXACT style of the uploaded image, do not reinterpret.\n' +
-    (functionReveal ? '🚫🚫🚫 CRITICAL: ONE FACE ONLY — NO FACE DUPLICATION 🚫🚫🚫\n' +
-      'The uploaded reference image shows ONE character with ONE single face in ONE specific location. Throughout the entire animation, there must be ONLY THIS ONE FACE — the exact same face in the exact same location as in the reference image.\n' +
-      '\n' +
-      '❌ FORBIDDEN (these are CRITICAL errors that ruin the video):\n' +
-      '   - Do NOT generate a second face anywhere else (not on the wall, not on the door, not on the side, not popping out, not floating)\n' +
-      '   - Do NOT create a duplicate face on any object or surface around the character\n' +
-      '   - Do NOT make the face appear multiple times during the animation\n' +
-      '   - Do NOT let a face emerge, protrude, or grow out of walls, doors, cabinets, or any surface\n' +
-      '   - Do NOT generate additional characters, heads, or faces beyond the single one in the reference\n' +
-      '   - Do NOT clone, mirror, or split the face\n' +
-      '\n' +
-      '✅ REQUIRED:\n' +
-      '   - Exactly ONE face, in the ONE location shown in the reference image, throughout ALL frames\n' +
-      '   - If the face-bearing part moves or rotates out of view, the face disappears with it — do NOT replace it with a new face elsewhere\n' +
-      '   - If the object opens (like a fridge door or cabinet), only the part WITHOUT the face moves; the part WITH the face stays perfectly still\n' +
-      '   - Surrounding surfaces (walls, floor, background) MUST remain plain and faceless\n' +
-      '\n' +
-      '🎬 CHARACTER REVEAL (핵심 — 캐릭터가 자기 기능을 직접 시연): '+functionReveal+' This reveal happens naturally during dialogue, synced with the words, WHILE PRESERVING THE SINGLE-FACE RULE ABOVE.\n' +
-      '\n' +
-      'Detailed face preservation rules:\n' +
-      '1. The face exists in ONLY ONE location — exactly where it appears in the uploaded reference image. Never duplicate, clone, or re-generate the face anywhere else. NO second face appearing next to, above, below, or on any part of the object or background.\n' +
-      '2. If the object has multiple separable sections (e.g. fridge with upper freezer + lower fridge, box with lid, cabinet with two doors): identify which section the face is on, and ONLY open/move the OPPOSITE section. Keep the face-bearing section completely still.\n' +
-      '3. If the face-bearing part must move or open, the face moves naturally WITH that part. If rotation takes the face out of view, the face simply disappears with its mounting surface. Do NOT regenerate the face elsewhere.\n' +
-      '4. No new character, head, or face should appear that was not in the original uploaded image. The only character is the object itself with its single original face. Walls, background, ambient objects all stay faceless.\n' +
-      '5. NEGATIVE: multiple faces, duplicate face, face on wall, face on door, face emerging from surface, cloned face, twin face, split face, mirror face, second character, extra head, additional faces.\n' : '') +
-    (functionMotion ? 'Surrounding ambient details add a sense of life: '+functionMotion+', along with '+scene.ambient+'. Keep these visible but not distracting from the talking character.\n' : 'Subtle environmental life: '+scene.ambient+'.\n') +
-    'Audio: '+voiceDesc+'. Natural '+(S.country==='jp'?'Japanese':'Korean')+' speaker.\n' +
-    'Clear and dry sound — no echo, no reverb, no hollow sound.\n' +
-    'Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music of any kind — only the clean Korean voice speaking, nothing else. No humming, no melodic tones, no subtle music layer.\n' +
-    'No roaring, no monster sounds, no creature sounds.\n' +
-    'No text, no subtitles, no captions, no watermarks, no logos appearing in the video.\n' +
-    'The character\'s face must remain as the object —\n' +
-    'do NOT replace or morph into a real human face.\n' +
-    'Duration ~7 seconds. 9:16 vertical.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '🔒 FINAL REMINDER: The uploaded image is the LAW. Every pixel of visual design MUST come from it. The text above only describes MOTION and AUDIO — NOT visual appearance. Use Image-to-Video mode with MAXIMUM reference fidelity. Failing to match the uploaded image is a CRITICAL error.';
+'Use the uploaded reference image as the EXACT first frame and identity anchor.\n\n' +
+'Preserve the original object exactly: same object structure, same proportions, same materials, same colors, same face design, same arm attachment points, and same environment style.\n\n' +
+'Create a 7-second short vertical video with two connected scenes.\n\n' +
+'Scene 1 (0-3s):\n' +
+'Show the natural everyday situation clearly: ' + situ.action + '.\n' +
+'Focus on the action and environment first. The object stays in the same setting and behaves naturally. Use subtle camera movement only.\n\n' +
+'Scene 2 (3-7s):\n' +
+'The object reacts to the situation and says this ' + (isJP?'Japanese':'Korean') + ' line VERBATIM (do not translate, do not paraphrase, keep the original tone):\n' +
+'"' + scriptOriginal + '"\n' +
+(moodPerformEN ? 'Performance tone: ' + moodPerformEN + '\n\n' : '\n') +
+'Identity rules:\n' +
+'- Keep only ONE character identity.\n' +
+'- If the face is visible, keep the EXACT same face from the reference image.\n' +
+'- If the face is occluded by water, props, motion, hands, or camera angle, keep it occluded.\n' +
+'- Never generate a new face.\n' +
+'- Never create an alternate face, secondary face, or replacement face.\n' +
+'- Do not force face visibility.\n\n' +
+'Mouth/voice:\n' +
+'- When the face is visible, use subtle mouth movement.\n' +
+'- When the face is hidden or occluded, the voice can continue without visible mouth animation.\n\n' +
+'Motion rules:\n' +
+'- Subtle, natural motion only. Object stays grounded and stable.\n' +
+'- Exactly two arms only, attached at the same original positions.\n' +
+'- No extra arms, no floating limbs, no detached hands, no morphing.\n\n' +
+'Natural action priority:\n' +
+'- Match action to dialogue meaning.\n' +
+'- Show practical everyday motion before facial acting.\n' +
+'- If facial visibility conflicts with natural action, prioritize the natural action.\n\n' +
+'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
+situ.ambient + ', along with ' + scene.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
+'Audio:\n' +
+'- ' + voiceDesc + '. Natural ' + (isJP?'Japanese':'Korean') + ' speaker, conversational.\n' +
+'- Clear and dry sound. No echo, no reverb.\n' +
+'- No background music, no BGM, no soundtrack.\n' +
+'- No captions or text on screen.\n\n' +
+'Style:\n' +
+styleTpl.note + ' — preserve the EXACT style of the uploaded image, stable composition, vertical 9:16, ~7 seconds.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -2483,3 +2499,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
