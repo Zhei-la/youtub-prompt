@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">7초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v5.0 🔁 자동연결</span></div>
+    <div class="subtitle">7초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v5.1 🔇 BGM제거</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -977,7 +977,7 @@ async function genScript(){
 
     const visualStyleMap = {
       cinematic: `REALISTIC LIVE-ACTION FILM STYLE (NON-CELEBRITY ORDINARY KOREAN PEOPLE).
-Visual keywords: "photorealistic cinematic film, Korean drama/movie aesthetic, ordinary non-celebrity Korean people with natural everyday facial features, realistic skin texture with subtle imperfections and visible pores, professional DSLR cinematography, 35mm film grain, natural lighting, shallow depth of field, authentic everyday human appearance, documentary-quality realism, grounded realistic faces, NOT celebrity, NOT famous actor, NOT idol".
+Visual keywords: "photorealistic, modern Korean drama aesthetic, ordinary non-celebrity Korean people with natural everyday facial features, realistic skin texture with subtle imperfections and visible pores, professional DSLR cinematography, clean digital cinematography, natural lighting, shallow depth of field, authentic everyday human appearance, grounded realistic faces, modern clean look, NOT celebrity, NOT famous actor, NOT idol, NO film grain, NO film burn, NO letterbox bars, NO film leader marks, NO retro film effects, clean modern frame".
 CHARACTERS: Must look like ordinary realistic Korean people you would see on the street — NOT famous actors, NOT K-pop idols, NOT celebrities. Use generic realistic descriptions only.
 NEVER: anime, 3D cartoon, Pixar, illustrated, drawn, celebrity-like, idol-like, famous actor, real actor names, K-pop idol look, like [name].`,
 
@@ -1735,7 +1735,7 @@ async function generateScenePrompts(idx){
   try{
     // 비주얼 스타일 가이드
     const visualStyleMap={
-      cinematic:`REALISTIC LIVE-ACTION KOREAN FILM (NON-CELEBRITY). MANDATORY: "photorealistic cinematic, Korean drama aesthetic, ordinary non-celebrity Korean people, natural skin texture with imperfections, 35mm film grain, natural lighting, DSLR cinematography quality, documentary-style realism, grounded everyday faces". NEVER: anime, cartoon, 3D render, illustrated, celebrity-like, K-pop idol look, famous actor, real actor names, like [name].`,
+      cinematic:`REALISTIC LIVE-ACTION KOREAN FILM (NON-CELEBRITY). MANDATORY: "photorealistic, modern Korean drama aesthetic, ordinary non-celebrity Korean people, natural skin texture with imperfections, natural lighting, clean DSLR cinematography quality, modern grounded everyday faces, NO film grain, NO letterbox, NO film leader marks, NO retro film effects". NEVER: anime, cartoon, 3D render, illustrated, celebrity-like, K-pop idol look, famous actor, real actor names, like [name].`,
       webtoon:`KOREAN WEBTOON STYLE (네이버/카카오 웹툰). MANDATORY: "Korean webtoon illustration (네이버웹툰 스타일), clean thin digital lineart, soft pastel coloring with cell shading, tall slim Korean webtoon proportions, large soft eyes, refined pretty features, gentle gradient skin tone, smooth detailed hair, modern clean clothing, like '여신강림' (True Beauty) / '신의 탑' (Tower of God) / '외모지상주의' / '나혼자만 레벨업' digital illustration, vertical scroll webtoon aesthetic, 2D digital art, light watercolor-like shadows". NEVER: photo, photorealistic, 3D render, Japanese anime cel-shading (different style), Pixar, celebrity-like.`,
       anime:`JAPANESE ANIME STYLE (Studio Ghibli / Makoto Shinkai). MANDATORY: "Japanese anime illustration, cel-shaded 2D animation style, large sparkling anime eyes with detailed highlights, sharp anime lineart, flat cel-shading with clear color boundaries, expressive anime hair (flowing or spiky), Studio Ghibli or Makoto Shinkai aesthetic like '너의 이름은' (Your Name) / '천기의 아이' / '센과 치히로' / '하울의 움직이는 성', vibrant anime colors, dramatic anime lighting, 2D flat animation". NEVER: photo, photorealistic, 3D render, Pixar, Korean webtoon (different style), celebrity-like.`,
       pixar:`PIXAR 3D ANIMATION. MANDATORY: "Pixar-quality 3D animated film, stylized 3D rendered character, oversized round head, huge expressive eyes, small cute body proportions, soft subsurface scattering skin, warm volumetric lighting, vibrant saturated colors, smooth 3D surfaces, Disney/Pixar aesthetic like Inside Out / Encanto / Zootopia / Toy Story / Up / Coco / Soul, adorable 3D cartoon design, high-quality CGI". NEVER: photorealistic, anime 2D, flat illustration, realistic human proportions, celebrity-like, Korean webtoon.`
@@ -1745,14 +1745,30 @@ async function generateScenePrompts(idx){
 
     const sys=`너는 Google Flow/Veo 전용 영상 프롬프트 엔지니어다. 주어진 Scene을 Flow/Veo 포맷에 맞춰 7초 영상 프롬프트로 변환한다.
 
+🔇🔇🔇 절대 고정 규칙 — BGM/배경음악 금지 LOCK 🔇🔇🔇
+- Audio 섹션에 절대 음악/BGM/instrumental/melody 추가 금지
+- 환경음(ambient sound, footsteps, rain, traffic, coffee machine 등)은 OK
+- 대사 + 환경음만 허용 — 배경음악은 절대 금지
+- Audio 끝에 반드시 추가: "NO background music, NO BGM, NO soundtrack, NO instrumental, NO melodic music. Only natural ambient sounds and dialogue."
+- Scene이 이어지는 영상이라 BGM이 들어가면 컷마다 음악이 잘려서 어색함
+
+🚫🚫🚫 절대 고정 규칙 — 화면 효과 금지 LOCK 🚫🚫🚫
+화면 가장자리/바깥에 영화필름 같은 효과 절대 금지!
+- ❌ 검은 letterbox 바 (위/아래 검은 줄)
+- ❌ 35mm film grain, film burn
+- ❌ film leader marks (35, 32, 숫자 표시)
+- ❌ 필름 가장자리 효과, 빈티지 필름 효과
+- ❌ vignette (가장자리 어두움)
+- ❌ retro film effects, old movie effects
+- Style 섹션에 반드시 추가: "Clean modern frame, full screen, NO letterbox bars, NO film grain, NO film leader marks, NO vignette, NO retro film effects, full bleed clean digital cinematography"
+
 🔒🔒🔒 절대 고정 규칙 — 한국어 음성 LOCK 🔒🔒🔒
 이 프로젝트는 **한국 영화**다. 모든 음성/대사는 무조건 **한국어**다.
 - Audio 섹션 시작은 반드시: "Audio: Korean dialogue spoken by native Korean voice actors..."
 - 모든 대사는 한국어 그대로 (큰따옴표 안에)
 - 영어/일본어/중국어 대사 절대 금지
 - 음성은 무조건 native Korean speaker
-- 배경 환경음(발자음/엔진/바람 등)에도 영어 단어 들어가도 됨, 하지만 대사와 voice는 무조건 Korean
-- Audio 섹션 끝에 반드시 추가: "ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent."
+- Audio 섹션 끝에 반드시 추가: "ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent. NO background music."
 
 🎤🎤🎤 절대 고정 규칙 — 화자 명시 LOCK 🎤🎤🎤
 대사가 있으면 무조건 **누가 말하는지** 명시한다.
@@ -2287,25 +2303,56 @@ ${(s.cut_structure||s.sound||s.camera||s.character_desc)?'⚠️ 위에 컷 구�
 
     s.prompts=d;
 
-    // 🔒 Audio 섹션에 한국어 voice 락 강제 주입 (혹시 빠졌으면 자동 보정)
+    // 🔒 Audio 섹션에 한국어 voice 락 + BGM 차단 + 화면효과 차단 자동 보정
     if(s.prompts && s.prompts.prompt_flow){
-      const flow = s.prompts.prompt_flow;
-      // Audio 섹션이 있는지 확인 + Korean voice 명시 안 됐으면 보강
+      let flow = s.prompts.prompt_flow;
+      
+      // 1) 한국어 voice 락
       if(/Audio:\s/i.test(flow)){
         const hasKoreanVoice = /Korean (dialogue|voice|speakers?|actors?)/i.test(flow);
         const hasNoEnglish = /NO English voice|ALL DIALOGUE IN KOREAN/i.test(flow);
         if(!hasKoreanVoice || !hasNoEnglish){
-          // Audio 섹션 끝부분에 강제 추가
-          let fixed = flow.replace(
+          flow = flow.replace(
             /(Audio:[^\n]*)/,
             '$1 ALL DIALOGUE IN KOREAN spoken by native Korean voice actors. NO English voice. NO foreign accent.'
           );
-          // 중복 방지
-          fixed = fixed.replace(/(ALL DIALOGUE IN KOREAN[^.]*\.\s*NO English voice[^.]*\.\s*NO foreign accent\.\s*){2,}/g, 'ALL DIALOGUE IN KOREAN spoken by native Korean voice actors. NO English voice. NO foreign accent. ');
-          s.prompts.prompt_flow = fixed;
-          console.log('[Movie] 한국어 voice lock 자동 보강');
         }
       }
+      
+      // 2) 🔇 BGM/배경음악 자동 차단
+      const hasNoBGM = /NO background music|NO BGM|NO soundtrack/i.test(flow);
+      if(/Audio:\s/i.test(flow) && !hasNoBGM){
+        flow = flow.replace(
+          /(Audio:[^\n]*?)(\n|$)/,
+          '$1 NO background music, NO BGM, NO soundtrack, NO instrumental, NO melodic music. Only natural ambient sounds and dialogue.$2'
+        );
+      }
+      
+      // 3) BGM 키워드를 환경음으로 자동 교체
+      flow = flow.replace(/\b(soft acoustic guitar|gentle piano|jazz piano|background music|soundtrack|melodic theme|musical score|instrumental music)\b/gi, 'natural ambient sounds');
+      
+      // 4) 🚫 화면 효과 (letterbox, film grain) 자동 차단
+      const hasNoFilmEffect = /NO letterbox|NO film grain|clean modern frame/i.test(flow);
+      if(/Style:\s/i.test(flow) && !hasNoFilmEffect){
+        flow = flow.replace(
+          /(Style:[^\n]*?)(\n|$)/,
+          '$1 Clean modern frame, full screen, NO letterbox bars, NO film grain, NO film leader marks, NO vignette, NO retro film effects, full bleed clean digital cinematography.$2'
+        );
+      }
+      
+      // 5) film grain/35mm 키워드 제거 (이게 화면 효과 만드는 원인)
+      flow = flow.replace(/35mm film grain,?\s*/gi, '');
+      flow = flow.replace(/film grain,?\s*/gi, '');
+      flow = flow.replace(/film burn,?\s*/gi, '');
+      flow = flow.replace(/film leader,?\s*/gi, '');
+      flow = flow.replace(/letterbox,?\s*/gi, '');
+      
+      // 중복 정리
+      flow = flow.replace(/(ALL DIALOGUE IN KOREAN[^.]*\.\s*NO English voice[^.]*\.\s*NO foreign accent\.\s*){2,}/g, 'ALL DIALOGUE IN KOREAN spoken by native Korean voice actors. NO English voice. NO foreign accent. ');
+      flow = flow.replace(/(NO background music[^.]*\.\s*){2,}/g, 'NO background music, NO BGM, NO soundtrack. ');
+      
+      s.prompts.prompt_flow = flow;
+      console.log('[Movie] Audio/Style 자동 보강 완료');
     }
 
     s._generating=false;
@@ -2529,7 +2576,7 @@ function updateScenePrompt(idx, kind, value){
 }
 
 // Flow 확장(이어만들기) 버튼용 템플릿 자동 생성 + 복사
-function copyExtensionTemplate(idx, btn){
+async function copyExtensionTemplate(idx, btn){
   const scene = S.scenes && S.scenes[idx];
   if(!scene){alert('Scene 정보 없음');return}
 
@@ -2537,40 +2584,63 @@ function copyExtensionTemplate(idx, btn){
   const protagonist = S.movieMeta?.protagonist || {};
   const supporting = S.movieMeta?.supporting || [];
 
-  // 등장인물 정보 영문화
-  const charLines = [];
-  // 주인공
-  if(protagonist.name){
-    charLines.push(`the SAME ${protagonist.desc||'main character'}`);
-  }
-  // 조연
-  supporting.forEach(sp=>{
-    if(sp.name) charLines.push(`the SAME ${sp.desc||sp.name}`);
-  });
+  const origText = btn.textContent;
+  btn.textContent = '⏳ 영문 번역 중...';
+  btn.disabled = true;
 
-  // 대사가 있으면 화자별로
-  let dialogText = '';
-  if(dialogues.length > 0){
-    const lines = dialogues.map(d=>{
-      const speakerInfo = d.speaker===protagonist.name 
-        ? `the SAME ${protagonist.desc||'protagonist'}`
-        : (supporting.find(s=>s.name===d.speaker) 
-            ? `the SAME ${supporting.find(s=>s.name===d.speaker).desc}`
-            : d.speaker);
-      return `${speakerInfo} says in Korean: "${d.line}"`;
-    }).join('. Then ');
-    dialogText = `\n\nDialogue: ${lines}.`;
-  }
+  try {
+    // 등장인물 한국어 묘사 모음
+    const charKR = [];
+    if(protagonist.name) charKR.push(`${protagonist.name}: ${protagonist.desc||''}`);
+    supporting.forEach(sp=>{ if(sp.name) charKR.push(`${sp.name}: ${sp.desc||''}`); });
 
-  const template = `Continue the scene with ${charLines.join(' and ')}. Keep the EXACT same characters from the previous video — same gender, same age, same outfit, same face, same position. The action continues naturally.${dialogText}\n\nAudio: Korean dialogue spoken by native Korean voice actors. ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent.`;
+    // 대사 한국어 라인 모음 (대사 자체는 한국어 유지, 화자만 영문화)
+    const dialogKR = dialogues.map(d=>`${d.speaker}: "${d.line}"`).join('\n');
 
-  navigator.clipboard.writeText(template).then(()=>{
-    const orig = btn.textContent;
+    // AI에게 영문 변환 요청
+    const translateSys = `You are a professional film prompt translator. Convert Korean character descriptions and scene info into natural cinematic English suitable for Veo/Flow video AI prompts.
+
+Rules:
+- Keep dialogue in Korean (inside quotes), but describe everything else in English
+- Use cinematic, vivid descriptions
+- For character descriptions: focus on age, gender, appearance, outfit, hair
+- Output ONLY the English prompt, no explanation, no preamble
+- Keep it concise but specific
+- Use phrases like "the SAME [character description]" to enforce consistency`;
+
+    const translateUser = `Convert this scene info into a Flow extension prompt. The previous video already exists, this is to CONTINUE that video with the same characters.
+
+[Characters in Korean]:
+${charKR.join('\n')}
+
+[Dialogue (KEEP IN KOREAN)]:
+${dialogKR || '(no dialogue)'}
+
+Output format (English description + Korean dialogue, all on natural lines):
+Continue the scene with the SAME [translated char1] and the SAME [translated char2]. Keep the EXACT same characters from the previous video — same gender, same age, same outfit, same face, same position. The action continues naturally.
+
+Dialogue: the SAME [character description] says in Korean: "[KEEP KOREAN DIALOGUE AS IS]". [Add more dialogue lines if any]
+
+Audio: Korean dialogue spoken by native Korean voice actors. ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent.
+
+Output only the prompt, nothing else.`;
+
+    const translated = await callAI(translateSys, translateUser, 800);
+    const finalPrompt = (translated || '').trim();
+
+    if(!finalPrompt) throw new Error('빈 응답');
+
+    await navigator.clipboard.writeText(finalPrompt);
     btn.textContent = '✅ 복사됨! Flow 확장창에 붙여넣으세요';
-    setTimeout(()=>{btn.textContent=orig},2500);
-  }).catch(()=>{
-    alert('복사 실패 — 직접 복사해주세요:\n\n'+template);
-  });
+    btn.disabled = false;
+    setTimeout(()=>{btn.textContent=origText},3000);
+  } catch(e){
+    console.error('확장 템플릿 생성 실패:', e);
+    btn.textContent = '❌ 실패 — 다시 시도';
+    btn.disabled = false;
+    setTimeout(()=>{btn.textContent=origText},2000);
+    alert('영문 변환 실패: '+e.message+'\n\nAPI 키 확인 후 다시 시도해주세요.');
+  }
 }
 // ═══════ SRT 자막 생성 ═══════
 function formatSRTTime(seconds){
