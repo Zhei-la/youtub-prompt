@@ -111,7 +111,7 @@ body.dark .scene-card.has-prompts .scene-cta{background:#064e3b;color:#6ee7b7}
 <div class="topbar">
   <div>
     <div class="title">🎬 AI 영화 프롬프트 생성기</div>
-    <div class="subtitle">7초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.5</span></div>
+    <div class="subtitle">7초 Scene 단위 · 이어쓰기 · Flow/Veo 프롬프트 + SRT 자막 <span style="background:#10b981;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;margin-left:4px;">v4.8 🎤 화자락</span></div>
   </div>
   <button class="dark-toggle" id="darkToggle" onclick="toggleDark()">🌙</button>
 </div>
@@ -1754,6 +1754,23 @@ async function generateScenePrompts(idx){
 - 배경 환경음(발자음/엔진/바람 등)에도 영어 단어 들어가도 됨, 하지만 대사와 voice는 무조건 Korean
 - Audio 섹션 끝에 반드시 추가: "ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent."
 
+🎤🎤🎤 절대 고정 규칙 — 화자 명시 LOCK 🎤🎤🎤
+대사가 있으면 무조건 **누가 말하는지** 명시한다.
+- Audio 섹션 형식 필수: 'The [male/female] [character role like "cafe owner in his 30s"] says in Korean: "대사"'
+- Action 섹션 필수: 누가 누구에게 말하는지 명시 (예: "the male cafe owner approaches the female customer at the window seat and speaks to her")
+- 화자가 남자면 영상에서 입 움직이는 사람도 남자
+- 화자가 여자면 영상에서 입 움직이는 사람도 여자
+- 두 캐릭터가 있으면 절대 헷갈리지 않게 — 성별, 나이, 위치, 외형 모두 명확히 구분
+- "she says" / "he says" / "the male owner says" / "the female customer says" 등 명시적 사용
+
+🔒🔒🔒 절대 고정 규칙 — 캐릭터 일관성 LOCK 🔒🔒🔒
+- 주인공이 남자면 끝까지 남자, 여자면 끝까지 여자 (성별 변경 절대 금지)
+- 입력으로 받은 character_desc 그대로 100% 유지
+- Subject 섹션에서 **모든 등장인물 외형 명시** (1명이면 1명, 2명이면 2명 모두)
+- Action 섹션에서 **누가 무엇을 하는지** 캐릭터 구분 명확히
+- 같은 Scene 안에서 캐릭터가 갑자기 바뀌거나 성별이 바뀌면 안 됨
+- 확장 영상(이어쓰기)에서도 시작 캐릭터 그대로 유지
+
 ⏱️ 프롬프트는 정확히 7초 분량.
 🎨 비주얼 스타일 (절대 준수 — 프롬프트에 강제 적용):
 ${styleGuide}
@@ -2100,18 +2117,53 @@ Duration: 7 seconds"
 5. 줄바꿈은 \\n, 실제 줄바꿈 금지
 6. trailing comma 금지`;
 
+    const dialogueArr = s.dialogue||[];
+    const protagonistName = S.movieMeta?.protagonist?.name||'';
+    const protagonistDesc = S.movieMeta?.protagonist?.desc||'';
+    const supportingList = S.movieMeta?.supporting||[];
+    
+    // 화자별 정보 매핑
+    const speakerLines = dialogueArr.map(d=>{
+      let speakerInfo = d.speaker;
+      // 화자가 주인공이면 묘사 추가
+      if(d.speaker === protagonistName) speakerInfo = `${d.speaker} (주인공: ${protagonistDesc})`;
+      else {
+        // 조연 중에서 매칭
+        const sup = supportingList.find(sp=>sp.name===d.speaker);
+        if(sup) speakerInfo = `${d.speaker} (조연: ${sup.desc})`;
+      }
+      return `${speakerInfo} → "${d.line}"`;
+    }).join('\n  ');
+
     const user=`[영화 컨텍스트]
 제목: ${S.movieMeta?.title||''}
 세계관: ${S.movieMeta?.world||''}
-주인공: ${S.movieMeta?.protagonist?.name||''} — ${S.movieMeta?.protagonist?.desc||''}
-${S.movieMeta?.supporting?.length?'조연: '+S.movieMeta.supporting.map(sp=>sp.name+' ('+sp.desc+')').join(', '):''}
+주인공: ${protagonistName} — ${protagonistDesc}
+${supportingList.length?'조연: '+supportingList.map(sp=>sp.name+' ('+sp.desc+')').join(', '):''}
 비주얼 톤: ${S.movieMeta?.visual_style||''}
 
 [이번 Scene ${s.num} (7초)]
 위치: ${s.location}
 사건: ${s.event}
 감정: ${s.emotion}
-대사: ${(s.dialogue||[]).map(d=>d.speaker+':"'+d.line+'"').join(' / ')}
+
+🎤🎤🎤 대사 + 화자 (절대 정확히 매칭) 🎤🎤🎤
+${dialogueArr.length>0 ? speakerLines : '(대사 없음)'}
+
+⚠️ 위 화자 정보를 Action/Audio 섹션에 정확히 반영:
+- Action에서 누가 누구에게 말하는지 명시 (예: "the male cafe owner [protagonist desc] speaks to the young woman customer")
+- Audio에서도 화자 명시: "[Speaker name/role] says in Korean: '대사'"
+- 한 Scene에 여러 캐릭터가 있을 경우 절대 헷갈리지 않게 — 성별/나이/외형으로 명확히 구분
+
+🔒🔒🔒 캐릭터 일관성 절대 락 🔒🔒🔒
+- 주인공이 남자면 끝까지 남자 (성별 변경 절대 금지)
+- 주인공이 여자면 끝까지 여자
+- 조연도 마찬가지
+- 화자가 남자면 영상에서도 남자가 말하는 모습 (입 움직임, 목소리)
+- 화자가 여자면 영상에서도 여자가 말하는 모습
+- Subject 섹션에 모든 등장인물 외형 명시 (성별/나이/체형/머리/옷)
+- Action 섹션에서 누가 어떤 동작을 하는지 명확히 ("the male owner does X", "the female customer does Y")
+
 ${s.narration?'내레이션: '+s.narration:''}
 시각 묘사: ${s.visual_description||''}
 ${s.character_desc?'👤 인물 묘사 (이 묘사를 Subject 섹션에 100% 그대로 반영! 다른 묘사 추가 금지): '+s.character_desc:''}
@@ -2331,8 +2383,8 @@ function showSceneModal(s,idx){
           '<span style="font-size:12px;font-weight:900;color:#3730a3;">🖼️ 이미지 프롬프트 (Flow Ingredients용 스틸컷)</span>'+
           '<button class="copy-btn" style="position:static;background:#3730a3;color:#fff;" onclick="copyText(this,\'mimage\')">📋 복사</button>'+
         '</div>'+
-        '<textarea id="mimage" oninput="updateScenePrompt('+idx+',\'image\',this.value)" style="width:100%;min-height:140px;background:#eef2ff;color:#3730a3;font-size:11px;padding:10px;border:1px solid #c7d2fe;border-radius:6px;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box;">'+escapeHtml(imageText)+'</textarea>'+
-        '<div style="font-size:10px;color:#3730a3;margin-top:6px;">✏️ 직접 수정 가능 — 수정 후 [📋 복사] 누르면 수정된 내용 복사됩니다</div>'+
+        '<div style="background:#fef3c7;border:1px dashed #f59e0b;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#78350f;font-weight:700;">✏️ 아래 박스 직접 클릭해서 수정 가능! 수정 후 [📋 복사] 누르면 수정된 내용 복사됩니다</div>'+
+        '<textarea id="mimage" oninput="updateScenePrompt('+idx+',\'image\',this.value)" style="width:100%;min-height:140px;background:#fff;color:#3730a3;font-size:12px;padding:10px;border:2px solid #6366f1;border-radius:6px;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box;outline:none;">'+escapeHtml(imageText)+'</textarea>'+
       '</div>';
     }
 
@@ -2343,8 +2395,17 @@ function showSceneModal(s,idx){
           '<span style="font-size:12px;font-weight:900;color:#065f46;">🎥 Flow/Veo 영상 프롬프트 · 7초 (Multi-Cut)</span>'+
           '<button class="copy-btn" style="position:static;background:#065f46;color:#fff;" onclick="copyText(this,\'mflow\')">📋 복사</button>'+
         '</div>'+
-        '<textarea id="mflow" oninput="updateScenePrompt('+idx+',\'flow\',this.value)" style="width:100%;min-height:240px;background:#f0fdf4;color:#065f46;font-size:11px;padding:10px;border:1px solid #86efac;border-radius:6px;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box;">'+escapeHtml(flowText)+'</textarea>'+
-        '<div style="font-size:10px;color:#065f46;margin-top:6px;">✏️ 직접 수정 가능 — 대사 추가/감정 변경/디테일 추가 가능! [0-2s], [2-5s], [5-7s] 시간 마커가 컷 전환 만들어요</div>'+
+        '<div style="background:#fef3c7;border:1px dashed #f59e0b;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:11px;color:#78350f;font-weight:700;">✏️ 아래 박스 직접 수정 가능! 대사 추가/감정 변경/디테일 자유롭게 수정 → [📋 복사]로 수정된 내용 그대로 복사</div>'+
+        '<textarea id="mflow" oninput="updateScenePrompt('+idx+',\'flow\',this.value)" style="width:100%;min-height:280px;background:#fff;color:#065f46;font-size:12px;padding:10px;border:2px solid #10b981;border-radius:6px;font-family:inherit;line-height:1.5;resize:vertical;box-sizing:border-box;outline:none;">'+escapeHtml(flowText)+'</textarea>'+
+        '<div style="font-size:10px;color:#065f46;margin-top:6px;">💡 [0-2s], [2-5s], [5-7s] 시간 마커가 컷 전환 만들어요. Audio 섹션에 대사 추가하려면 따옴표로 감싸기: "안녕하세요"</div>'+
+        '<div style="background:#fee2e2;border:2px solid #ef4444;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:#7f1d1d;line-height:1.6;">'+
+          '<div style="font-weight:900;color:#991b1b;margin-bottom:4px;">🎬 Flow 확장(이어만들기) 사용 시 일관성 유지법</div>'+
+          '1. Flow에서 7초 영상 만든 뒤 [확장] 버튼 누를 때<br>'+
+          '2. 확장 프롬프트 박스에 <b>화자 + 캐릭터 외형</b>을 다시 명시!<br>'+
+          '<span style="background:#fff;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:10px;">예: "Continue with the SAME male cafe owner in his 30s wearing a navy apron — he says in Korean: \'다음 대사\'"</span><br>'+
+          '3. 확장 시 화자가 안 바뀌도록 <b>"the SAME [성별] [역할]"</b> 키워드 필수!<br>'+
+          '4. 대사가 있으면 무조건 누가 말하는지 (he/she/the male owner/the female customer 등) 명시'+
+        '</div>'+
       '</div>';
     }
 
