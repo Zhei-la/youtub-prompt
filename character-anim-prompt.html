@@ -616,6 +616,7 @@ async function callChat({ system, user, image, max_tokens=900, temperature=0.8 }
   if (!state.apiKey) throw new Error('API 키를 입력해야 합니다.');
   const payload = { apiKey: state.apiKey, system, user, max_tokens, temperature };
   if (image) { payload.image = image; payload.vision = true; payload.model = 'gpt-4o'; }
+  console.log('[callChat] payload (image len:', image ? image.length : 0, ')');
   const res = await fetch(`${PROXY_URL}/openai/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -623,11 +624,18 @@ async function callChat({ system, user, image, max_tokens=900, temperature=0.8 }
   });
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(`API 실패 (${res.status}): ${txt.slice(0,200)}`);
+    console.error('[callChat] HTTP 에러:', res.status, txt);
+    throw new Error(`API 실패 (${res.status}): ${txt.slice(0,300)}`);
   }
   const data = await res.json();
+  console.log('[callChat] 응답 keys:', Object.keys(data));
+  // 모든 가능한 응답 형태 fallback
   if (data.content) return data.content;
-  if (data.choices && data.choices[0]) return data.choices[0].message.content;
+  if (data.text) return data.text;
+  if (data.choices && data.choices[0] && data.choices[0].message) return data.choices[0].message.content;
+  if (data.message) return data.message;
+  if (data.error) throw new Error('서버 에러: ' + data.error);
+  console.warn('[callChat] 알 수 없는 응답 형태:', data);
   return JSON.stringify(data);
 }
 
@@ -729,21 +737,58 @@ analyzeBtn.addEventListener('click', async () => {
   if (!state.apiKey) { toast('API 키 먼저'); return; }
   setBtnLoading(analyzeBtn, true, '분석중');
   try {
-    const system = `You are an expert character analyst for a Pixar-style 3D animation series. Describe the MAIN human character from the uploaded image in precise English.
-Output STRICT JSON only:
+    const system = `You are an expert character analyst for Pixar-style 3D animation. The uploaded image may be a SINGLE PORTRAIT or a CHARACTER REFERENCE SHEET (multiple poses, angles, or expressions of the SAME ONE character).
+
+If it's a reference sheet: treat it as ONE character shown from multiple angles. Describe THAT one character.
+If it's a single portrait: describe that one person.
+
+Be very specific and detailed. NEVER respond with empty fields. If something is unclear, make a reasonable guess based on what's visible.
+
+Output STRICT JSON only (no markdown, no code fences):
 {
-  "character": "<detailed: age estimate, gender, body type, hair, clothing style, distinctive features>",
-  "personality_hint": "<visual personality cue>",
-  "outfit": "<clothing summary>"
+  "character": "<MUST be filled: age estimate, gender, body type, hair color/style, face shape, distinctive features>",
+  "outfit": "<MUST be filled: top, bottom, accessories, color palette, style genre>",
+  "personality_hint": "<MUST be filled: vibe/mood you get from the visual — e.g. 'confident introvert with creative energy'>"
 }`;
-    const raw = await callChat({ system, user: 'Analyze this character.', image: state.charImage, max_tokens: 500, temperature: 0.4 });
+    const raw = await callChat({ system, user: 'Analyze this character image and return JSON.', image: state.charImage, max_tokens: 700, temperature: 0.5 });
+
+    // 디버그: 콘솔에 raw 응답 찍기
+    console.log('[AI 분석] raw 응답:', raw);
+
     const parsed = extractJSON(raw);
-    if (!parsed) throw new Error('파싱 실패');
-    const desc = `CHARACTER: ${parsed.character}\nOUTFIT: ${parsed.outfit || ''}\nPERSONALITY HINT: ${parsed.personality_hint || ''}`;
-    charImgDescEl.value = desc;
-    state.charImageDesc = desc;
-    toast('분석 완료 ✅');
-  } catch (err) { toast('❌ ' + err.message); }
+    console.log('[AI 분석] parsed:', parsed);
+
+    // 1) 파싱 성공한 경우 — 여러 키 이름 fallback
+    if (parsed && typeof parsed === 'object') {
+      const character = parsed.character || parsed.appearance || parsed.description || parsed.summary || parsed.main_character || '';
+      const outfit = parsed.outfit || parsed.clothing || parsed.attire || parsed.wear || '';
+      const personality = parsed.personality_hint || parsed.personality || parsed.vibe || parsed.mood || parsed.hint || '';
+
+      if (character) {
+        const desc = `CHARACTER: ${character}\nOUTFIT: ${outfit}\nPERSONALITY HINT: ${personality}`;
+        charImgDescEl.value = desc;
+        state.charImageDesc = desc;
+        toast('분석 완료 ✅');
+        return;
+      }
+    }
+
+    // 2) JSON 파싱 실패 또는 character 키가 비어있는 경우 — raw 응답을 그대로 사용
+    if (raw && raw.trim()) {
+      const cleanRaw = raw.replace(/```json|```/g, '').trim();
+      const desc = `CHARACTER: ${cleanRaw}\nOUTFIT: (분석 결과에서 추출 안 됨 — 위 설명에 포함됨)\nPERSONALITY HINT: (분석 결과에서 추출 안 됨)`;
+      charImgDescEl.value = desc;
+      state.charImageDesc = desc;
+      toast('⚠️ JSON 파싱 실패 — raw 텍스트로 표시됨 (수동 수정 추천)');
+      return;
+    }
+
+    // 3) 응답 자체가 비어있음
+    throw new Error('AI 응답이 비어있음 — F12 콘솔 확인');
+  } catch (err) {
+    console.error('[AI 분석] 에러:', err);
+    toast('❌ ' + err.message);
+  }
   finally { setBtnLoading(analyzeBtn, false); }
 });
 
