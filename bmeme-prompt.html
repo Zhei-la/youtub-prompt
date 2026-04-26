@@ -1494,6 +1494,45 @@ async function aiGenObjForCat(){
 }
 
 // Backward compat (기존 코드 호출 안 깨지도록)
+// ═══ 영어 대본 어색함 체크 ═══
+function looksAwkwardEnglishDialogue(text){
+  const badPatterns = [
+    /\blowkey\b/i,
+    /\bbestie\b/i,
+    /\bslay\b/i,
+    /\bvibes\b/i,
+    /\bin me\b/i,
+    /\binside me\b/i,
+    /please use/i,
+    /incorrect behavior/i,
+    /\brecommended\b/i
+  ];
+  const words = String(text||'').split(/\s+/).filter(Boolean);
+  if(words.length > 25) return true;
+  if(words.length < 8) return true;  // 너무 짧으면 5초 못 채움
+  return badPatterns.some(re => re.test(text));
+}
+// ═══ 중국어 대본 어색함 체크 ═══
+function looksAwkwardChineseDialogue(text){
+  const badPatterns = [
+    /宝子/g,
+    /家人们/g,
+    /绝绝子/gi,
+    /yyds/gi,
+    /种草/g,
+    /我肚子里/g,
+    /扔我里边/g,
+    /扔我里面/g,
+    /请正确使用/g,
+    /推荐使用/g,
+    /三秒钟/g
+  ];
+  const compact = String(text||'').replace(/[\s\n\r]/g,'');
+  if(compact.length > 32) return true;
+  if(compact.length < 12) return true;  // 너무 짧으면 5초 못 채움
+  return badPatterns.some(re => re.test(text));
+}
+
 async function aiRandomObjGroup(groupKey){
   if(groupKey){ S.cat = groupKey; }
   await aiGenObjForCat();
@@ -1724,7 +1763,7 @@ async function genDialogue(regen){
   // 최종 시스템 프롬프트
   // ═════════════════════════════════════════════════
   const systemPrompt = (S.country==='us')
-    ? `You are a top-tier short-form video scriptwriter for US TikTok/Instagram Reels/YouTube Shorts that hit millions of views, specializing in "talking object" content with humor.
+    ? `You are a top-tier short-form video scriptwriter for US TikTok/Instagram Reels/YouTube Shorts. You write SHORT, PUNCHY, NATURAL English lines that native speakers instantly understand and laugh at.
 
 【Reference scripts】
 ${refs}
@@ -1733,21 +1772,39 @@ ${refs}
 ${structureKR}
 
 【Voice】${styleTone}
-American everyday life — apartment, work-from-home, Gen Z/millennial casual humor. Use natural casual American English with mild slang (lowkey, ngl, the way, hits different — but don't force it).
 
-🎯 RULES:
-- Natural American English ONLY, casual conversational tone
-- Short punchy sentences for short-form pacing
-- Use contractions (don't, you're, gonna)
-- ❌ NO formal/textbook English
-- ❌ NO Korean/Japanese phrases
-- ❌ NO awkward translations
+🎯 STRICT RULES:
+- 7-second video → 1-2 sentences that fill 5-7 seconds when spoken
+- Total 12-20 English words (target ~15 words for 5-7s natural speech). Each sentence 6-12 words.
+- Short and punchy, casual but natural, slightly sarcastic
+- Like an object briefly scolding/nagging a person
+- Easy to understand INSTANTLY by any native speaker
+- Use natural contractions (you're, don't, I'm, gonna)
+- NO formal/textbook English
 
-✅ Tone examples: "Bestie no 💀 you literally cannot do that", "Not me getting roasted by my microwave"
+❌ ABSOLUTELY FORBIDDEN:
+- "lowkey", "bestie", "slay", "vibes" — sounds like AI-generated slang
+- "in me", "inside me" — weird object POV phrasing
+- "please use", "incorrect behavior", "recommended" — too formal
+- Long explanations, AI-sounding phrases
+- Forced Gen Z slang
+- Awkward literal translations from Korean
 
-【Output】 American English script body ONLY, first person, info-dense or super relatable.`
+✅ GOOD examples (THIS is the target tone):
+- Washing machine + zippers: "Zip those zippers first! They're scratching everything in here."
+- Microwave + plastic wrap: "Crack the wrap open first! Steam builds up fast in there."
+- Fridge + door open: "Close the door already! You're letting all the cold air out."
+- Sink + food scraps: "Don't leave food scraps in here! That smell is not my fault."
+
+❌ BAD examples (DO NOT do this):
+- "Yo, toss your clothes in me." → weird object POV
+- "Lowkey shredding your stuff inside." → forced slang
+- "Please use the appliance properly." → too formal
+- "Bestie, this is not giving clean vibes." → AI-generated slang
+
+【Output】 English script body ONLY. 1-2 sentences MAX. Short. Punchy. Native-sounding. First person, like nagging.`
   : (S.country==='cn')
-    ? `你是一位顶级中国短视频(抖音/小红书/B站)编剧,专门写"物品说话"主题的爆款短视频脚本(百万播放量)。
+    ? `你是一位顶级中国短视频(抖音/小红书/B站)编剧,专门写"物品说话"主题的爆款短视频脚本。台词要像母语者随口说出的话 — 短、有节奏、自然。
 
 【参考案例】
 ${refs}
@@ -1756,18 +1813,37 @@ ${refs}
 ${structureKR}
 
 【语气】${styleTone}
-中国年轻人日常生活背景 —— 出租屋、996、外卖、小红书。使用自然的中文口语和适度网络用语(绝绝子、家人们、宝子们等,自然就好不要刻意)。
 
-🎯 规则:
-- 必须使用自然的中国大陆口语中文(简体字)
-- 短句、节奏感、短视频感
-- ❌ 禁止书面语/官腔
+🎯 严格规则(最重要):
+- 7秒视频 → 1~2句,说出来要占满 5-7 秒
+- 总共 16-26 个汉字(目标约 20 字)
+- 每句 8-14 字
+- 短促有力、自然口语、略带嫌弃/吐槽
+- 像物品对人简短地训一句 — 不要太短也不要长篇解释
+- 母语者听一秒就懂的日常中文
+- ❌ 禁止书面语/官腔("您应该"、"建议您使用")
 - ❌ 禁止韩语/日语词汇混入
-- ❌ 禁止生硬翻译
 
-✅ 语气示例: "家人们这个真的不能这样啊!", "宝子,你这样真的没救了"
+❌ 绝对禁止使用以下表达(听起来像AI/直播带货/直译):
+- "宝子"、"家人们" → 直播带货式AI语气
+- "绝绝子"、"yyds"、"种草" → 强行网络流行语
+- "我肚子里"、"扔我里边" → 过度拟人化
+- "三秒钟" → 韩语直译风
+- "请正确使用"、"推荐使用" → 太书面
 
-【输出】 仅输出中文脚本正文,第一人称,信息密度或共鸣感要足够。`
+✅ 好的语气示例(就是这种感觉):
+- 洗衣机+拉链: "喂,拉链先拉上!别把衣服都刮坏了。"
+- 微波炉+保鲜膜: "保鲜膜留个口!不然蒸汽会顶爆出来。"
+- 冰箱+没关门: "门快关上!冷气都跑光了你知道吗。"
+- 充电器+过充: "电都满了还不拔?电池都被你搞累了。"
+
+❌ 不好的示例:
+- "宝子,扔我里边?" → 直播带货+怪拟人
+- "家人们这个真的不行" → 推销口吻
+- "我肚子里都坏了" → 过度拟人化
+- "请正确使用" → 像说明书
+
+【输出】仅输出中文脚本正文,第一人称简短,1~2句,16-26字,刚好填满 5-7 秒。`
   : (S.country==='jp')
     ? `あなたは日本のTikTok/Instagram Reels/YouTube Shorts で再生数100万超を連発する「物が話す」ショート動画の専門台本作家だ。
 
@@ -1842,11 +1918,60 @@ Write a first-person script of this object talking about "${S.sitAI||S.sit}", at
 
   try {
     console.log('[genDialogue] callAI 호출 직전');
-    const txt=await callAI(systemPrompt, userPrompt);
+    let txt=await callAI(systemPrompt, userPrompt);
     console.log('[genDialogue] callAI 성공, 길이:', txt.length);
     if(!txt || txt.trim().length===0){
       throw new Error('AI가 빈 응답을 반환함. API 키 또는 쿼터 확인.');
     }
+
+    // 🔁 영어 대본이 어색하거나 너무 길면 한 번만 재작성
+    if(S.country==='us' && looksAwkwardEnglishDialogue(txt)){
+      console.log('[genDialogue] 영어 대본 어색 — 자연스러운 숏폼 톤으로 재작성');
+      try {
+        const rewriteSys = `Rewrite this as natural short-form American English. Keep it casual, punchy, and easy to understand.
+
+🎯 RULES:
+- 1-2 sentences that fill 5-7 seconds when spoken (12-20 words total, target ~15 words)
+- Each sentence 6-12 words
+- Sound like an object briefly scolding/nagging someone
+- Use contractions (you're, don't, I'm, gonna)
+- Slightly sarcastic but not too aggressive
+
+❌ FORBIDDEN: lowkey, bestie, slay, vibes, "in me", "inside me", "please use", "recommended", "incorrect behavior"
+❌ NO forced Gen Z slang, NO formal/textbook English, NO long explanations
+
+✅ Target tone:
+- "Zip those zippers first! They're scratching everything in here."
+- "Close the door already! You're letting all the cold air out."
+- "Unplug me already! Your battery's been full for hours."
+
+Output the rewritten script ONLY.`;
+        const rewritten = await callAI(rewriteSys, 'Original script:\n"""\n'+txt.trim()+'\n"""\n\nRewrite as natural short, punchy American English (1-2 sentences max). Output script only.');
+        if(rewritten && rewritten.trim().length > 0){
+          txt = rewritten.trim();
+          console.log('[genDialogue] 영어 재작성 완료');
+        }
+      } catch(e){
+        console.warn('[genDialogue] 영어 재작성 실패, 원본 사용:', e);
+      }
+    }
+
+    // 🔁 중국어 대본이 어색하거나 길이 부적절하면 한 번만 재작성
+    if(S.country==='cn' && looksAwkwardChineseDialogue(txt)){
+      console.log('[genDialogue] 중국어 대본 어색 — 재작성');
+      try {
+        const rewriteSysCN = '重写为自然的短视频中文。\n\n🎯 规则:\n- 1~2句,说出来要占满 5-7 秒(总共 16-26 个汉字,目标约 20 字)\n- 每句 8-14 字\n- 像物品对人简短训一句,略带嫌弃/吐槽\n- 自然口语,母语者听一秒就懂\n- 略带讽刺但不要太攻击\n\n❌ 禁止: 宝子、家人们、绝绝子、yyds、种草、我肚子里、扔我里边、请正确使用、推荐使用、三秒钟\n❌ 禁止: 强行网络流行语、直播带货口吻、过度拟人化、韩语直译\n\n✅ 目标语气示例:\n- "喂,拉链先拉上!别把衣服都刮坏了。"\n- "门快关上!冷气都跑光了你知道吗。"\n- "电都满了还不拔?电池都被你搞累了。"\n\n只输出重写后的脚本正文,不要任何前言或注释。';
+        const rewriteUserCN = '原始脚本:\n"""\n'+txt.trim()+'\n"""\n\n重写为自然简短的中文(1~2句,16-26字)。仅输出脚本。';
+        const rewrittenCN = await callAI(rewriteSysCN, rewriteUserCN);
+        if(rewrittenCN && rewrittenCN.trim().length > 0){
+          txt = rewrittenCN.trim();
+          console.log('[genDialogue] 중국어 재작성 완료');
+        }
+      } catch(e){
+        console.warn('[genDialogue] 중국어 재작성 실패, 원본 사용:', e);
+      }
+    }
+
     document.getElementById('dialogue').value=txt.trim();
     document.getElementById('dialogue').placeholder='주제 선택 후 AI 대본 생성 클릭';
     usedScripts.push(txt.trim());
