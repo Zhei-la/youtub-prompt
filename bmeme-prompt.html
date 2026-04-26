@@ -247,6 +247,8 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="chips country-toggle" id="countryChips">
     <div class="chip active" data-val="kr" onclick="selCountry(this)">🇰🇷 한국</div>
     <div class="chip" data-val="jp" onclick="selCountry(this)">🇯🇵 일본</div>
+    <div class="chip" data-val="us" onclick="selCountry(this)">🇺🇸 미국</div>
+    <div class="chip" data-val="cn" onclick="selCountry(this)">🇨🇳 중국</div>
   </div>
 </div>
 
@@ -403,6 +405,10 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       <button class="btn-sm" onclick="regenDialogue()">🔄 다시 생성</button>
     </div>
     <textarea id="dialogue" placeholder="여기에 대본이 생성됩니다. 직접 수정도 가능해요."></textarea>
+    <div id="dialogueTransBox" style="display:none;margin-top:10px;padding:10px 12px;background:var(--card-soft);border-radius:8px;border-left:3px solid var(--accent);font-size:12px;color:var(--sub);line-height:1.6;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">🇰🇷 한국어 뜻 (참고용)</div>
+      <div id="dialogueTransText" style="color:var(--text);"></div>
+    </div>
     <div class="dialogue-note">💡 꿀팁 컨셉은 [문제 지적 → 경고 → 해결책] 구조로, 민폐 컨셉은 [공감 상황 → 훈계] 구조로 생성됩니다.</div>
 
     <div class="sec-label" style="margin-top:14px;">🎙️ 목소리 톤</div>
@@ -1325,7 +1331,7 @@ function selObj(kr,en,jp){
 function buildSituations(){
   const wrap=document.getElementById('sitChips');
   wrap.innerHTML='';
-  const sitDB=SITUATIONS[S.concept][S.country];
+  const sitDB=SITUATIONS[S.concept][S.country] || SITUATIONS[S.concept]['kr'];
   const list=sitDB[S.obj]||sitDB['🎙️ 기본']||[];
   if(list.length===0){
     wrap.innerHTML='<div style="font-size:12px;color:var(--muted);padding:10px;">직접 입력하거나 🎲 AI 생성을 눌러주세요.</div>';
@@ -1717,7 +1723,52 @@ async function genDialogue(regen){
   // ═════════════════════════════════════════════════
   // 최종 시스템 프롬프트
   // ═════════════════════════════════════════════════
-  const systemPrompt = isJP
+  const systemPrompt = (S.country==='us')
+    ? `You are a top-tier short-form video scriptwriter for US TikTok/Instagram Reels/YouTube Shorts that hit millions of views, specializing in "talking object" content with humor.
+
+【Reference scripts】
+${refs}
+
+【Structure】
+${structureKR}
+
+【Voice】${styleTone}
+American everyday life — apartment, work-from-home, Gen Z/millennial casual humor. Use natural casual American English with mild slang (lowkey, ngl, the way, hits different — but don't force it).
+
+🎯 RULES:
+- Natural American English ONLY, casual conversational tone
+- Short punchy sentences for short-form pacing
+- Use contractions (don't, you're, gonna)
+- ❌ NO formal/textbook English
+- ❌ NO Korean/Japanese phrases
+- ❌ NO awkward translations
+
+✅ Tone examples: "Bestie no 💀 you literally cannot do that", "Not me getting roasted by my microwave"
+
+【Output】 American English script body ONLY, first person, info-dense or super relatable.`
+  : (S.country==='cn')
+    ? `你是一位顶级中国短视频(抖音/小红书/B站)编剧,专门写"物品说话"主题的爆款短视频脚本(百万播放量)。
+
+【参考案例】
+${refs}
+
+【结构】
+${structureKR}
+
+【语气】${styleTone}
+中国年轻人日常生活背景 —— 出租屋、996、外卖、小红书。使用自然的中文口语和适度网络用语(绝绝子、家人们、宝子们等,自然就好不要刻意)。
+
+🎯 规则:
+- 必须使用自然的中国大陆口语中文(简体字)
+- 短句、节奏感、短视频感
+- ❌ 禁止书面语/官腔
+- ❌ 禁止韩语/日语词汇混入
+- ❌ 禁止生硬翻译
+
+✅ 语气示例: "家人们这个真的不能这样啊!", "宝子,你这样真的没救了"
+
+【输出】 仅输出中文脚本正文,第一人称,信息密度或共鸣感要足够。`
+  : (S.country==='jp')
     ? `あなたは日本のTikTok/Instagram Reels/YouTube Shorts で再生数100万超を連発する「物が話す」ショート動画の専門台本作家だ。
 
 【参考: 実際に視聴者が「保存!」「コメント!」する台本の例】
@@ -1761,7 +1812,21 @@ ${BAN_RULES_KR}
     ? '\n\n📖 이어쓰기 요청: 이전 사물이 이런 말을 했어:\n"'+bmemePrev.trim()+'"\n\n이 대사를 듣고 자연스럽게 반응/대꾸/말대답하는 대본을 써. 병맛 사물 대화 흐름이라는 걸 느낄 수 있게, 하지만 이번 사물의 성격으로. (예: 이전 사물이 "야 선풍기!" 라고 했으면, "헐 뭔데 왜 나한테 ㅋㅋ" 같은 대꾸로 시작)'
     : '';
 
-  const userPrompt = isJP
+  const userPrompt = (S.country==='us')
+    ? `Object: ${S.objEn||S.obj}
+Situation: ${S.sitAI||S.sit}
+Concept: ${isTip?'lifehack/warning (specific info)':'pet peeve/complaint (relatable)'}
+Length: 7 seconds
+
+Write a first-person script of this object talking about "${S.sitAI||S.sit}", at the level of the reference examples.${avoid}${continuationHint}`
+  : (S.country==='cn')
+    ? `物品: ${S.objEn||S.obj}
+情境: ${S.sitAI||S.sit}
+概念: ${isTip?'小技巧/警告':'吐槽/抱怨'}
+长度: 7秒
+
+为这个物品以第一人称说话,关于"${S.sitAI||S.sit}"这个情境,按上述参考案例水平写脚本。${avoid}${continuationHint}`
+  : (S.country==='jp')
     ? `物: ${S.objJp||S.objEn||S.obj}
 状況: ${S.sitAI||S.sit}
 コンセプト: ${isTip?'ライフハック/警告 (具体的な情報)':'愚痴/マナー指摘 (共感)'}
@@ -1786,6 +1851,28 @@ ${BAN_RULES_KR}
     document.getElementById('dialogue').placeholder='주제 선택 후 AI 대본 생성 클릭';
     usedScripts.push(txt.trim());
     if(usedScripts.length>10) usedScripts.shift();
+
+    // 🌐 외국어 모드 — 한국어 번역 미리보기
+    const transBox = document.getElementById('dialogueTransBox');
+    const transText = document.getElementById('dialogueTransText');
+    if(transBox && transText){
+      if(S.country !== 'kr'){
+        const langName = S.country==='jp'?'일본어':S.country==='us'?'영어':'중국어';
+        transBox.style.display='block';
+        transText.textContent='번역 중...';
+        try {
+          const transResult = await callAI(
+            '너는 ' + langName + ' 숏폼 영상 대본을 한국 쇼츠 시청자가 자연스럽게 들리는 한국어로 옮기는 번역가다. 설명 없이 번역 결과만 출력. 직역 X, 한국 쇼츠 반말 개그톤으로 자연스럽게 옮겨라.',
+            langName + ' 대본:\n'+txt.trim()+'\n\n한국 쇼츠 반말 개그톤으로 자연스럽게 번역.'
+          );
+          transText.textContent = (transResult||'').trim() || '(번역 실패)';
+        } catch(e){
+          transText.textContent='(번역 실패)';
+        }
+      } else {
+        transBox.style.display='none';
+      }
+    }
   } catch(e){
     console.error('[genDialogue] 에러:', e);
     document.getElementById('dialogue').placeholder='❌ 대본 생성 실패: '+e.message+' (F12 콘솔 확인)';
@@ -1953,8 +2040,17 @@ async function generate(){
   };
   const situ = getBmemeSituationalAction(S.obj, S.objEn);
   const isJP = S.country==='jp';
-  const spokenLang = isJP ? 'Japanese' : 'Korean';
-  const voiceLang = isJP ? 'Natural Japanese voice' : 'Natural Korean voice';
+  // 🌐 4-country language map
+  const langMap = {
+    kr: {name:'Korean', voice:'Natural Korean voice', native:'Native Korean speaker'},
+    jp: {name:'Japanese', voice:'Natural Japanese voice', native:'Native Japanese speaker'},
+    us: {name:'American English', voice:'Natural American English voice', native:'Native American English speaker'},
+    cn: {name:'Mandarin Chinese', voice:'Natural Mandarin Chinese voice', native:'Native Mandarin Chinese speaker'}
+  };
+  const lang = langMap[S.country] || langMap.kr;
+  const spokenLang = lang.name;
+  const voiceLang = lang.voice;
+  const isNonKR = S.country !== 'kr';
 
   // 🔍 일본어 모드 검증 — 대사에 한글 섞이면 에러
   if(isJP && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(scriptOriginal||'')){
@@ -1973,9 +2069,9 @@ async function generate(){
 'Scene 2 (3-7s):\n' +
 'The object reacts to the situation and says this ' + spokenLang + ' line EXACTLY as written (do not translate, do not paraphrase, keep the original ' + spokenLang + ' tone):\n' +
 '"' + scriptOriginal + '"\n' +
-(isJP
-  ? '⚠️ CRITICAL LANGUAGE LOCK: This is JAPANESE. Speak the Japanese dialogue exactly as written. Do NOT translate it into Korean. Do NOT mix Korean words. Do NOT use Korean pronunciation. The voice MUST be Japanese.\n'
-  : '⚠️ CRITICAL LANGUAGE LOCK: This is KOREAN. Speak the Korean dialogue exactly as written. Do NOT translate it into Japanese or English. The voice MUST be Korean.\n') +
+(isNonKR
+  ? '⚠️ CRITICAL LANGUAGE LOCK: This is ' + spokenLang.toUpperCase() + '. Speak the ' + spokenLang + ' dialogue exactly as written. Do NOT translate it into Korean or any other language. Do NOT mix other languages. The voice MUST be ' + spokenLang + '.\n'
+  : '⚠️ CRITICAL LANGUAGE LOCK: This is KOREAN. Speak the Korean dialogue exactly as written. Do NOT translate it into other languages. The voice MUST be Korean.\n') +
 (moodPerformEN ? 'Performance tone: ' + moodPerformEN + '\n\n' : '\n') +
 'Identity rules:\n' +
 '- Keep only ONE character identity.\n' +
@@ -1998,8 +2094,8 @@ async function generate(){
 'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
 situ.ambient + ', along with ' + scene.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
 'Audio:\n' +
-'- ' + voiceLang + '. ' + (isJP?'Native Japanese speaker':'Native Korean speaker') + ', natural and conversational.\n' +
-(isJP ? '- ABSOLUTELY NO Korean voice, NO Korean pronunciation, NO Korean accent. Pure Japanese only.\n' : '') +
+'- ' + voiceLang + '. ' + lang.native + ', natural and conversational.\n' +
+(isNonKR ? '- ABSOLUTELY NO Korean voice, NO Korean pronunciation, NO Korean accent. Pure ' + spokenLang + ' only.\n' : '') +
 '- Clear and dry sound. No echo, no reverb.\n' +
 '- No background music, no BGM, no soundtrack.\n' +
 '- No captions or text on screen.\n\n' +
