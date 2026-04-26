@@ -2142,35 +2142,142 @@ async function generate(){
   const functionMotion = fnMotion;
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
-  // 🪣 사물별 자연스러운 상황 + 환경 역동성
+  // 🪣 사물별 자연스러운 상황 + 풍부한 환경 역동성
+  // 핵심 철학: 정적인 talking object X, 상황과 환경이 살아있는 숏폼
   const getSituationalAction = (objKey, objEn) => {
     const lo = (objEn||'').toLowerCase();
     const ko = (objKey||'').toLowerCase();
-    if(lo.includes('sink')||lo.includes('faucet')||ko.includes('싱크')||ko.includes('수전'))
-      return {action:'water flowing into the basin, dishes being rinsed, water filling up', ambient:'water flow, droplets splashing, dishes shifting slightly, sponge moving'};
-    if(lo.includes('washing machine')||ko.includes('세탁기'))
-      return {action:'laundry being placed inside, door closing, drum starting to spin', ambient:'laundry tumbling, door motion, slight vibration, water motion'};
-    if(lo.includes('refrigerator')||lo.includes('fridge')||ko.includes('냉장고'))
-      return {action:'door opening, food being placed inside, cool mist drifting out', ambient:'door movement, interior light flicker, cold air feel, items shifting'};
-    if(lo.includes('microwave')||ko.includes('전자레인지'))
-      return {action:'a bowl placed inside, door closing, buttons pressed, light glowing', ambient:'button press, tray rotating, warm steam, indicator light blinking'};
-    if(lo.includes('toilet')||ko.includes('변기'))
-      return {action:'lid lifting, water flushing, splashing', ambient:'water swirling, lid motion, ripples'};
-    if(lo.includes('shower')||ko.includes('샤워'))
-      return {action:'water flowing down, steam rising', ambient:'water spray pattern, steam clouds, droplets, mirror fogging'};
-    if(lo.includes('vacuum')||ko.includes('청소기'))
-      return {action:'moving across floor sucking up dust', ambient:'dust particles flying, hose flexing, indicator light'};
-    if(lo.includes('rice cooker')||ko.includes('밥솥'))
-      return {action:'lid opening with steam rising, scoop being used', ambient:'steam billowing, condensation, indicator light'};
-    if(lo.includes('frying pan')||lo.includes('pan')||ko.includes('프라이팬'))
-      return {action:'food sizzling inside, oil splattering', ambient:'steam rising, oil splatter, food bubbling, spatula moving'};
-    if(lo.includes('trash')||ko.includes('쓰레기'))
-      return {action:'lid opening, items being thrown in', ambient:'lid bobbing, items settling, faint stink lines'};
+
+    // 에어컨 — 답답한 방에서 작동 시작
     if(lo.includes('air conditioner')||ko.includes('에어컨'))
-      return {action:'air visibly blowing out', ambient:'visible airflow, vent louvers moving, curtain drifting, indicator blinking'};
-    return {action:'a natural action matching the dialogue meaning', ambient:'subtle environmental motion, gentle ambient activity'};
+      return {
+        action:'a stuffy hot room scene, the air conditioner powers on with a soft beep, LED indicator lights up, vent louvers tilt and start swinging, cool visible airflow streams out',
+        ambient:'visible cool airflow streaming out, vent louvers oscillating up and down, curtain by the window drifting in the breeze, dust particles swirling in the cool air, LED display panel blinking softly, papers on a nearby desk fluttering slightly, cool mist effect spreading across the room'
+      };
+
+    // 선풍기
+    if(lo.includes('fan')||ko.includes('선풍기'))
+      return {
+        action:'the fan blades start spinning, head oscillating side to side, blowing visible airflow',
+        ambient:'fan blades blurring with rotation, visible air streams, hair/curtain/papers flapping in the wind, head turning rhythmically, base slight vibration'
+      };
+
+    // 싱크대
+    if(lo.includes('sink')||lo.includes('faucet')||ko.includes('싱크')||ko.includes('수전'))
+      return {
+        action:'the faucet turns on, water flows into the basin, dishes get rinsed under the running water',
+        ambient:'water flowing in steady stream, droplets splashing on dishes, water filling and swirling in the basin, sponge floating and shifting, soap suds bubbling, water reflections shimmering on the metal'
+      };
+
+    // 세탁기
+    if(lo.includes('washing machine')||ko.includes('세탁기'))
+      return {
+        action:'laundry placed inside, door closes with a soft click, drum starts spinning with water filling up',
+        ambient:'laundry tumbling visibly through the glass door, water filling and sloshing, soap bubbles forming, slight vibration of the body, control panel lights blinking, hose pulsing with water flow'
+      };
+
+    // 냉장고
+    if(lo.includes('refrigerator')||lo.includes('fridge')||ko.includes('냉장고'))
+      return {
+        action:'the fridge door opens, interior light turns on, cool mist drifts out, items visible inside on shelves',
+        ambient:'door swinging open, interior LED light glowing, cold mist billowing out, drink bottles slightly clinking on shelves, condensation droplets on cold surfaces, magnets on the door trembling slightly'
+      };
+
+    // 전자레인지
+    if(lo.includes('microwave')||ko.includes('전자레인지'))
+      return {
+        action:'a bowl placed inside, door closes, buttons beep as pressed, interior light glows, turntable starts rotating',
+        ambient:'turntable rotating slowly with food, interior light glowing yellow-orange, warm steam visible inside, control panel countdown blinking, food bubbling/sizzling, condensation forming on the door window'
+      };
+
+    // 변기
+    if(lo.includes('toilet')||ko.includes('변기'))
+      return {
+        action:'the lid lifts, water flushes with a swirl, fresh water refills',
+        ambient:'water swirling powerfully in the bowl, lid bobbing slightly, water splash droplets, ripples settling on the water surface, tank refilling with hissing sound'
+      };
+
+    // 샤워기
+    if(lo.includes('shower')||ko.includes('샤워'))
+      return {
+        action:'shower turns on, water sprays down in a wide pattern, steam fills the bathroom',
+        ambient:'water spraying in fine droplets, steam clouds rising and rolling, condensation dripping down tiled walls, mirror fogging up, water flowing down the drain, droplets bouncing off the floor'
+      };
+
+    // 청소기
+    if(lo.includes('vacuum')||ko.includes('청소기'))
+      return {
+        action:'vacuum moves across the dusty floor, sucking up debris with a roar',
+        ambient:'dust particles being sucked into the brush head, hose flexing as it moves, dust clouds visible being inhaled, indicator light blinking, wheels rolling smoothly, brush head rotating'
+      };
+
+    // 밥솥
+    if(lo.includes('rice cooker')||ko.includes('밥솥'))
+      return {
+        action:'rice cooker lid opens with a hiss of steam, fluffy rice visible inside, scoop being used',
+        ambient:'thick steam billowing out from the lid, condensation droplets on the inside of the lid, indicator light glowing, rice grains visible and steaming, scoop moving, water vapor rising in the air'
+      };
+
+    // 프라이팬
+    if(lo.includes('frying pan')||lo.includes('pan')||ko.includes('프라이팬'))
+      return {
+        action:'oil heats up in the pan, food sizzling and bubbling, spatula moving the food around',
+        ambient:'oil splattering and crackling, food sizzling actively, smoke rising from the surface, spatula stirring with motion, steam wafting up, oil droplets dancing on the hot surface'
+      };
+
+    // 쓰레기통
+    if(lo.includes('trash')||ko.includes('쓰레기'))
+      return {
+        action:'the lid lifts, items being thrown in, lid closes again',
+        ambient:'lid bobbing as items drop in, items settling inside, faint stink lines wafting up, plastic bag rustling, fly buzzing nearby, slight wobble from impact'
+      };
+
+    // 토스터
+    if(lo.includes('toaster')||ko.includes('토스터'))
+      return {
+        action:'bread popping up, lever pushed down, heating coils glowing red',
+        ambient:'heating coils glowing bright red-orange, slight crumbs falling, steam rising from the bread, lever springing up, indicator light glowing'
+      };
+
+    // 침대
+    if(lo.includes('bed')||ko.includes('침대'))
+      return {
+        action:'someone settling into bed, sheets moving as they shift',
+        ambient:'sheets rustling and shifting, pillow indenting slightly, blanket draping naturally, dust particles floating in window light, curtain drifting'
+      };
+
+    // 의자
+    if(lo.includes('chair')||ko.includes('의자'))
+      return {
+        action:'someone sitting down, chair adjusting under weight',
+        ambient:'cushion compressing slightly, wheels rolling subtly, fabric flexing, slight squeak, sunlight shifting on the surface'
+      };
+
+    // 키보드
+    if(lo.includes('keyboard')||ko.includes('키보드'))
+      return {
+        action:'fingers typing rapidly, keys pressing down with sound',
+        ambient:'keys pressing rhythmically, RGB lights cycling colors, slight key wobble, dust particles on keys, monitor glow reflecting on surface'
+      };
+
+    return {
+      action:'a natural everyday situation matching the dialogue meaning',
+      ambient:'subtle environmental motion bringing the scene to life — light shifts, dust particles, gentle airflow, ambient surface reflections'
+    };
   };
   const situ = getSituationalAction(S.obj, S.objEn);
+
+  // 🌐 언어 분기 + 한글 섞임 검증
+  const isJP_video = S.country==='jp';
+  const spokenLang = isJP_video ? 'Japanese' : 'Korean';
+  const voiceLang = isJP_video ? 'Natural Japanese voice' : 'Natural Korean voice';
+
+  // 🔍 일본어 모드인데 한글 섞이면 차단
+  if(isJP_video && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(scriptOriginal||'')){
+    showErr('⚠️ 일본어 모드인데 대사에 한글이 섞여 있습니다. 대본을 다시 생성해주세요.');
+    btn.disabled=false;btn.textContent='🔥 프롬프트 생성하기';
+    return;
+  }
 
   const videoPrompt =
 'Use the uploaded reference image as the EXACT first frame and identity anchor.\n\n' +
@@ -2180,8 +2287,11 @@ async function generate(){
 'Show the natural everyday situation clearly: ' + situ.action + '.\n' +
 'Focus on the action and environment first. The object stays in the same setting and behaves naturally. Use subtle camera movement only.\n\n' +
 'Scene 2 (3-7s):\n' +
-'The object reacts to the situation and says this Korean line VERBATIM (do not translate, do not paraphrase, keep 반말 as 반말):\n' +
+'The object reacts to the situation and says this ' + spokenLang + ' line EXACTLY as written (do not translate, do not paraphrase' + (isJP_video?'':', keep 반말 as 반말') + '):\n' +
 '"' + scriptOriginal + '"\n' +
+(isJP_video
+  ? '⚠️ CRITICAL LANGUAGE LOCK: This is JAPANESE. Speak the Japanese dialogue exactly as written. Do NOT translate it into Korean. Do NOT mix Korean words. Do NOT use Korean pronunciation. The voice MUST be Japanese.\n'
+  : '⚠️ CRITICAL LANGUAGE LOCK: This is KOREAN. Speak the Korean dialogue exactly as written. Do NOT translate it into other languages. The voice MUST be Korean.\n') +
 'Performance tone: ' + moodData.perform + '\n\n' +
 'Identity rules:\n' +
 '- Keep only ONE character identity.\n' +
@@ -2204,7 +2314,8 @@ async function generate(){
 'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
 situ.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
 'Audio:\n' +
-'- Korean ' + voiceDesc + ' voice, natural and conversational, ' + moodData.label + ' emotion.\n' +
+'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker':'Native Korean ' + voiceDesc + ' speaker') + ', natural and conversational, ' + moodData.label + ' emotion.\n' +
+(isJP_video ? '- ABSOLUTELY NO Korean voice, NO Korean pronunciation, NO Korean accent. Pure Japanese only.\n' : '') +
 '- Clear and dry sound. No echo, no reverb.\n' +
 '- No background music, no BGM, no soundtrack.\n' +
 '- No captions or text on screen.\n\n' +
