@@ -2489,20 +2489,31 @@ function showSceneModal(s,idx){
         '<div style="font-size:10px;color:#065f46;margin-top:6px;">💡 [0-2s], [2-5s], [5-7s] 시간 마커가 컷 전환 만들어요. Audio 섹션에 대사 추가하려면 따옴표로 감싸기: "안녕하세요"</div>'+
         '<div style="background:#fee2e2;border:2px solid #ef4444;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#7f1d1d;line-height:1.7;">'+
           '<div style="font-weight:900;color:#991b1b;margin-bottom:6px;font-size:13px;">⚠️ Flow [확장] 버튼 누를 때 주의!</div>'+
-          '확장 시 캐릭터/화자가 바뀔 수 있어요.<br>'+
-          '→ <b>확장 입력창에 같은 인물 정보를 다시 적어야 함!</b><br><br>'+
+          '확장하면 화면이 바뀌거나 다른 사람이 등장할 수 있어요.<br>'+
+          '→ <b>아래 버튼으로 강제 일관성 프롬프트 만들기!</b><br><br>'+
           '<button onclick="copyExtensionTemplate('+idx+',this)" style="width:100%;padding:8px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📋 확장용 템플릿 복사하기 (Flow 확장창에 붙여넣기)</button>'+
+          '<div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;font-size:11px;color:#7f1d1d;line-height:1.6;">'+
+            '<b>💡 Flow [확장] 사용 팁:</b><br>'+
+            '1. Flow에서 확장 시 <b>"Last frame as first frame"</b> 옵션 켜기 (있으면)<br>'+
+            '2. 확장 횟수가 많아질수록 일관성 떨어짐 → 최대 2-3번까지만 권장<br>'+
+            '3. <b>차라리 Scene별로 따로 생성하고 캡컷에서 이어붙이는 게 더 일관성 좋음</b><br>'+
+            '4. 확장 영상이 이상하면 → 버리고 처음부터 다시 7초 영상 생성'+
+          '</div>'+
         '</div>'+
       '</div>';
     }
 
     // 워크플로우 안내
     html+='<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:10px;padding:12px;margin-bottom:12px;font-size:11px;color:#78350f;line-height:1.7;">'+
-      '<b>💰 효율적 워크플로우 (Flow 크레딧 1번만 사용):</b><br>'+
+      '<b>💰 효율적 워크플로우 (강력 추천!):</b><br>'+
       '1️⃣ 🖼️ 이미지 프롬프트 → Midjourney/Nano Banana → 스틸컷 생성<br>'+
       '2️⃣ 🎥 영상 프롬프트 → <b>Flow에 1번만 입력</b> + 캐릭터 시트 업로드 → 7초 영상 (자동으로 2-3 cut 전환됨)<br>'+
-      '3️⃣ 6개 Scene 영상 완성 → 캡컷에서 이어붙이기 → 42초짜리 영화 + SRT 자막!<br>'+
-      '✨ <b>총 크레딧: 6번만 사용</b> (Scene 1개당 1번)'+
+      '3️⃣ <b>다음 Scene은 [확장]말고 다시 새로 생성</b> → 같은 캐릭터 시트 + 새 Scene 영상 프롬프트<br>'+
+      '4️⃣ 6개 Scene 영상 완성 → 캡컷에서 이어붙이기 → 42초짜리 영화 + SRT 자막!<br>'+
+      '✨ <b>총 크레딧: 6번 사용</b> (Scene 1개당 1번)<br><br>'+
+      '<div style="background:#fff;border:1px solid #f59e0b;border-radius:6px;padding:8px;margin-top:6px;color:#7c2d12;">'+
+        '⚠️ <b>Flow [확장] 기능은 일관성이 깨지기 쉬워요!</b> 화면 바뀌고 다른 사람이 등장할 수 있어요. <b>Scene별 따로 생성 후 캡컷 이어붙이기</b>가 훨씬 안정적입니다.'+
+      '</div>'+
     '</div>';
   }
 
@@ -2594,38 +2605,55 @@ async function copyExtensionTemplate(idx, btn){
     if(protagonist.name) charKR.push(`${protagonist.name}: ${protagonist.desc||''}`);
     supporting.forEach(sp=>{ if(sp.name) charKR.push(`${sp.name}: ${sp.desc||''}`); });
 
-    // 대사 한국어 라인 모음 (대사 자체는 한국어 유지, 화자만 영문화)
+    // 대사 한국어 라인 모음
     const dialogKR = dialogues.map(d=>`${d.speaker}: "${d.line}"`).join('\n');
 
-    // AI에게 영문 변환 요청
-    const translateSys = `You are a professional film prompt translator. Convert Korean character descriptions and scene info into natural cinematic English suitable for Veo/Flow video AI prompts.
+    // Scene 정보 (위치, 사건, 감정)
+    const sceneInfo = `위치: ${scene.location||''}\n사건: ${scene.event||''}\n감정: ${scene.emotion||''}`;
 
-Rules:
-- Keep dialogue in Korean (inside quotes), but describe everything else in English
-- Use cinematic, vivid descriptions
-- For character descriptions: focus on age, gender, appearance, outfit, hair
-- Output ONLY the English prompt, no explanation, no preamble
-- Keep it concise but specific
-- Use phrases like "the SAME [character description]" to enforce consistency`;
+    // AI에게 영문 변환 요청 — 매우 강력한 일관성 락
+    const translateSys = `You are a professional film prompt translator for Veo/Flow video AI. Convert Korean scene info into a STRONG continuation prompt that forces the next 7 seconds to be EXACTLY the same setting, same characters, same composition as the previous video.
 
-    const translateUser = `Convert this scene info into a Flow extension prompt. The previous video already exists, this is to CONTINUE that video with the same characters.
+CRITICAL RULES:
+- The output is for the [Extend] button in Flow — it must continue the EXACT same shot, NOT cut to a different scene
+- Repeat character descriptions EXTREMELY explicitly (gender, age, hair, outfit, position)
+- Repeat the EXACT location and what's around (table, window, props)
+- Specify "same camera angle, same composition, same lighting" — Flow tends to cut to different scenes if this isn't enforced
+- Keep dialogue in Korean (inside quotes), describe everything else in English
+- Output ONLY the prompt, no explanation`;
+
+    const translateUser = `Convert this scene info into a STRONG Flow extension prompt that forces the next 7 seconds to be the EXACT continuation of the previous video (same location, same characters, same composition).
 
 [Characters in Korean]:
 ${charKR.join('\n')}
 
+[Scene info]:
+${sceneInfo}
+
 [Dialogue (KEEP IN KOREAN)]:
 ${dialogKR || '(no dialogue)'}
 
-Output format (English description + Korean dialogue, all on natural lines):
-Continue the scene with the SAME [translated char1] and the SAME [translated char2]. Keep the EXACT same characters from the previous video — same gender, same age, same outfit, same face, same position. The action continues naturally.
+REQUIRED OUTPUT FORMAT (English description + Korean dialogue):
 
-Dialogue: the SAME [character description] says in Korean: "[KEEP KOREAN DIALOGUE AS IS]". [Add more dialogue lines if any]
+CONTINUE THE EXACT SAME SHOT FROM THE PREVIOUS VIDEO. Do NOT cut to a different scene, do NOT change location, do NOT introduce new people.
 
-Audio: Korean dialogue spoken by native Korean voice actors. ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent.
+Setting: The EXACT same [translate location] as the previous video — keep all the same details (table, props, window, lighting, background).
 
-Output only the prompt, nothing else.`;
+Characters: ONLY the SAME [translate char1 with detailed description] [and the SAME char2 if any]. NO new people appear. NO additional customers, NO staff, NO bystanders.
 
-    const translated = await callAI(translateSys, translateUser, 800);
+Camera: Keep the EXACT same camera angle and composition as the end of the previous video. NO scene cut, NO location change.
+
+Action: [Translate the event into a natural continuation of what was happening]
+
+Dialogue: the SAME [character description] says in Korean: "[KEEP KOREAN DIALOGUE AS IS]". [More lines if any]
+
+Audio: Korean dialogue spoken by native Korean voice actors. Natural ambient sounds only. NO background music, NO BGM, NO soundtrack, NO instrumental music. ALL DIALOGUE IN KOREAN. Native Korean voice. NO English voice. NO foreign accent.
+
+Style: Clean modern frame, full screen, NO letterbox bars, NO film grain, NO film leader marks, photorealistic Korean drama aesthetic, natural lighting.
+
+Output the prompt only. No preamble.`;
+
+    const translated = await callAI(translateSys, translateUser, 1200);
     const finalPrompt = (translated || '').trim();
 
     if(!finalPrompt) throw new Error('빈 응답');
