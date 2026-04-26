@@ -1953,6 +1953,15 @@ async function generate(){
   };
   const situ = getBmemeSituationalAction(S.obj, S.objEn);
   const isJP = S.country==='jp';
+  const spokenLang = isJP ? 'Japanese' : 'Korean';
+  const voiceLang = isJP ? 'Natural Japanese voice' : 'Natural Korean voice';
+
+  // 🔍 일본어 모드 검증 — 대사에 한글 섞이면 에러
+  if(isJP && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(scriptOriginal||'')){
+    showErr('⚠️ 일본어 모드인데 대사에 한글이 섞여 있습니다. 대본을 다시 생성해주세요.');
+    btn.disabled=false;btn.textContent='🔥 프롬프트 생성하기';
+    return;
+  }
 
   const videoPrompt =
 'Use the uploaded reference image as the EXACT first frame and identity anchor.\n\n' +
@@ -1962,8 +1971,11 @@ async function generate(){
 'Show the natural everyday situation clearly: ' + situ.action + '.\n' +
 'Focus on the action and environment first. The object stays in the same setting and behaves naturally. Use subtle camera movement only.\n\n' +
 'Scene 2 (3-7s):\n' +
-'The object reacts to the situation and says this ' + (isJP?'Japanese':'Korean') + ' line VERBATIM (do not translate, do not paraphrase, keep the original tone):\n' +
+'The object reacts to the situation and says this ' + spokenLang + ' line EXACTLY as written (do not translate, do not paraphrase, keep the original ' + spokenLang + ' tone):\n' +
 '"' + scriptOriginal + '"\n' +
+(isJP
+  ? '⚠️ CRITICAL LANGUAGE LOCK: This is JAPANESE. Speak the Japanese dialogue exactly as written. Do NOT translate it into Korean. Do NOT mix Korean words. Do NOT use Korean pronunciation. The voice MUST be Japanese.\n'
+  : '⚠️ CRITICAL LANGUAGE LOCK: This is KOREAN. Speak the Korean dialogue exactly as written. Do NOT translate it into Japanese or English. The voice MUST be Korean.\n') +
 (moodPerformEN ? 'Performance tone: ' + moodPerformEN + '\n\n' : '\n') +
 'Identity rules:\n' +
 '- Keep only ONE character identity.\n' +
@@ -1986,7 +1998,8 @@ async function generate(){
 'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
 situ.ambient + ', along with ' + scene.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
 'Audio:\n' +
-'- ' + voiceDesc + '. Natural ' + (isJP?'Japanese':'Korean') + ' speaker, conversational.\n' +
+'- ' + voiceLang + '. ' + (isJP?'Native Japanese speaker':'Native Korean speaker') + ', natural and conversational.\n' +
+(isJP ? '- ABSOLUTELY NO Korean voice, NO Korean pronunciation, NO Korean accent. Pure Japanese only.\n' : '') +
 '- Clear and dry sound. No echo, no reverb.\n' +
 '- No background music, no BGM, no soundtrack.\n' +
 '- No captions or text on screen.\n\n' +
