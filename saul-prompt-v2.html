@@ -2142,139 +2142,74 @@ async function generate(){
   const functionMotion = fnMotion;
   const functionReveal = getFunctionReveal(S.obj, S.mood);
 
-  // 🎬 자연스러운 상황 우선 + 자연 가림 허용 시스템
-  // 핵심 철학: 얼굴은 "보일 때만 보인다", "가려지면 그냥 가려진 채로"
-  const identityAndLimbVideoLock =
-    '🎬 NATURAL SITUATION FIRST — IDENTITY PRESERVATION 🎬\n' +
-    '\n' +
-    '🎯 PRIORITY ORDER (most important first):\n' +
-    '1. Natural situation matching the dialogue (e.g., for sink: turn on faucet, fill water, rinse)\n' +
-    '2. Natural object motion that fits the dialogue meaning\n' +
-    '3. Original object structure preserved (single object identity, no extra parts, no morphing)\n' +
-    '4. If face is naturally visible, keep the EXACT same face from the reference image\n' +
-    '5. If face becomes occluded by water, motion, props, hands, or angle — keep it occluded, do NOT regenerate\n' +
-    '\n' +
-    '👤 FACE STATES (all 3 are acceptable — no need to keep face always visible):\n' +
-    '- face_visible: face naturally shown — preserve the EXACT same face from reference\n' +
-    '- face_partially_occluded: water / hand / prop / angle covers part of face — this is fine, keep partial\n' +
-    '- face_hidden: face not visible due to natural situation — this is also fine, do NOT invent a new face\n' +
-    '\n' +
-    '✅ NATURAL OCCLUSION RULES:\n' +
-    '- If the face becomes naturally occluded by motion, water, props, hands, or camera angle, do NOT generate a new visible face\n' +
-    '- If the face is not clearly visible in a moment, that is acceptable — natural occlusion is better than hallucinating a new face\n' +
-    '- Do NOT force face visibility through awkward camera moves\n' +
-    '- Do NOT reveal the face unnaturally just to keep it on screen\n' +
-    '- If the face is hidden, KEEP IT HIDDEN rather than inventing a new face elsewhere\n' +
-    '\n' +
-    '🚫 ABSOLUTE PROHIBITIONS:\n' +
-    '- NO new face generation when the original face is occluded\n' +
-    '- NO secondary face / alternate face / replacement face\n' +
-    '- NO reappearing alternate face on walls, doors, surfaces, or background\n' +
-    '- NO face hallucination during occlusion\n' +
-    '- NO face cloning, mirroring, splitting, or morphing\n' +
-    '- NO forced face visibility — trust the natural situation\n' +
-    '\n' +
-    '✋ LIMB RULES (kept strict):\n' +
-    '- Exactly TWO arms only, attached at the same root points as the reference image\n' +
-    '- Arms may move with natural gestures during the action, but root points stay locked\n' +
-    '- For sink/faucet characters: arms attached only to sink/faucet area, never from dishes, water, sponges, or background\n' +
-    '- No extra arms, no floating limbs, no disconnected hands, no mutated anatomy\n' +
-    '\n' +
-    '📷 CAMERA & MOTION:\n' +
-    '- Subtle camera movement allowed (slight zoom, gentle dolly) — but not chasing the face\n' +
-    '- Use natural angles that fit the action, even if face is sometimes off-frame or covered\n' +
-    '- Object motion should be slow and deliberate, matching the dialogue meaning\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
-
-  // 🪣 사물별 자연스러운 상황 연출 가이드
+  // 🪣 사물별 자연스러운 상황 + 환경 역동성
   const getSituationalAction = (objKey, objEn) => {
-    const lowerObj = (objEn||'').toLowerCase();
-    const krObj = (objKey||'').toLowerCase();
-
-    if(lowerObj.includes('sink')||lowerObj.includes('faucet')||krObj.includes('싱크')||krObj.includes('수전')){
-      return 'turning on the faucet, water flowing into the basin, dishes being rinsed, water filling up — face may be partially obscured by the water stream or angle, that is fine';
-    }
-    if(lowerObj.includes('washing machine')||krObj.includes('세탁기')){
-      return 'laundry being placed inside, door closing, detergent being added, drum starting to spin — focus on the action, face may be partially occluded by the door or motion';
-    }
-    if(lowerObj.includes('refrigerator')||lowerObj.includes('fridge')||krObj.includes('냉장고')){
-      return 'door opening, food being placed inside or taken out, cool mist drifting out — face may be partially blocked by the door or items, that is fine';
-    }
-    if(lowerObj.includes('microwave')||krObj.includes('전자레인지')){
-      return 'a bowl being placed inside, door closing, buttons being pressed, light glowing inside — face may be partially blocked by the door or hand, that is fine';
-    }
-    if(lowerObj.includes('toilet')||krObj.includes('변기')){
-      return 'lid lifting, water flushing, splashing — face may be obscured by the lid angle or water, that is fine';
-    }
-    if(lowerObj.includes('shower')||krObj.includes('샤워')){
-      return 'water flowing down, steam rising, the spray pattern — face may be partially obscured by water and steam, that is fine';
-    }
-    if(lowerObj.includes('vacuum')||krObj.includes('청소기')){
-      return 'moving across the floor sucking up dust, hose extending, dust collecting — face may be at angle, that is fine';
-    }
-    if(lowerObj.includes('rice cooker')||krObj.includes('밥솥')){
-      return 'lid opening with steam rising, rice visible inside, scoop being used — face may be obscured by steam, that is fine';
-    }
-    if(lowerObj.includes('frying pan')||lowerObj.includes('pan')||krObj.includes('프라이팬')){
-      return 'food sizzling inside, oil splattering, spatula moving — face may be partially obscured by steam or food, that is fine';
-    }
-    if(lowerObj.includes('trash')||krObj.includes('쓰레기')){
-      return 'lid opening, items being thrown in, bag being lifted out — face may be obscured by lid or items, that is fine';
-    }
-    if(lowerObj.includes('air conditioner')||krObj.includes('에어컨')){
-      return 'air visible blowing out, filter being shown, lights blinking — subtle environmental motion';
-    }
-    return 'a natural action that matches the dialogue meaning, with the object operating in its everyday function';
+    const lo = (objEn||'').toLowerCase();
+    const ko = (objKey||'').toLowerCase();
+    if(lo.includes('sink')||lo.includes('faucet')||ko.includes('싱크')||ko.includes('수전'))
+      return {action:'water flowing into the basin, dishes being rinsed, water filling up', ambient:'water flow, droplets splashing, dishes shifting slightly, sponge moving'};
+    if(lo.includes('washing machine')||ko.includes('세탁기'))
+      return {action:'laundry being placed inside, door closing, drum starting to spin', ambient:'laundry tumbling, door motion, slight vibration, water motion'};
+    if(lo.includes('refrigerator')||lo.includes('fridge')||ko.includes('냉장고'))
+      return {action:'door opening, food being placed inside, cool mist drifting out', ambient:'door movement, interior light flicker, cold air feel, items shifting'};
+    if(lo.includes('microwave')||ko.includes('전자레인지'))
+      return {action:'a bowl placed inside, door closing, buttons pressed, light glowing', ambient:'button press, tray rotating, warm steam, indicator light blinking'};
+    if(lo.includes('toilet')||ko.includes('변기'))
+      return {action:'lid lifting, water flushing, splashing', ambient:'water swirling, lid motion, ripples'};
+    if(lo.includes('shower')||ko.includes('샤워'))
+      return {action:'water flowing down, steam rising', ambient:'water spray pattern, steam clouds, droplets, mirror fogging'};
+    if(lo.includes('vacuum')||ko.includes('청소기'))
+      return {action:'moving across floor sucking up dust', ambient:'dust particles flying, hose flexing, indicator light'};
+    if(lo.includes('rice cooker')||ko.includes('밥솥'))
+      return {action:'lid opening with steam rising, scoop being used', ambient:'steam billowing, condensation, indicator light'};
+    if(lo.includes('frying pan')||lo.includes('pan')||ko.includes('프라이팬'))
+      return {action:'food sizzling inside, oil splattering', ambient:'steam rising, oil splatter, food bubbling, spatula moving'};
+    if(lo.includes('trash')||ko.includes('쓰레기'))
+      return {action:'lid opening, items being thrown in', ambient:'lid bobbing, items settling, faint stink lines'};
+    if(lo.includes('air conditioner')||ko.includes('에어컨'))
+      return {action:'air visibly blowing out', ambient:'visible airflow, vent louvers moving, curtain drifting, indicator blinking'};
+    return {action:'a natural action matching the dialogue meaning', ambient:'subtle environmental motion, gentle ambient activity'};
   };
-
-  const situationalAction = getSituationalAction(S.obj, S.objEn);
+  const situ = getSituationalAction(S.obj, S.objEn);
 
   const videoPrompt =
-    '⚠️⚠️ CRITICAL — REFERENCE IMAGE IS THE ANCHOR ⚠️⚠️\n' +
-    'Use the uploaded image as the EXACT first frame. Preserve the original character design, object structure, body proportions, colors, textures, lighting, and composition.\n' +
-    'BUT — face visibility is NOT mandatory throughout. Natural occlusion is acceptable and preferred over fake face generation.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-    identityAndLimbVideoLock +
-    '🎬 SCENE STRUCTURE (7-second short video, 2 connected scenes):\n' +
-    '\n' +
-    '━━ Scene 1 (0-3s) — SITUATION FIRST ━━\n' +
-    'Show the everyday situation that matches the dialogue meaning. Focus on the natural action: ' + situationalAction + '.\n' +
-    'The object is in its environment doing its everyday function. Camera uses subtle, natural movement.\n' +
-    'The face may or may not be visible during this scene — both are acceptable. Do NOT force face visibility.\n' +
-    '\n' +
-    '━━ Scene 2 (3-7s) — REACTION + DIALOGUE ━━\n' +
-    'The object reacts naturally to the situation while delivering the line: "' + scriptOriginal + '"\n' +
-    'Speak the Korean script VERBATIM — do not translate, do not change casual (반말) to polite form, do not paraphrase.\n' +
-    'Performance tone: ' + moodData.perform + '\n' +
-    'If the face is naturally visible during this reaction, keep the EXACT same face from the reference (eyes, nose, mouth, expression structure preserved).\n' +
-    'If the face becomes occluded by water, motion, hands, props, or camera angle, leave it occluded — do NOT generate a replacement face.\n' +
-    'Mouth movement syncs with the spoken words ONLY when the face is visible. When face is hidden, the voice still speaks but no visible mouth motion is needed.\n' +
-    '\n' +
-    '━━ NATURAL ACTION GUIDE FOR THIS OBJECT ━━\n' +
-    'Recommended situational action: ' + situationalAction + '\n' +
-    'This action should anchor the visual narrative. The dialogue accompanies this action — it does NOT replace it.\n' +
-    '\n' +
-    (functionMotion ? '🌬️ Surrounding ambient: ' + functionMotion + ', with subtle environmental motion that adds life without distracting.\n\n' : '') +
-    '🎙️ AUDIO:\n' +
-    '- Korean ' + voiceDesc + ' voice delivering the line with ' + moodData.label + ' emotion\n' +
-    '- Clear and dry sound — no echo, no reverb, no hollow sound\n' +
-    '- Absolutely NO background music, NO BGM, NO soundtrack, NO instrumental, NO ambient music — only the clean Korean voice and natural environmental sounds (water flowing, door clicking, etc.)\n' +
-    '- No roaring, no monster sounds, no creature sounds\n' +
-    '- No humming, no melodic tones, no subtle music layer\n' +
-    '\n' +
-    '🚫 NEGATIVE PROMPTS:\n' +
-    '- No new face, no alternate face, no replacement face during occlusion\n' +
-    '- No second character, no extra head, no duplicate face\n' +
-    '- No extra arms, no floating limbs, no disconnected hands, no morphing\n' +
-    '- No forced face visibility, no awkward camera angles to chase the face\n' +
-    '- No real human face, no photorealistic human (keep as the object)\n' +
-    '- No text, no subtitles, no captions, no watermarks, no logos\n' +
-    '- No background music, no BGM, no soundtrack\n' +
-    '\n' +
-    '🎨 STYLE: Exaggerated Pixar-like 3D animation, stable composition, natural relatable ending. Vertical 9:16 format.\n' +
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-    '🔑 KEY REMINDER: SITUATION > ACTION > IDENTITY > VISIBLE FACE.\n' +
-    'A natural moment with the face occluded is BETTER than a forced face shot. Trust the situation.';
+'Use the uploaded reference image as the EXACT first frame and identity anchor.\n\n' +
+'Preserve the original object exactly: same object structure, same proportions, same materials, same colors, same face design, same arm attachment points, and same environment style.\n\n' +
+'Create a 7-second short vertical video with two connected scenes.\n\n' +
+'Scene 1 (0-3s):\n' +
+'Show the natural everyday situation clearly: ' + situ.action + '.\n' +
+'Focus on the action and environment first. The object stays in the same setting and behaves naturally. Use subtle camera movement only.\n\n' +
+'Scene 2 (3-7s):\n' +
+'The object reacts to the situation and says this Korean line VERBATIM (do not translate, do not paraphrase, keep 반말 as 반말):\n' +
+'"' + scriptOriginal + '"\n' +
+'Performance tone: ' + moodData.perform + '\n\n' +
+'Identity rules:\n' +
+'- Keep only ONE character identity.\n' +
+'- If the face is visible, keep the EXACT same face from the reference image.\n' +
+'- If the face is occluded by water, props, motion, hands, or camera angle, keep it occluded.\n' +
+'- Never generate a new face.\n' +
+'- Never create an alternate face, secondary face, or replacement face.\n' +
+'- Do not force face visibility.\n\n' +
+'Mouth/voice:\n' +
+'- When the face is visible, use subtle mouth movement.\n' +
+'- When the face is hidden or occluded, the voice can continue without visible mouth animation.\n\n' +
+'Motion rules:\n' +
+'- Subtle, natural motion only. Object stays grounded and stable.\n' +
+'- Exactly two arms only, attached at the same original positions.\n' +
+'- No extra arms, no floating limbs, no detached hands, no morphing.\n\n' +
+'Natural action priority:\n' +
+'- Match action to dialogue meaning.\n' +
+'- Show practical everyday motion before facial acting.\n' +
+'- If facial visibility conflicts with natural action, prioritize the natural action.\n\n' +
+'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
+situ.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
+'Audio:\n' +
+'- Korean ' + voiceDesc + ' voice, natural and conversational, ' + moodData.label + ' emotion.\n' +
+'- Clear and dry sound. No echo, no reverb.\n' +
+'- No background music, no BGM, no soundtrack.\n' +
+'- No captions or text on screen.\n\n' +
+'Style:\n' +
+'Pixar-like 3D animation, relatable, natural, stable composition, vertical 9:16.';
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
@@ -2681,3 +2616,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
