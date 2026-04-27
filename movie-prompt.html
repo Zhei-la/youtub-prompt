@@ -3941,6 +3941,705 @@ window.addEventListener('load',()=>{
   updateSummary();
 });
 </script>
+  <script>
+const VIDEO_ONLY_USAGE_WARNING = `
+IMPORTANT USAGE:
+This is the FINAL VIDEO GENERATION PROMPT for Veo / Flow / Kling / Seedance.
+Use this ONLY in a video generation tool.
+This is NOT a storyboard prompt.
+This is NOT a 4-panel prompt.
+This is NOT a 3x3 grid prompt.
+This is NOT a split-screen layout.
+Generate ONE continuous cinematic video scene only.
+`;
+
+const HARD_NO_TEXT_LOCK = `
+NO on-screen text.
+NO subtitles.
+NO captions.
+NO Korean text overlays.
+NO English text overlays.
+NO title cards.
+NO burned-in text.
+NO speech bubbles.
+NO UI text.
+NO visible lyrics.
+NO watermark.
+Dialogue is for voice acting only.
+Subtitles will be provided separately as SRT.
+Do not display any dialogue as text on the video.
+`;
+
+const ONE_SCENE_CONTINUITY_LOCK = `
+Create ONE continuous scene only.
+Do not create a storyboard.
+Do not create panels.
+Do not create a grid.
+Do not create montage tiles.
+Do not create split-screen.
+Do not create multiple separate scenes.
+Do not jump to random insert shots.
+Do not cut to unrelated hands, objects, or background details.
+Keep the same location, same characters, same costumes, same lighting, and same emotional continuity throughout the full duration.
+`;
+
+const CINEMATIC_REALISM_LOCK = `
+Shot like a real live-action Korean film scene.
+Natural camera movement, subtle handheld realism, realistic motion blur, stable actor blocking.
+Keep the camera movement restrained and motivated.
+No chaotic camera jumps.
+No random close-up inserts.
+No sudden change of camera angle unless the action naturally requires it.
+Photorealistic skin texture, natural imperfections, realistic clothing folds, natural breathing, subtle eye blinks, small hand movements, grounded body weight.
+`;
+
+function safePatchStr(v){
+  if(v === null || v === undefined) return '';
+  if(typeof v === 'string') return v;
+  try { return JSON.stringify(v); } catch(e){ return String(v); }
+}
+
+function getSceneDialogueAudioLines(scene, movieMeta){
+  const protagonist = movieMeta?.protagonist || {};
+  const supporting = movieMeta?.supporting || [];
+  const dialogues = scene.dialogue || [];
+
+  if(!dialogues.length){
+    return 'No spoken dialogue. Use natural ambient sound only.';
+  }
+
+  return dialogues.map(d=>{
+    let speakerDesc = d.speaker || 'character';
+
+    if(d.speaker === protagonist.name){
+      speakerDesc = `the SAME protagonist (${protagonist.desc || protagonist.name || 'Korean character'})`;
+    }else{
+      const sup = supporting.find(sp => sp.name === d.speaker);
+      if(sup){
+        speakerDesc = `the SAME supporting character (${sup.desc || sup.name})`;
+      }
+    }
+
+    return `Voice acting only, no subtitles: ${speakerDesc} speaks in Korean — "${d.line || ''}"`;
+  }).join('\n');
+}
+
+function buildSingleSceneTimeline(scene){
+  const event = (scene.event || '').trim();
+  const cut = (scene.cut_structure || '').trim();
+  const duration = typeof SCENE_DURATION !== 'undefined' ? SCENE_DURATION : 8;
+
+  if(cut){
+    return `
+Use this as motion timing only, NOT as a multi-panel layout:
+${cut}
+
+Important:
+Even if timing markers are used, the output must remain ONE continuous video scene, not a storyboard, not split-screen, not panels.
+`;
+  }
+
+  const pieces = event
+    .split(/[.!?。！？,，.]/)
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+  const a = pieces[0] || event || 'The character is already present in the scene, breathing naturally and holding the emotional state.';
+  const b = pieces[1] || event || 'The main emotional or physical action develops naturally.';
+  const c = pieces[2] || pieces[1] || pieces[0] || event || 'The character reacts with a clear final emotional beat.';
+
+  return `
+0-2 seconds:
+Establish the SAME location and SAME characters. ${a}
+The camera holds a coherent cinematic frame.
+
+2-5 seconds:
+The main action or emotional change happens. ${b}
+Character movement must feel physically grounded, with natural body weight and realistic reaction.
+
+5-${duration} seconds:
+The character reacts or resolves the beat. ${c}
+End on a clear cinematic emotional moment without cutting to an unrelated shot.
+`;
+}
+
+function getMiseText(scene){
+  const m = scene.mise_en_scene || {};
+  const light = m.lighting || {};
+  const color = m.color || {};
+
+  return `
+Mise-en-scene intention: ${m.intent || scene.emotion || ''}
+Who: ${m.who || ''}
+When: ${m.when || ''}
+Where: ${m.where || scene.location || ''}
+What: ${m.what || scene.event || ''}
+How: ${m.how || ''}
+Why: ${m.why || ''}
+Shot size: ${m.shot_size || 'Medium Shot'}
+Camera angle: ${m.camera_angle || 'Eye Level'}
+Composition: ${m.composition || 'Rule of Thirds'}
+Lighting: ${light.type || 'Natural light'}${light.direction ? ', '+light.direction : ''}${light.quality ? ', '+light.quality : ''}${light.color_temperature ? ', '+light.color_temperature : ''}
+Shadows: ${light.shadow || ''}
+Color tone: ${color.tone || ''}${Array.isArray(color.palette) && color.palette.length ? ', palette '+color.palette.join(', ') : ''}
+Costume: ${m.costume || ''}
+Props: ${Array.isArray(m.props) ? m.props.join(', ') : ''}
+Background: ${m.background || ''}
+Texture: ${m.texture || 'clean modern digital cinematography'}
+`;
+}
+
+/* =========================================================
+   씬별 영상용 메인 프롬프트
+   ========================================================= */
+function compileFlowPrompt(scene, movieMeta){
+  const protagonist = movieMeta?.protagonist || {};
+  const supporting = movieMeta?.supporting || [];
+  const visualKey = movieMeta?.visual || 'cinematic';
+  const audio = scene.audio || {};
+  const duration = typeof SCENE_DURATION !== 'undefined' ? SCENE_DURATION : 8;
+
+  const styleMap = {
+    cinematic: 'Photorealistic modern Korean drama / Korean film aesthetic, ordinary non-celebrity Korean people, realistic skin texture, natural imperfections, natural lighting, clean modern digital cinematography.',
+    webtoon: 'Korean webtoon animation aesthetic, clean digital line art, consistent character design, no panel layout in the video output.',
+    anime: 'Japanese anime cinematic animation aesthetic, consistent character design, no manga panels in the video output.',
+    pixar: 'Pixar-quality 3D animation aesthetic, consistent stylized character design, no storyboard panels in the video output.',
+    pixar3d: 'Pixar-quality 3D animation aesthetic, consistent stylized character design, no storyboard panels in the video output.'
+  };
+
+  const characterLines = [];
+
+  if(protagonist.desc){
+    characterLines.push(`Main character: the SAME protagonist throughout the whole scene — ${protagonist.desc}`);
+  }
+
+  supporting.forEach(sp=>{
+    if(sp.desc){
+      characterLines.push(`Supporting character: the SAME ${sp.name || 'supporting character'} throughout the whole scene — ${sp.desc}`);
+    }
+  });
+
+  if(scene.character_desc){
+    characterLines.push(`Scene-specific character detail, keep consistent: ${scene.character_desc}`);
+  }
+
+  const dialogueLines = getSceneDialogueAudioLines(scene, movieMeta);
+  const ambient = audio.ambient || scene.sound || 'natural location ambience';
+  const sfx = audio.sfx ? `SFX: ${audio.sfx}` : '';
+  const voice = audio.voice ? `Voice tone: ${audio.voice}` : '';
+  const bgm = audio.bgm ? `BGM: ${audio.bgm}` : 'No background music unless absolutely necessary.';
+
+  return `${VIDEO_ONLY_USAGE_WARNING}
+
+[FINAL VIDEO PROMPT]
+Generate a single ${duration}-second cinematic video scene.
+
+[Do NOT create]
+${ONE_SCENE_CONTINUITY_LOCK}
+
+[No text or subtitles]
+${HARD_NO_TEXT_LOCK}
+
+[Characters]
+${characterLines.join('\n') || 'Use the same Korean characters described in the scene. Keep identity, face, costume, and body proportions consistent.'}
+
+Character consistency rules:
+- Do not duplicate the main character.
+- Do not merge supporting characters into the protagonist.
+- Do not swap gender, age, hairstyle, clothing, or body type.
+- If two people appear, keep their positions and relationship clear.
+- No sudden new background characters unless explicitly described.
+
+[Scene]
+Location: ${scene.location || ''}
+Event: ${scene.event || ''}
+Emotion: ${scene.emotion || ''}
+${getMiseText(scene)}
+
+[Action timeline — continuous video, not panels]
+${buildSingleSceneTimeline(scene)}
+
+[Camera]
+Use one coherent cinematic camera setup.
+Camera should feel like a real camera operator following the scene.
+Preferred camera: ${scene.camera || 'subtle handheld or slow push-in, restrained movement, shallow depth of field'}.
+Avoid random insert cuts.
+Avoid sudden montage.
+Avoid unrelated close-ups of hands or objects.
+Avoid split-screen.
+Avoid grid layout.
+Avoid storyboard panels.
+If the camera changes framing, it must be a smooth motivated movement inside the same continuous scene.
+
+[Lighting and visual style]
+${styleMap[visualKey] || styleMap.cinematic}
+Keep lighting consistent through the whole scene.
+No letterbox bars.
+No film leader marks.
+No fake UI.
+No visible text.
+
+[Audio]
+Dialogue is spoken audio only, not subtitles:
+${dialogueLines}
+
+${voice}
+${sfx}
+Ambient: ${ambient}
+${bgm}
+
+[Duration]
+${duration} seconds.
+
+[Final negative constraints]
+${HARD_NO_TEXT_LOCK}
+No storyboard.
+No panels.
+No grid.
+No collage.
+No split-screen.
+No montage.
+No random insert shot.
+No title card.
+No visual captions.
+No burned-in text.`;
+}
+
+/* =========================================================
+   Kling 영상 프롬프트
+   ========================================================= */
+function compileKlingPrompt(scene, movieMeta){
+  const m = scene.mise_en_scene || {};
+  const protagonist = movieMeta?.protagonist || {};
+  const supporting = movieMeta?.supporting || [];
+  const duration = typeof SCENE_DURATION !== 'undefined' ? SCENE_DURATION : 8;
+
+  const chars = [];
+
+  if(protagonist.desc){
+    chars.push(`Main: SAME protagonist, ${protagonist.desc}`);
+  }
+
+  supporting.forEach(sp=>{
+    if(sp.desc){
+      chars.push(`Supporting: SAME ${sp.name || 'character'}, ${sp.desc}`);
+    }
+  });
+
+  if(scene.character_desc){
+    chars.push(`Scene character note: ${scene.character_desc}`);
+  }
+
+  return `${VIDEO_ONLY_USAGE_WARNING}
+
+Kling video prompt.
+Create ONE continuous ${duration}-second cinematic scene.
+Not a storyboard. Not a grid. Not split-screen. Not panels.
+
+Scene:
+${scene.location || ''}. ${m.background || ''}
+Event: ${scene.event || ''}
+Emotion: ${scene.emotion || ''}
+
+Subject:
+${chars.join('\n') || 'Same Korean character from the scene, consistent face and costume.'}
+
+Motion timeline:
+${buildSingleSceneTimeline(scene)}
+
+Camera:
+${m.shot_size || 'Medium Shot'}, ${m.camera_angle || 'Eye Level'}, ${m.composition || 'Rule of Thirds'}.
+Use restrained cinematic camera movement.
+No random insert cut.
+No unrelated close-up.
+No montage.
+
+Lighting:
+${m.lighting?.type || 'Natural light'}, ${m.lighting?.direction || ''}, ${m.lighting?.color_temperature || ''}.
+Color: ${m.color?.tone || ''}.
+
+Audio:
+${getSceneDialogueAudioLines(scene, movieMeta)}
+Ambient: ${scene.sound || scene.audio?.ambient || 'natural ambience'}.
+Dialogue is voice acting only.
+
+Negative:
+${HARD_NO_TEXT_LOCK}
+No storyboard, no grid, no panels, no split-screen, no collage, no title cards, no subtitles, no captions.`;
+}
+
+/* =========================================================
+   Seedance 영상 프롬프트
+   ========================================================= */
+function compileSeedancePrompt(scene, movieMeta){
+  const m = scene.mise_en_scene || {};
+  const protagonist = movieMeta?.protagonist || {};
+  const supporting = movieMeta?.supporting || [];
+  const audio = scene.audio || {};
+  const refs = scene.references || [];
+  const timeline = scene.timeline || [];
+  const duration = typeof SCENE_DURATION !== 'undefined' ? SCENE_DURATION : 8;
+
+  const refsBlock = refs.length
+    ? refs.map(r=>`${r.name || '@ref'} (${r.type || 'image'}): ${r.role || 'reference material'}`).join('\n')
+    : 'No uploaded references. Use the character descriptions below.';
+
+  const chars = [];
+
+  if(protagonist.desc){
+    chars.push(`Main character: SAME protagonist throughout — ${protagonist.desc}`);
+  }
+
+  supporting.forEach(sp=>{
+    if(sp.desc){
+      chars.push(`Supporting character: SAME ${sp.name || 'supporting character'} throughout — ${sp.desc}`);
+    }
+  });
+
+  if(scene.character_desc){
+    chars.push(`Scene-specific character detail: ${scene.character_desc}`);
+  }
+
+  let timelineBlock = '';
+
+  if(timeline.length){
+    timelineBlock = timeline.map(t=>{
+      return `${t.start || 0}-${t.end || duration}s: ${t.action || ''}${t.camera ? ' | Camera: '+t.camera : ''}`;
+    }).join('\n');
+  }else{
+    timelineBlock = buildSingleSceneTimeline(scene);
+  }
+
+  return `${VIDEO_ONLY_USAGE_WARNING}
+
+Seedance 2.0 video prompt.
+Generate ONE continuous ${duration}-second video scene only.
+This is not a storyboard, not a comic panel, not a 3x3 test, not split-screen.
+
+[Reference Roles]
+${refsBlock}
+
+[No text / no subtitles]
+${HARD_NO_TEXT_LOCK}
+
+[Subject / Character]
+${chars.join('\n') || 'Same Korean character from the scene, consistent identity, face, costume, and proportions.'}
+
+[Space]
+Location: ${m.where || scene.location || ''}
+Background: ${m.background || ''}
+Props: ${Array.isArray(m.props) ? m.props.join(', ') : ''}
+
+[Style / Mood]
+${m.intent || scene.emotion || ''}
+Visible emotional cues: ${typeof emotionToVisualCues === 'function' ? emotionToVisualCues(scene.emotion || '') : scene.emotion || ''}
+Texture: ${m.texture || 'clean modern digital cinematography'}
+Color: ${m.color?.tone || ''}${Array.isArray(m.color?.palette) && m.color.palette.length ? ', '+m.color.palette.join(', ') : ''}
+
+[Lighting]
+${m.lighting?.type || 'Natural light'}, ${m.lighting?.direction || ''}, ${m.lighting?.quality || ''}, ${m.lighting?.color_temperature || ''}
+
+[Timeline Action — continuous scene only]
+${timelineBlock}
+
+[Camera]
+${m.shot_size || 'Medium Shot'}, ${m.camera_angle || 'Eye Level'}, ${m.composition || 'Rule of Thirds'}.
+Keep camera movement controlled and motivated.
+No random insert shots.
+No montage.
+No panels.
+No grid.
+
+[Audio]
+${getSceneDialogueAudioLines(scene, movieMeta)}
+BGM: ${audio.bgm || 'No background music unless needed'}
+SFX: ${audio.sfx || scene.sound || 'natural realistic sound effects'}
+Ambient: ${audio.ambient || 'natural location ambience'}
+Voice: ${audio.voice || 'native Korean voice acting, audio only'}
+
+[Duration]
+${duration} seconds.
+
+[Negative Constraints]
+${HARD_NO_TEXT_LOCK}
+No storyboard, no comic panels, no grid, no split-screen, no collage, no title card, no burned-in subtitles.`;
+}
+
+/* =========================================================
+   4컷 콘티 프롬프트 — 이미지툴 전용
+   ========================================================= */
+function compileFourPanelPrompt(scene, movieMeta){
+  const m = scene.mise_en_scene || {};
+  const protagonist = movieMeta?.protagonist || {};
+
+  return `[IMAGE TOOL ONLY — 4-PANEL STORYBOARD]
+This prompt is for image generation tools only.
+Do NOT use this in Veo / Flow / Kling / Seedance.
+This creates a 4-panel storyboard image for planning, not a video.
+
+Create a 4-panel cinematic storyboard for the SAME scene.
+Panel layout: 2x2 grid storyboard.
+
+Panel 1:
+Wide establishing shot of the location.
+
+Panel 2:
+Medium shot showing character action and body language.
+
+Panel 3:
+Close-up showing emotional reaction.
+
+Panel 4:
+Insert or final cinematic detail that summarizes the scene.
+
+Keep the same:
+- same characters
+- same face
+- same costume
+- same location
+- same lighting
+- same color palette
+- same emotional continuity
+
+Scene:
+${scene.location || ''}
+${scene.event || ''}
+
+Character:
+${m.who || protagonist.desc || ''}
+
+Mise-en-scene:
+Intent: ${m.intent || scene.emotion || ''}
+Lighting: ${m.lighting?.type || 'Natural light'}
+Color: ${m.color?.tone || ''}
+Composition: ${m.composition || 'Rule of Thirds'}
+Props: ${Array.isArray(m.props) ? m.props.join(', ') : ''}
+
+Style:
+Cinematic storyboard, clear four-panel layout, high-quality planning image.
+
+Important:
+This is a storyboard image only.
+Not for video generation.
+No subtitles, no captions, no dialogue text bubbles.`;
+}
+
+/* =========================================================
+   3x3 스타일 테스트 — 이미지툴 전용
+   ========================================================= */
+function compileGridPrompt(scene, movieMeta){
+  const base = typeof compileImagePrompt === 'function'
+    ? compileImagePrompt(scene, movieMeta)
+    : `${scene.location || ''}\n${scene.event || ''}`;
+
+  return `[IMAGE TOOL ONLY — 3x3 STYLE TEST GRID]
+This prompt is for image generation tools only.
+Do NOT use this in Veo / Flow / Kling / Seedance.
+This creates a 3x3 image grid for visual style testing, not a video.
+
+Create a 3x3 grid of nine still-image variations of the SAME scene.
+
+Purpose:
+- test camera angle
+- test lighting
+- test composition
+- test character consistency
+- choose the best still image before making video
+
+Keep exactly the same:
+- same character identity
+- same face
+- same age
+- same gender
+- same costume
+- same location
+- same props
+- same emotional situation
+
+Vary only:
+- shot size
+- camera angle
+- composition
+- lighting intensity
+- subtle facial expression
+
+Base scene:
+${base}
+
+Important:
+This is a 3x3 image grid only.
+Not for video generation.
+No subtitles, no captions, no dialogue text, no UI text.`;
+}
+
+/* =========================================================
+   사용법 텍스트
+   ========================================================= */
+function buildUseGuideText(){
+  return `🎬 사용법 안내
+
+1. 영상을 만들 때
+반드시 "씬별 영상용 메인 프롬프트"만 Veo / Flow / Kling / Seedance 같은 영상 생성툴에 넣으세요.
+
+2. 영상툴에 넣으면 안 되는 것
+- 4컷 콘티 프롬프트
+- 3x3 스타일 테스트 프롬프트
+- SRT 자막
+- 대본 확인용 텍스트
+
+3. 각 탭의 용도
+
+[사용법 탭]
+어떤 프롬프트를 어디에 쓰는지 확인하는 안내입니다.
+
+[대본 탭]
+한국어 대사, Scene 요약, 사건 흐름 확인용입니다.
+영상툴에 넣는 용도가 아닙니다.
+
+[씬별 영상용 메인 프롬프트 탭]
+Veo / Flow / Kling / Seedance에 넣는 실제 영상 프롬프트입니다.
+한 Scene을 하나의 연속된 영상으로 생성하도록 설계되어 있습니다.
+자막은 화면에 넣지 않습니다.
+
+[4컷 콘티 프롬프트 탭]
+이미지 생성툴용입니다.
+영상 생성툴에 넣지 마세요.
+영화 흐름을 4컷 이미지로 확인하는 용도입니다.
+
+[3x3 스타일 테스트 프롬프트 탭]
+이미지 생성툴용입니다.
+영상 생성툴에 넣지 마세요.
+캐릭터/조명/구도/스타일 일관성 테스트용입니다.
+
+[SRT 자막 탭]
+영상 생성이 끝난 뒤 CapCut, Premiere, DaVinci 같은 편집툴에서 따로 넣는 자막입니다.
+영상 프롬프트 안에 자막을 넣지 않습니다.
+
+핵심 규칙:
+영상 프롬프트에는 자막을 넣지 않습니다.
+대사는 voice acting only 입니다.
+한국어 자막은 SRT에서 따로 처리합니다.`;
+}
+
+/* =========================================================
+   결과 모달 안내 강화
+   ========================================================= */
+if(typeof showSceneModal === 'function'){
+  const __originalShowSceneModal_v73 = showSceneModal;
+
+  showSceneModal = function(s, idx){
+    __originalShowSceneModal_v73(s, idx);
+
+    setTimeout(()=>{
+      const content = document.getElementById('modalContent');
+      if(!content) return;
+
+      if(document.getElementById('v73UsageGuideBox')) return;
+
+      const guide = document.createElement('div');
+      guide.id = 'v73UsageGuideBox';
+      guide.style.cssText = 'background:#ecfeff;border:2px solid #06b6d4;border-radius:10px;padding:12px;margin:0 0 14px;font-size:12px;color:#155e75;line-height:1.7;';
+      guide.innerHTML = `
+        <b>✅ 결과 탭 사용법</b><br>
+        <b>🎥 영상 만들 때:</b> 반드시 <u>Flow/Veo 영상 프롬프트</u>, <u>Kling 영상 프롬프트</u>, 또는 <u>Seedance 2.0 영상 프롬프트</u>만 영상툴에 넣으세요.<br>
+        <b>🎞 4컷 콘티</b>와 <b>🔲 3x3 그리드</b>는 이미지 생성툴용입니다. 영상툴에 넣으면 화면이 분할되거나 콘티처럼 나올 수 있습니다.<br>
+        <b>📝 SRT 자막</b>은 영상 생성 후 편집툴에서 따로 넣는 자막입니다. 영상 프롬프트 안에는 자막을 넣지 않습니다.
+      `;
+
+      content.insertBefore(guide, content.firstChild);
+    }, 0);
+  };
+}
+
+/* =========================================================
+   영상용 프롬프트만 복사 — SRT/콘티/그리드 제외
+   ========================================================= */
+function copySceneVideoOnly(idx, btn){
+  const scene = S.scenes[idx];
+  if(!scene){ alert('Scene 정보 없음'); return; }
+
+  const p = scene.prompts || {};
+  const toStr = v => typeof v === 'string' ? v : (v ? JSON.stringify(v, null, 2) : '');
+
+  const flow = toStr(p.prompt_flow || p.shots?.[0]?.prompt_flow || '');
+  const kling = toStr(p.prompt_kling || '');
+  const seedance = toStr(p.prompt_seedance || '');
+  const image = toStr(p.prompt_image || p.shots?.[0]?.prompt_image || '');
+
+  const sections = [
+    '════════════════════════════════════',
+    '🎥 Scene '+scene.num+' 영상용 메인 프롬프트',
+    'SRT 자막 미포함 / 콘티 미포함 / 3x3 미포함',
+    '════════════════════════════════════',
+    '',
+    '사용법:',
+    'Veo / Flow / Kling / Seedance 같은 영상 생성툴에는 아래 영상 프롬프트만 넣으세요.',
+    '4컷 콘티, 3x3 스타일 테스트, SRT 자막은 영상툴에 넣지 마세요.',
+    ''
+  ];
+
+  if(flow){
+    sections.push('🎥 [Flow / Veo 영상 프롬프트]');
+    sections.push('────────────────────────────────────');
+    sections.push(flow);
+    sections.push('');
+  }
+
+  if(kling){
+    sections.push('🌊 [Kling 영상 프롬프트]');
+    sections.push('────────────────────────────────────');
+    sections.push(kling);
+    sections.push('');
+  }
+
+  if(seedance){
+    sections.push('🌟 [Seedance 2.0 영상 프롬프트]');
+    sections.push('────────────────────────────────────');
+    sections.push(seedance);
+    sections.push('');
+  }
+
+  if(image){
+    sections.push('🖼️ [참조 이미지 생성용 프롬프트 — 선택]');
+    sections.push('영상툴용이 아니라 캐릭터/장면 참조 이미지 생성용입니다.');
+    sections.push('────────────────────────────────────');
+    sections.push(image);
+    sections.push('');
+  }
+
+  copyToClipboardWithFeedback(sections.join('\n'), btn, '영상용 프롬프트만 복사됨');
+}
+
+/* =========================================================
+   전체 자료 복사도 안내 강화
+   ========================================================= */
+if(typeof copySceneAll === 'function'){
+  const __originalCopySceneAll_v73 = copySceneAll;
+
+  copySceneAll = function(idx, btn){
+    const scene = S.scenes[idx];
+
+    if(!scene){
+      alert('Scene 정보가 없습니다.');
+      return;
+    }
+
+    const warning = [
+      '⚠️ 사용 주의',
+      '영상 생성툴에는 반드시 영상용 메인 프롬프트만 넣으세요.',
+      '4컷 콘티 / 3x3 테스트 / SRT 자막은 영상툴에 넣지 마세요.',
+      'SRT는 영상 생성 후 편집툴에서 따로 넣는 자막입니다.',
+      ''
+    ].join('\n');
+
+    __originalCopySceneAll_v73(idx, btn);
+
+    console.log('[movie-prompt v7.3] copySceneAll includes all materials. Use video-only copy for video tools.');
+  };
+}
+
+console.log('[movie-prompt] v7.3 video prompt separation patch loaded');
+  </script>
 </body>
 </html>
 
