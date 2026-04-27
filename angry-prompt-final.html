@@ -315,7 +315,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
     <button class="tab" onclick="switchTab('vid')">🎬 영상 프롬프트</button>
   </div>
   <div class="tab-panel active" id="panelImg">
-    <div class="scene-tip">💡 말하는 사물 전경 강조 + 주변 배경 디테일 + 실제 크기 유지 설계</div>
+    <div class="scene-tip">💡 핵심 기능 모션 1개 + 주변 움직임 1~2개만 간단하게</div>
     <div class="result-card">
       <div class="result-top">
         <span class="result-label">IMAGE PROMPT</span>
@@ -427,7 +427,6 @@ const ANGRY_FUNCTION_MOTION = {
 };
 function getAngryFunctionMotion(objKr){
   if(!objKr) return '';
-  // 한글 검색: emoji + 이름에서 매칭되는 키 찾기
   for(const key of Object.keys(ANGRY_FUNCTION_MOTION)){
     if(objKr.includes(key)) return ANGRY_FUNCTION_MOTION[key];
   }
@@ -509,7 +508,6 @@ function getFunctionReveal(objKr, mood){
     }
   }
   if(!reveal){
-    // 키워드 매칭
     const k = objKr;
     if(k.includes('냉장고')) reveal = FUNCTION_REVEAL['🧊 냉장고'];
     else if(k.includes('세탁기')) reveal = FUNCTION_REVEAL['🌀 세탁기'];
@@ -527,7 +525,7 @@ function getFunctionReveal(objKr, mood){
   return 'During the dialogue, the character ' + reveal.action + ' ' + emotionStyle + ', ' + reveal.reveal + '.';
 }
 
-// 카테고리별 주변 ambient motion (너무 잡스럽지 않게 1-2 포인트)
+// 카테고리별 주변 ambient motion
 const AMBIENT_BY_CAT = {
   food:'steam rising from nearby food, condensation droplets slowly forming on cold drinks, a napkin corner barely fluttering',
   object:'fabric or paper edges slightly moving, dust particles drifting through light, a stray item on the floor nearby',
@@ -544,8 +542,64 @@ const AMBIENT_BY_CAT = {
   kitchen:'steam rising from pots or kettle, condensation on windows, oil sizzling visually',
   tool:'dust particles from recent work, a loose screw on the surface, light flicker from work lamp'
 };
-
 function getAmbient(cat){return AMBIENT_BY_CAT[cat]||'subtle ambient motion — dust in light, fabric edges faintly moving, gentle environmental life';}
+
+/* ===== 추가: 짧고 직관적인 핵심 기능 모션 ===== */
+const CORE_MOTION_MAP = {
+  '세탁기': 'the drum is clearly spinning behind the glass door, with laundry tumbling and suds moving inside',
+  '청소기': 'the vacuum is clearly sucking up visible dust, crumbs, and hair from the floor',
+  '냉장고': 'the refrigerator door is slightly open and cold air is spilling out',
+  '에어컨': 'the front vent is open and cool air is visibly blowing out',
+  '선풍기': 'the blades are spinning and blowing a nearby paper slightly',
+  '전자레인지': 'the turntable inside is spinning with the inside light on',
+  '밥솥': 'steam is clearly coming out from the top vent',
+  '커피머신': 'coffee is dripping into a cup and steam is rising',
+  'TV': 'the screen is turned on and changing subtly',
+  '노트북': 'the screen is on with slight motion and a small blinking indicator light',
+  '가습기': 'mist is continuously coming out from the top',
+  '쓰레기통': 'the lid opens and the trash inside is visible',
+  '선글라스': 'the sunglasses are placed lens-down on a hard surface, with small dust and light reflections visible on the lenses',
+  '스마트폰': 'the screen is on and a small notification light or subtle UI motion is visible',
+  '키보드': 'a few keys are slightly pressed and tiny crumbs are visible between the keys',
+  '마우스': 'the cursor movement is implied and the mouse slightly shifts on the desk',
+  '우산': 'small water droplets are dripping from the umbrella surface',
+  '전구': 'the bulb is glowing brightly with a subtle flicker',
+  '자전거': 'one wheel is slowly spinning',
+  '버스': 'the bus is idling slightly with small reflections moving on the body',
+  '택시': 'the taxi is idling slightly with small street reflections moving on the body',
+  '운동화': 'small dust and surface texture are visible while the shoe rests naturally',
+  '냄비': 'light steam is rising from inside the pot',
+  '프라이팬': 'light steam or cooking heat is visible above the pan'
+};
+
+function getCoreMotionShort(objKr, objEn){
+  if(!objKr) return `show one clear natural motion that fits a real ${objEn || 'object'}`;
+  for(const key of Object.keys(CORE_MOTION_MAP)){
+    if(objKr.includes(key)) return CORE_MOTION_MAP[key];
+  }
+  return `show one clear natural motion that fits a real ${objEn || objKr}`;
+}
+
+const SIMPLE_AMBIENT_MAP = {
+  food: 'soft steam or condensation moving nearby',
+  object: 'a little dust or one nearby small item moving slightly',
+  electronics: 'one small indicator light blinking or a cable moving slightly',
+  furniture: 'a curtain edge or a small object moving slightly',
+  vehicle: 'small street reflections or one simple background movement',
+  animal: 'fur, ears, or whiskers moving naturally',
+  nature: 'wind moving leaves or dust slightly',
+  toy: 'a little dust or one nearby toy moving slightly',
+  stationery: 'paper edges moving slightly',
+  sports: 'a little dust or one small piece of gear moving slightly',
+  fashion: 'small light reflections or fabric movement',
+  building: 'one simple background movement only',
+  kitchen: 'light steam or tiny kitchen movement',
+  tool: 'a little dust or one small part moving slightly'
+};
+
+function getSimpleAmbientShort(cat){
+  return SIMPLE_AMBIENT_MAP[cat] || 'one or two simple background motions only';
+}
 
 const STYLE_PROMPTS = {
   pixar:{note:'🎬 픽사 3D',base:'Pixar-style 3D animation, highly expressive cartoon face on the object, two slim stylized arms emerging naturally from either side, warm volumetric studio lighting, vibrant colors, cinematic illumination, Pixar-quality render'},
@@ -828,7 +882,6 @@ async function aiRandom(step){
     const btn=document.querySelector('#s'+step+' .btn-sm');
     const ot=btn.textContent;btn.textContent='⏳...';btn.disabled=true;
     try{
-      // 카테고리별 엄격한 가이드라인
       const CAT_GUIDE = {
         food: '한국 사람이 자주 먹는 음식/식품/디저트 (예: 김밥, 떡볶이, 라면, 치킨, 삼겹살, 아이스크림). 판타지나 희귀한 것 금지',
         object: '일상에서 매일 쓰는 생활 사물 (예: 휴대폰, 이어폰, 안경, 지갑, 열쇠, 머리끈, 우산). 판타지 아이템 금지',
@@ -877,7 +930,6 @@ async function aiRandom(step){
     return;
   }
   if(step===4){
-    // 스타일은 픽사 고정 — step 4 호출 시 바로 mood 랜덤으로 넘어감
     const chips=document.querySelectorAll('#moodChips .chip');
     if(chips.length>0){
       const idx=Math.floor(Math.random()*chips.length);
@@ -932,7 +984,6 @@ async function genDialogue(regen){
 
   dialogueEl.placeholder = '⏳ 정보 수집 중 (웹 검색)...';
 
-  // 웹 검색으로 사물×주제 관련 실제 정보 수집
   let research = null;
   try {
     research = await getResearch(S.obj, S.topicDesc);
@@ -945,7 +996,6 @@ async function genDialogue(regen){
 
   const styleTone=STYLE_DIALOGUE_TONE[S.style]||'자연스러운 한국어 구어체';
 
-  // 연구 결과를 시스템 프롬프트에 주입할 텍스트
   const researchText = research && (research.reasons.length || research.stats.length || research.common_mistakes.length || research.real_examples.length)
     ? '\n\n【🔍 웹 검색 기반 실제 정보 — 이걸 대사에 녹여라】\n' +
       (research.reasons.length ? '\n▶ 왜 안 좋은가:\n' + research.reasons.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
@@ -954,15 +1004,6 @@ async function genDialogue(regen){
       (research.real_examples.length ? '\n\n▶ 실제 사례:\n' + research.real_examples.slice(0,5).map(r=>'  - '+r).join('\n') : '') +
       '\n\n⚠️ 이 정보를 반드시 대사에 녹여라. 구체적 숫자/사실/사례를 활용해서 시청자가 "오 이거 진짜 정보네" 하게 만들어라. 단순 감정 표출이 아닌 정보 전달 + 분노 두 마리 토끼.'
     : '';
-
-  const REFS_30 = `[예시1 - 쓰레기통 × 옆 바닥에 버리기]
-"야 진짜 미친 거 아니야? 나 여기 버젓이 있는데 굳이 바닥에 던지냐? 세 걸음이야 세 걸음. 그것도 못 걷냐? 어제는 내 옆에 떨어뜨려 놓고 그냥 가버렸잖아. 내가 네 엄마냐? 내가 줍는 사람이냐? 나도 자존심이라는 게 있어. 버릴 때는 내 안에 정확히 넣어. 이게 어려워? 진짜 짜증나 죽겠네."
-
-[예시2 - 캔음료 × 안 닦고 마시기]
-"야 너 지금 제정신이야? 캔 뚜껑에 뭐가 붙어있는지 알고나 마셔? 공장에서 출고될 때 기름, 유통 중에 먼지, 편의점 매대에서 누가 만졌는지도 몰라. 어제는 심지어 바닥에 떨어뜨리고도 그냥 따서 마시던데. 그게 네 입이야? 쓰레기통이야? 나 위해서가 아니라 네 몸 걱정해서 말하는 거야. 티슈 한 장이면 끝나는 걸 왜 안 하냐? 진심 답답하다."
-
-[예시3 - 엘리베이터 × 스피커폰]
-"진짜 이거 너한테만 몇 번째야? 좁은 공간 다섯 명 갇혀있는데 너 혼자 엄마랑 스피커폰으로 30층까지 가. 방금 저 할아버지 인상 쓰는 거 봤어? 뒤에 학생 이어폰 꽂고도 네 목소리 다 들린대. 창피한 줄 알아. 이어폰 꽂든가 끊든가. 공공장소라는 개념이 없어?"`;
 
   const REFS_10 = `[예시1 - 쓰레기통 × 바닥에 버리기]
 "야 나 바로 옆에 있는데 바닥에 던지는 거 뭐냐? 세 걸음도 못 걷냐? 진짜 어이없다."
@@ -1114,7 +1155,6 @@ ${BAN_RULES}
 5. 이전 대사와 같은 각도 → 다른 각도 골라라
 약하면 다시 써.`;
 
-  // 재생성 다양성 강화: 매번 다른 각도 seed
   const angles = ['건강/위생 피해', '금전적/경제적 피해', '사회적 민폐', '구체적 숫자/통계', '과거 사례/목격담'];
   const anglesJP = ['健康・衛生被害', '金銭的被害', '他人への迷惑', '具体的な数字・統計', '過去の事例・目撃談'];
   const angleList = isJP_dlg ? anglesJP : angles;
@@ -1144,7 +1184,6 @@ ${BAN_RULES}
       throw new Error('AI가 빈 응답을 반환함. API 키 또는 쿼터 확인.');
     }
 
-    // 🔁 일본어 모드 — 너무 딱딱하면 재작성
     if(isJP_dlg){
       const formalPatterns = [/してください/g,/しましょう/g,/適切ではありません/g,/正しい使い方/g,/使用方法/g,/おすすめします/g,/重要です/g];
       const hits = formalPatterns.reduce((sum,re)=>{const m=String(txt||'').match(re);return sum+(m?m.length:0);},0);
@@ -1167,7 +1206,6 @@ ${BAN_RULES}
     usedDialogues.push(txt.trim());
     if(usedDialogues.length>10) usedDialogues.shift();
 
-    // 🌐 일본어 모드 — 한국어 번역 미리보기
     const transBox = document.getElementById('dialogueTransBox');
     const transText = document.getElementById('dialogueTransText');
     if(isJP_dlg){
@@ -1194,7 +1232,7 @@ ${BAN_RULES}
   }
 }
 
-// ═══ 프롬프트 생성 ═══
+// ═══ 프롬프트 생성 (간단 버전으로 수정) ═══
 async function generate(){
   if(!S.obj){showErr('오브젝트를 선택해주세요.');return;}
   if(!S.loc){showErr('장소를 선택해주세요.');return;}
@@ -1213,167 +1251,71 @@ async function generate(){
     if(!dialogue){dialogue='왜 이러는 거야, 진짜!';}
   }
 
-  let dialogueEN='';
-  if(getApiKey()){
-    try{
-      dialogueEN=await callAI(
-        'You translate short-form video dialogues from Korean to natural spoken English for AI voice generation. Output only the translation. Preserve emotion, rhythm, contractions.',
-        'Korean:\n'+dialogue+'\n\nTranslate to natural spoken English.'
-      );
-    }catch(e){dialogueEN=dialogue;}
-  } else dialogueEN=dialogue;
-
-  const moodEn=MOOD_MAP[S.mood]||MOOD_MAP.angry;
-  const ratio='9:16 vertical short-form';
-  const platform='Kling / Veo / Runway | Max: 60s';
   const objEn=S.objEn||S.obj;
   const locEn=S.locEn||S.loc;
-  const styleTpl=STYLE_PROMPTS[S.style];
+  const coreMotion=getCoreMotionShort(S.obj,objEn);
+  const ambientShort=getSimpleAmbientShort(S.cat);
+  const moodEn=MOOD_MAP[S.mood]||MOOD_MAP.angry;
   const sizeHint=getSizeHint(S.obj);
-  // 카테고리 기반 fallback ambient + AI 시도로 덮어쓰기
-  let ambient = getAmbient(S.cat);
-  let enhancedLoc = locEn;
-  let enhancedProps = 'contextually relevant items placed naturally around the subject';
 
-  const aiScene = await getScene(objEn, S.cat);
-  if(aiScene && aiScene.loc){
-    enhancedLoc = aiScene.loc;
-    if(aiScene.props) enhancedProps = aiScene.props;
-    if(aiScene.ambient) ambient = aiScene.ambient;
-  }
-
-  // 3단계 폴백 모션
-  let fnMotion = getAngryFunctionMotion(S.obj);
-  if(!fnMotion && aiScene && aiScene.motion){
-    fnMotion = aiScene.motion;
-  }
-  if(!fnMotion){
-    try {
-      const aiMotion = await getMotionAI(objEn);
-      if(aiMotion) fnMotion = aiMotion;
-    } catch(e){ console.warn('motion AI failed:', e); }
-  }
-  const ambientLine = fnMotion
-    ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+ambient+'.'
-    : ' Surrounding ambient details add a sense of life: '+ambient+'.';
-
-  // 🔒 캐릭터 고정 규칙 (이미지) — 얼굴/팔 새로 생기는 문제 방지
-  const identityAndLimbImageLock =
-    'CRITICAL CHARACTER ANCHOR: exactly ONE face only, embedded on the main object in one clear location. ' +
-    'The face must be part of the object surface, not a separate head, not a sticker, not floating, and not duplicated anywhere else. ' +
-    'Keep the same face structure, eyes, nose, mouth, expression, proportions, and placement. ' +
-    'LIMB ANCHOR: exactly TWO arms only. The arms must grow directly from the main object body at believable fixed attachment points. ' +
-    'For sink/faucet characters, the arms must be attached only to the sink or faucet area, never from dishes, window, background, water, bowl, counter, or empty air. ' +
-    'No extra arms, no extra hands, no floating hands, no disconnected limbs, no wrong attachment points. ';
-
-  const imagePrompt = 'A ' + objEn + ' featuring an angry human-like expression — sharply furrowed eyebrows, clenched teeth, and exaggerated bulging cartoon eyes. ' +
-    identityAndLimbImageLock +
-    'Two thin, minimal cartoon arms extend directly from each side of its body — slender, not muscular, with colors subtly matching the object itself. ' +
-    'One arm is pointed forcefully toward the viewer as if accusing, while the other is lifted as if scolding. ' +
-    'No legs or feet are present. The character remains grounded, sitting or resting naturally on its base without any floating effect. ' +
-    'The ' + objEn + ' retains a realistic texture with fine surface details. ' +
-    'Scene: ' + enhancedLoc + ' — depicted in a realistic setting with natural lighting, ' + enhancedProps + '.' +
-    ambientLine + ' ' +
-    'Pixar-inspired 3D style, cinematic lighting, highly detailed, vertical 9:16 composition. No text, no subtitles, no captions, no watermarks, no logos anywhere in the frame.';
-
-  const functionReveal = getFunctionReveal(S.obj, S.mood);
-
-  // 🪣 사물별 분노 트리거 상황 + 풍부한 환경 역동성
-  const getAngrySituationalAction = (objKey, objEn) => {
-    const lo = (objEn||'').toLowerCase();
-    const ko = (objKey||'').toLowerCase();
-    if(lo.includes('air conditioner')||ko.includes('에어컨'))
-      return {action:'a sweltering hot room scene, the air conditioner struggles with a clogged dusty filter, weak airflow barely coming out, while ignored', ambient:'dust-clogged filter visible, weak sputtering airflow, vent louvers barely moving, mold spots on the surface, red error indicator blinking, room visibly hot with heat shimmer, dust falling out instead of cool air'};
-    if(lo.includes('fan')||ko.includes('선풍기'))
-      return {action:'fan struggling to spin with dust caked on blades, weak weakly rotating', ambient:'dust visibly caked on blades, blades rotating weakly, indicator dim, slight rattling'};
-    if(lo.includes('sink')||lo.includes('faucet')||ko.includes('싱크')||ko.includes('수전'))
-      return {action:'dirty dishes piled high, stagnant murky water in the basin, food residue everywhere', ambient:'water dripping slowly from clogged drain, dishes shifting under their own weight, stagnant water rippling, fly hovering nearby, food residue floating'};
-    if(lo.includes('washing machine')||ko.includes('세탁기'))
-      return {action:'overstuffed laundry crammed inside, drum struggling, lint everywhere', ambient:'laundry tumbling chaotically, lint flying out, machine vibrating violently, water sloshing, error light blinking, soap residue oozing'};
-    if(lo.includes('refrigerator')||lo.includes('fridge')||ko.includes('냉장고'))
-      return {action:'door left open with food spilling out, expired containers visible, mess inside', ambient:'cold air leaking wastefully, items teetering and falling, light flickering, condensation pooling, expired food visible, magnets falling off, smell visualized'};
-    if(lo.includes('microwave')||ko.includes('전자레인지'))
-      return {action:'food splattered all over the inside, dirty interior never cleaned', ambient:'splatter caked inside, light flickering yellow, tray spinning slowly with food residue, smoke wisp, error beeping'};
-    if(lo.includes('toilet')||ko.includes('변기'))
-      return {action:'lid up, mess and stains around the rim, an unflushed scene', ambient:'water still swirling slightly, faint stink lines wafting up, lid bobbing, toilet paper scattered, fly nearby'};
-    if(lo.includes('shower')||ko.includes('샤워'))
-      return {action:'mineral buildup, hair clogging the drain, water spraying weakly with attitude', ambient:'sputtering water in uneven spray, hair clog visible at drain, droplets, soap scum on tiles, weak weak steam'};
-    if(lo.includes('vacuum')||ko.includes('청소기'))
-      return {action:'tangled hair in the brush, clogged hose, dust everywhere ignored', ambient:'visible dust clouds NOT being sucked, hose flexing weakly, hair tangled in brush, indicator blinking red, wheels barely rolling'};
-    if(lo.includes('rice cooker')||ko.includes('밥솥'))
-      return {action:'crusted leftover rice inside from days ago, neglected appearance', ambient:'weak weak steam, condensation, indicator dim, rice crust visible, lid handle dirty'};
-    if(lo.includes('frying pan')||lo.includes('pan')||ko.includes('프라이팬'))
-      return {action:'burnt food stuck on, oil mess everywhere, never washed', ambient:'thick smoke rising, oil splatter mess, food crusting hard, fire alarm hint'};
-    if(lo.includes('trash')||ko.includes('쓰레기'))
-      return {action:'overflowing with garbage, lid stuck open, items spilling out', ambient:'stink lines wafting up, items spilling chaotically, flies buzzing actively, plastic crinkling, juice leaking'};
-    if(lo.includes('chair')||ko.includes('의자'))
-      return {action:'crumbs and stains on the seat, hair stuck in wheels, neglected', ambient:'wheels squeaking loudly, fabric flexing, debris settling, springs creaking, food residue visible'};
-    if(lo.includes('keyboard')||ko.includes('키보드'))
-      return {action:'crumbs and food bits between keys, sticky residue on the surface', ambient:'crumbs visible between keys, sticky residue gleaming, dust thick, key stuck pressed, RGB lights flickering weakly'};
-    return {action:'a messy/neglected situation triggering the anger', ambient:'visible neglect — dust, smell lines, debris, dim flickering indicator, environmental signs of frustration'};
-  };
-  const situ = getAngrySituationalAction(S.obj, S.objEn);
-
-  // 🌐 언어 분기 + 한글 섞임 검증
   const isJP_video = S.country==='jp';
-  const spokenLang = isJP_video ? 'Japanese' : 'Korean';
-  const voiceLang = isJP_video ? 'Natural Japanese voice' : 'Natural Korean voice';
+  const voiceSpec = isJP_video ? 'Natural Japanese angry voice.' : 'Natural Korean angry voice.';
+  const langLock = isJP_video
+    ? 'Speak the Japanese dialogue exactly as written.'
+    : 'Speak the Korean dialogue exactly as written.';
 
-  // 🔍 일본어 모드인데 한글 섞이면 차단
-  if(isJP_video && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(dialogue||'')){
-    showErr('⚠️ 일본어 모드인데 대사에 한글이 섞여 있습니다. 대사를 다시 생성해주세요.');
-    btn.disabled=false;btn.textContent='🔥 프롬프트 생성하기';
-    return;
-  }
+  // 이미지 프롬프트도 짧게
+  const imagePrompt =
+`A ${objEn} with an angry human-like cartoon face and exactly two thin cartoon arms.
+One arm points toward the viewer and the other is raised as if scolding.
+No legs.
+Keep the object grounded at its real size.
+Size guidance: ${sizeHint}
+Scene: ${locEn}.
+Show the key action clearly: ${coreMotion}.
+Add only 1-2 simple ambient details: ${ambientShort}.
+Expression: ${moodEn}.
+Pixar-style 3D, cinematic lighting, highly detailed, vertical 9:16.
+No text, no subtitles, no logos, no watermark.`;
 
   const videoPrompt =
-'Use the uploaded reference image as the EXACT first frame and identity anchor.\n\n' +
-'Preserve the original object exactly: same object structure, same proportions, same materials, same colors, same face design, same arm attachment points, and same environment style.\n\n' +
-'Create a 7-second short vertical video with two connected scenes.\n\n' +
-'Scene 1 (0-3s):\n' +
-'Show the messy/neglected situation that triggers the rage: ' + situ.action + '.\n' +
-'The object is in its environment showing visible signs of being mistreated. Use subtle camera movement only.\n\n' +
-'Scene 2 (3-7s):\n' +
-'The object explodes with anger and yells this ' + spokenLang + ' line EXACTLY as written (do not translate, do not paraphrase' + (isJP_video?'':', keep 반말 as 반말') + '):\n' +
-'"' + dialogue + '"\n' +
-(isJP_video
-  ? '⚠️ CRITICAL LANGUAGE LOCK: This is JAPANESE. Speak the Japanese dialogue exactly as written. Do NOT translate it into Korean. Do NOT mix Korean words. Do NOT use Korean pronunciation. The voice MUST be Japanese.\n'
-  : '⚠️ CRITICAL LANGUAGE LOCK: This is KOREAN. Speak the Korean dialogue exactly as written. Do NOT translate it. The voice MUST be Korean.\n') +
-'Performance tone: angry, scolding, exasperated.\n\n' +
-'Identity rules:\n' +
-'- Keep only ONE character identity.\n' +
-'- If the face is visible, keep the EXACT same face from the reference image.\n' +
-'- If the face is occluded by motion, props, hands, or camera angle, keep it occluded.\n' +
-'- Never generate a new face.\n' +
-'- Never create an alternate face, secondary face, or replacement face.\n' +
-'- Do not force face visibility.\n\n' +
-'Mouth/voice:\n' +
-'- When the face is visible, use subtle angry mouth movement (eyebrows furrow, mouth opens with rage).\n' +
-'- When the face is hidden or occluded, the voice can continue without visible mouth animation.\n\n' +
-'Motion rules:\n' +
-'- Subtle, natural angry motion. Object stays grounded and stable.\n' +
-'- Exactly two arms only, attached at the same original positions.\n' +
-'- Gestures may include pointing finger at camera or raising palms in "why would you do that" — but root points stay locked.\n' +
-'- No extra arms, no floating limbs, no detached hands, no morphing.\n\n' +
-'Natural action priority:\n' +
-'- Match action to dialogue meaning.\n' +
-'- Show the messy situation before facial acting.\n' +
-'- If facial visibility conflicts with natural action, prioritize the natural action.\n\n' +
-'Ambient dynamic motion (use these for liveliness instead of exaggerated face/arm motion):\n' +
-situ.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
-'Audio:\n' +
-'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker, angry tone with scolding emotion':'Native Korean speaker, angry adult tone with scolding emotion') + '.\n' +
-(isJP_video ? '- ABSOLUTELY NO Korean voice, NO Korean pronunciation, NO Korean accent. Pure Japanese only.\n' : '') +
-'- Clear and dry sound. No echo, no reverb.\n' +
-'- No background music, no BGM, no soundtrack.\n' +
-'- No captions or text on screen.\n\n' +
-'Style:\n' +
-'Pixar-like 3D animation, exaggerated angry expressions, stable composition, vertical 9:16.';
+`Use the uploaded reference image as the first frame.
+Create a 7-second vertical 9:16 Pixar-style video.
+Keep the same object, same face, same colors, same proportions, and exactly two arms.
+
+Main action:
+${coreMotion}.
+
+Scene:
+${locEn}.
+Add only 1-2 simple ambient motions: ${ambientShort}.
+
+Dialogue:
+The character angrily says exactly:
+"${dialogue}"
+${langLock}
+
+Acting:
+angry and scolding,
+subtle upper-body motion,
+small hand gestures only,
+no extra limbs,
+the face must stay as the object face.
+
+Camera:
+mostly static,
+slight push-in only.
+
+Audio:
+${voiceSpec}
+Clear and dry sound.
+No music.
+
+No captions, no subtitles, no on-screen text.`;
 
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
-  // SRT 자막 생성
   const srtText=generateSingleSceneSRT(dialogue,7);
   if(srtText){
     document.getElementById('srtOut').textContent=srtText;
@@ -1397,7 +1339,7 @@ situ.ambient + '. Keep ambient motion dynamic but not chaotic.\n\n' +
     if(!stats.byConcept)stats.byConcept={};
     stats.byConcept['angry']=(stats.byConcept['angry']||0)+1;
     if(!stats.byCountry)stats.byCountry={};
-    stats.byCountry['kr']=(stats.byCountry['kr']||0)+1;
+    stats.byCountry[S.country]=(stats.byCountry[S.country]||0)+1;
     localStorage.setItem('usage_stats',JSON.stringify(stats));
   } catch(e){}
 
@@ -1505,7 +1447,7 @@ async function getScene(object, category){
   }
 }
 
-// 사물별 작동/주변 모션 전용 AI 호출 (FUNCTION_MOTION 매칭 없을 때 fallback)
+// 사물별 작동/주변 모션 전용 AI 호출
 async function getMotionAI(object){
   const apiKey = getApiKey();
   if(!apiKey) return '';
@@ -1676,4 +1618,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
