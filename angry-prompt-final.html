@@ -1334,31 +1334,7 @@ async function generate(){
     'Real object usage and surrounding situation are PRIMARY. ' +
     'Face and hands are SECONDARY supporting elements only. ';
 
-  // ═══════ 🖼️ 이미지 프롬프트 (실제 사용 장면 + 화내는 사물) ═══════
-  const imagePrompt = 
-    'A realistic scene showing a ' + objEn + ' in its actual real-world usage context. ' +
-    
-    '🪑 OBJECT POSITION: ' + ctx.position + '. ' + ctx.posture + '. ' +
-    '⚙️ FUNCTION VISIBLE: ' + ctx.funcVisible + '. ' +
-    '🎬 SITUATION: ' + situ.action + '. The problem situation matching the dialogue is clearly visible around the object. ' +
-    '🌫️ ENVIRONMENT: ' + ambientLine + ' ' + enhancedProps + '. ' +
-    
-    OBJECT_REALISM_LOCK +
-    FACE_DESIGN_LOCK +
-    ARMS_DESIGN_LOCK +
-    
-    '😠 EXPRESSION: angry expression embedded on the object surface — furrowed stylized eyebrows, narrowed/glaring 3D eyes, mouth open in frustration. NO realistic human face features. ' +
-    
-    '📐 COMPOSITION: The real usage scene and problem situation take up the majority of the frame. The face is integrated into the object naturally. Vertical 9:16 composition. ' +
-    
-    '🎨 STYLE: Pixar-inspired 3D style with realistic environmental detail, cinematic lighting, the OBJECT remains recognizable as a real product first and a character second. ' +
-    
-    '🚫 ABSOLUTE NEGATIVES: No standing upright like a person, no walking, no floating, no jumping, no flying, no human-like posing, no human nose, no realistic human face, no skin-toned arms, no separate mask-like face, no text, no subtitles, no captions, no watermarks, no logos. ' +
-    'NO duplicated faces, NO multiple faces, NO floating face. Only ONE face embedded on the main object body.';
-
-  const functionReveal = getFunctionReveal(S.obj, S.mood);
-
-  // 🪣 사물별 분노 트리거 상황 + 풍부한 환경 역동성
+  // 🪣 사물별 분노 트리거 상황 + 풍부한 환경 역동성 (imagePrompt에서 사용하므로 미리 정의)
   const getAngrySituationalAction = (objKey, objEn) => {
     const lo = (objEn||'').toLowerCase();
     const ko = (objKey||'').toLowerCase();
@@ -1386,13 +1362,38 @@ async function generate(){
       return {action:'burnt food stuck on, oil mess everywhere, never washed', ambient:'thick smoke rising, oil splatter mess, food crusting hard, fire alarm hint'};
     if(lo.includes('trash')||ko.includes('쓰레기'))
       return {action:'overflowing with garbage, lid stuck open, items spilling out', ambient:'stink lines wafting up, items spilling chaotically, flies buzzing actively, plastic crinkling, juice leaking'};
-    if(lo.includes('chair')||ko.includes('의자'))
-      return {action:'crumbs and stains on the seat, hair stuck in wheels, neglected', ambient:'wheels squeaking loudly, fabric flexing, debris settling, springs creaking, food residue visible'};
+    if(lo.includes('chair')||lo.includes('sofa')||ko.includes('의자')||ko.includes('소파'))
+      return {action:'crumbs and stains on the seat, hair stuck in cushions, neglected', ambient:'fabric flexing, debris settling, springs creaking, food residue visible, dust accumulated'};
     if(lo.includes('keyboard')||ko.includes('키보드'))
       return {action:'crumbs and food bits between keys, sticky residue on the surface', ambient:'crumbs visible between keys, sticky residue gleaming, dust thick, key stuck pressed, RGB lights flickering weakly'};
     return {action:'a messy/neglected situation triggering the anger', ambient:'visible neglect — dust, smell lines, debris, dim flickering indicator, environmental signs of frustration'};
   };
   const situ = getAngrySituationalAction(S.obj, S.objEn);
+
+  // ═══════ 🖼️ 이미지 프롬프트 (실제 사용 장면 + 화내는 사물) ═══════
+  const imagePrompt = 
+    'A realistic scene showing a ' + objEn + ' in its actual real-world usage context. ' +
+    
+    '🪑 OBJECT POSITION: ' + ctx.position + '. ' + ctx.posture + '. ' +
+    '⚙️ FUNCTION VISIBLE: ' + ctx.funcVisible + '. ' +
+    '🎬 SITUATION: ' + situ.action + '. The problem situation matching the dialogue is clearly visible around the object. ' +
+    '🌫️ ENVIRONMENT: ' + ambientLine + ' ' + enhancedProps + '. ' +
+    
+    OBJECT_REALISM_LOCK +
+    FACE_DESIGN_LOCK +
+    ARMS_DESIGN_LOCK +
+    
+    '😠 EXPRESSION: angry expression embedded on the object surface — furrowed stylized eyebrows, narrowed/glaring 3D eyes, mouth open in frustration. NO realistic human face features. ' +
+    
+    '📐 COMPOSITION: The real usage scene and problem situation take up the majority of the frame. The face is integrated into the object naturally. Vertical 9:16 composition. ' +
+    
+    '🎨 STYLE: Pixar-inspired 3D style with realistic environmental detail, cinematic lighting, the OBJECT remains recognizable as a real product first and a character second. ' +
+    
+    '🚫 ABSOLUTE NEGATIVES: No standing upright like a person, no walking, no floating, no jumping, no flying, no human-like posing, no human nose, no realistic human face, no skin-toned arms, no separate mask-like face, no text, no subtitles, no captions, no watermarks, no logos. ' +
+    'NO duplicated faces, NO multiple faces, NO floating face. Only ONE face embedded on the main object body.';
+
+  const functionReveal = getFunctionReveal(S.obj, S.mood);
+
 
   // 🌐 언어 분기 + 한글 섞임 검증
   const isJP_video = S.country==='jp';
