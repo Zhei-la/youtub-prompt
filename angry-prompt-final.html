@@ -191,7 +191,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <header>
   <div class="logo">쇼츠 3D 프롬프트 생성기</div>
-  <div class="tagline">앵그리 에디션 · 사물 의인화 AI 영상 <span class="byline">by 제일라</span> <span style="display:inline-block;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:0;text-transform:none;white-space:nowrap;">v3.0 🪑 안티-캐릭터화</span></div>
+  <div class="tagline">감정형 사물·동물 AI 영상 <span class="byline">by 제일라</span> <span style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:0;text-transform:none;white-space:nowrap;">v4.0 🎭 감정3종</span></div>
 </header>
 
 <div id="apiKeyBanner">
@@ -569,14 +569,52 @@ const MOOD_MAP = {
   dramatic_wind:'dramatic hair flowing backward, eyes glowing white with power',
   cute_angry:'puffed cheeks, tiny fists raised, adorable fury'
 };
+// ═══════ 🎭 감정 3종 시스템 (가이드 v3.0) ═══════
+// 화남 / 차분함 / 기분좋음 — 카테고리별 표정/분위기/대사 톤이 다름
 const STYLE_MOODS = {
-  pixar:['angry','furious','scolding','crying_angry','chibi_rage','dramatic_wind'],
-  anime:['chibi_rage','spark_eye','dramatic_wind','cute_angry','furious','crying_angry']
+  pixar:['angry','calm','happy'],
+  anime:['angry','calm','happy']
 };
 const MOOD_LABELS = {
-  angry:'😤 분노',furious:'🤬 격분',annoyed:'😒 짜증',scolding:'☝️ 훈계',threatening:'😈 위협',crying_angry:'😭 울분',
-  suppressed:'🥶 억누른 분노',disappointed:'😞 깊은 실망',cold_rage:'🧊 냉정한 분노',breaking_point:'💥 한계폭발',righteous:'⚖️ 정의로운 분노',
-  chibi_rage:'👹 SD분노',spark_eye:'⚡ 눈에서 번개',dramatic_wind:'🌪️ 드라마틱',cute_angry:'🥺 귀엽지만 화남'
+  angry:'😤 화남',
+  calm:'😌 차분함',
+  happy:'😊 기분좋음'
+};
+
+// 감정별 표정/분위기/움직임 정의
+const MOOD_DEFINITIONS = {
+  angry: {
+    expression:'furrowed eyebrows, narrowed glaring eyes, mouth open in frustration',
+    atmosphere:'frustrated, scolding, exasperated mood',
+    motion:'short, sharp angry gestures',
+    situation_type:'problem situation, neglect, misuse, mess',
+    voice_tone:'angry adult tone with scolding emotion',
+    dialogue_style:'분노/짜증/훈계 톤'
+  },
+  calm: {
+    expression:'soft relaxed eyes, gentle closed or slight smile mouth, peaceful look',
+    atmosphere:'quiet, stable, settled, calm explanation mood',
+    motion:'minimal, natural, gentle movement',
+    situation_type:'normal proper use, organized environment, restful scene',
+    voice_tone:'calm gentle adult tone, soft and explaining',
+    dialogue_style:'차분/안정/설명 톤'
+  },
+  happy: {
+    expression:'smiling curved eyes, gentle upturned mouth, bright cheerful look',
+    atmosphere:'satisfied, pleased, refreshing, positive mood',
+    motion:'light, lively natural reaction (no exaggerated dancing)',
+    situation_type:'being well-used, happy usage, positive environment',
+    voice_tone:'cheerful warm adult tone, content and pleased',
+    dialogue_style:'기쁨/만족/뿌듯함 톤'
+  }
+};
+
+const STYLE_MOODS_LEGACY_FALLBACK = {
+  // 구버전 호환을 위해 유지 (저장된 데이터에 옛날 값이 있을 경우)
+  furious:'angry', annoyed:'angry', scolding:'angry', threatening:'angry',
+  crying_angry:'angry', suppressed:'angry', disappointed:'angry', cold_rage:'angry',
+  breaking_point:'angry', righteous:'angry', chibi_rage:'angry', spark_eye:'angry',
+  dramatic_wind:'angry', cute_angry:'angry'
 };
 
 const TOPICS = [
@@ -1124,17 +1162,32 @@ ${BAN_RULES}
         : '\n\n⚠️ 이번엔 반드시 "' + angleList[Math.floor(Math.random()*angleList.length)] + '" 각도로 써라. 이전과 완전히 다른 톤/각도.')
     : '';
 
+  // 🎭 감정별 대사 톤 (가이드 v3.0)
+  const moodKeyDlg = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
+  const moodToneKR = {
+    angry: '1인칭으로 화내는/짜증내는/훈계하는',
+    calm: '1인칭으로 차분하고 안정적으로 설명하거나 잔잔하게 말하는',
+    happy: '1인칭으로 기분좋고 만족스럽게 자랑하거나 뿌듯하게 말하는'
+  }[moodKeyDlg] || '1인칭으로 화내는';
+  const moodToneJP = {
+    angry: 'キレる/怒る/説教する',
+    calm: '落ち着いて穏やかに説明する',
+    happy: '嬉しそうに満足げに話す'
+  }[moodKeyDlg] || 'キレる';
+
   const userPrompt = isJP_dlg
     ? `物: ${S.objJp||S.objEn||S.obj}
 共感テーマ: ${S.topicDesc}
 長さ: 7秒
+感情: ${moodKeyDlg} (${moodToneJP})
 
-この物(${S.objJp||S.objEn||S.obj})が「${S.topicDesc}」する人に一人称でキレる台本を、上記レベルの怒り + ウェブ検索情報織り込んで生成。${avoid}${angleHint}`
+この物(${S.objJp||S.objEn||S.obj})が「${S.topicDesc}」する状況で、一人称で${moodToneJP}台本を生成。${avoid}${angleHint}`
     : `오브젝트: ${S.obj}
 공감 주제: ${S.topicDesc}
 길이: ${'7초'}
+감정: ${moodKeyDlg} (${moodToneKR})
 
-이 오브젝트(${S.obj})가 "${S.topicDesc}" 하는 사람에게 1인칭으로 화내는 대사를, 위 예시 수준 분노 + 웹 검색 정보 녹여서 생성.${avoid}${angleHint}`;
+이 오브젝트(${S.obj})가 "${S.topicDesc}" 상황에서 ${moodToneKR} 대사를 생성. ${moodKeyDlg==='angry'?'위 예시 수준 분노 + ':''}웹 검색 정보 녹여서 생성.${avoid}${angleHint}`;
 
   try {
     console.log('[angry genDialogue] callAI 호출 직전');
@@ -1257,11 +1310,77 @@ async function generate(){
     ? ' Surrounding ambient details add a sense of life: '+fnMotion+', along with '+ambient+'.'
     : ' Surrounding ambient details add a sense of life: '+ambient+'.';
 
-  // ═══════ 🪑 사물별 본래 위치 + 사용 방식 ═══════
-  // 사물이 어디에 어떻게 놓이는지, 어떤 기능이 보이는지 정확히 명시
+  // ═══════ 🪑 카테고리별 본래 위치 + 사용 방식 ═══════
+  // 동물/음식/자연/탈것은 사물 규칙 적용 X — 카테고리별 분기
   const getObjectContext = (objKey, objEn) => {
     const lo = (objEn||'').toLowerCase();
     const ko = (objKey||'').toLowerCase();
+    const cat = S.cat || '';
+    
+    // 🐾 동물 카테고리 — 사물 규칙 적용 X
+    if(cat === 'animal'){
+      if(lo.includes('dog')||ko.includes('강아지')||ko.includes('개'))
+        return {position:'in a comfortable indoor space (dog cafe, living room couch, or pet bed)', posture:'natural dog posture (standing, sitting, or lying down — keeps four legs, ears, tail, snout, fur)', funcVisible:'realistic dog behavior — wagging tail, ears perking, breathing visible', isAnimal:true};
+      if(lo.includes('cat')||ko.includes('고양이'))
+        return {position:'on a cat tower, windowsill, or sofa', posture:'natural cat posture (sitting elegantly, lying, or grooming — keeps four legs, ears, tail, whiskers, fur)', funcVisible:'cat-like behavior — tail flicking, eyes blinking slowly, paws kneading', isAnimal:true};
+      if(lo.includes('hamster')||ko.includes('햄스터'))
+        return {position:'in a hamster cage with bedding and wheel', posture:'natural hamster posture (small four-legged with tiny ears, eyes, fur)', funcVisible:'sniffing, running on wheel, cheek pouches', isAnimal:true};
+      if(lo.includes('rabbit')||ko.includes('토끼'))
+        return {position:'on a soft mat or in a small enclosure', posture:'natural rabbit posture (long ears, twitching nose, fluffy tail, four legs)', funcVisible:'twitching nose, ears moving, hopping subtly', isAnimal:true};
+      if(lo.includes('penguin')||ko.includes('펭귄'))
+        return {position:'on ice or near water in a cold environment', posture:'natural penguin posture (standing on two webbed feet, wings, beak)', funcVisible:'waddling slightly, head tilting, beak movement', isAnimal:true};
+      if(lo.includes('fox')||ko.includes('여우'))
+        return {position:'in a natural forest setting or themed space', posture:'natural fox posture (four legs, bushy tail, pointed ears, snout)', funcVisible:'tail swaying, ears perking, sniffing', isAnimal:true};
+      // 기본 동물
+      return {position:'in its natural habitat or comfortable space', posture:'natural animal posture (keeps all natural body parts — legs, ears, tail, nose, fur/feathers)', funcVisible:'realistic animal behavior and movement', isAnimal:true};
+    }
+    
+    // 🍔 음식·음료 카테고리
+    if(cat === 'food'){
+      if(lo.includes('coffee')||lo.includes('cup')||ko.includes('커피')||ko.includes('컵'))
+        return {position:'sitting on a wooden table or coaster', posture:'upright on its base, NOT walking', funcVisible:'steam rising from the surface, warm liquid visible inside, cup texture'};
+      if(lo.includes('ramen')||lo.includes('noodle')||ko.includes('라면')||ko.includes('국수'))
+        return {position:'in a bowl on a dining table', posture:'bowl flat on table', funcVisible:'noodles and broth visible, steam rising, chopsticks nearby'};
+      if(lo.includes('burger')||lo.includes('sandwich')||ko.includes('햄버거')||ko.includes('샌드위치'))
+        return {position:'on a plate or wrapping paper', posture:'flat on surface, NOT standing', funcVisible:'layers visible, fresh ingredients'};
+      if(lo.includes('soda')||lo.includes('can')||ko.includes('캔')||ko.includes('음료'))
+        return {position:'on a table or in hand', posture:'upright on base', funcVisible:'condensation droplets on surface, cold appearance'};
+      if(lo.includes('ice cream')||ko.includes('아이스크림'))
+        return {position:'in a cone or bowl', posture:'in container', funcVisible:'soft texture, slight melting drips, cold appearance'};
+      return {position:'on a plate or table in a real eating context', posture:'in its natural serving position, NOT standing', funcVisible:'food appearance — texture, steam if hot, fresh look'};
+    }
+    
+    // 🌿 자연물 카테고리
+    if(cat === 'nature'){
+      if(lo.includes('cactus')||ko.includes('선인장'))
+        return {position:'in a pot on a windowsill or in desert soil', posture:'standing in pot/soil naturally', funcVisible:'spines visible, slight color variation, natural plant look'};
+      if(lo.includes('cloud')||ko.includes('구름'))
+        return {position:'floating in the sky', posture:'natural cloud shape, slowly drifting', funcVisible:'soft puffy texture, light variation, drifting motion'};
+      if(lo.includes('rock')||lo.includes('stone')||ko.includes('바위')||ko.includes('돌'))
+        return {position:'on a forest path, stream, or mountainside', posture:'sitting in natural environment', funcVisible:'rough texture, moss patches, natural setting around'};
+      if(lo.includes('mushroom')||ko.includes('버섯'))
+        return {position:'on the forest floor among leaves and moss', posture:'growing from ground naturally', funcVisible:'natural mushroom shape with cap and stem, forest debris around'};
+      if(lo.includes('tree')||lo.includes('stump')||ko.includes('나무'))
+        return {position:'in a forest setting', posture:'rooted in ground naturally', funcVisible:'bark texture, moss, surrounding leaves and forest atmosphere'};
+      return {position:'in its natural environment', posture:'naturally placed, NOT human-posing', funcVisible:'natural movement — wind, light, growth, water flow'};
+    }
+    
+    // 🚗 탈것 카테고리
+    if(cat === 'vehicle'){
+      if(lo.includes('taxi')||ko.includes('택시'))
+        return {position:'on a city road in real traffic context', posture:'on its four wheels on the road', funcVisible:'taxi sign on roof, driver visible inside or empty waiting'};
+      if(lo.includes('bus')||ko.includes('버스'))
+        return {position:'at a bus stop or on a road', posture:'on wheels, NOT standing', funcVisible:'doors, route number, passengers visible inside'};
+      if(lo.includes('bicycle')||lo.includes('bike')||ko.includes('자전거'))
+        return {position:'leaning against a wall or in a bike rack', posture:'on its wheels OR leaning naturally', funcVisible:'pedals, chain, handlebars visible'};
+      if(lo.includes('scooter')||ko.includes('킥보드'))
+        return {position:'on a sidewalk or in a parking zone', posture:'on its base/wheels', funcVisible:'handlebar, deck, real urban setting'};
+      if(lo.includes('cart')||ko.includes('카트'))
+        return {position:'in a store aisle or cart return', posture:'on its wheels', funcVisible:'basket part, items inside or empty'};
+      return {position:'on a road or in a parking context', posture:'on its wheels in natural vehicle position', funcVisible:'vehicle features visible, urban or road setting'};
+    }
+    
+    // 📦 사물 계열 (생활용품/전자/가구/주방/문구/스포츠/패션/장난감/공구/건물)
     
     // [위치] [기본 자세] [실제 기능 작동]
     if(lo.includes('air conditioner')||ko.includes('에어컨'))
@@ -1306,33 +1425,47 @@ async function generate(){
     return {position:'in its real-world position where it normally sits', posture:'in its natural posture, NOT walking, NOT floating, NOT standing like a human', funcVisible:'showing its actual function in normal use'};
   };
   const ctx = getObjectContext(S.obj, S.objEn);
+  const isAnimal = !!ctx.isAnimal;
+  const moodKey = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
+  const moodDef = MOOD_DEFINITIONS[moodKey] || MOOD_DEFINITIONS.angry;
 
-  // ═══════ 😡 얼굴/팔 디자인 락 (사람 얼굴 방지 + 코 제거) ═══════
-  const FACE_DESIGN_LOCK = 
-    '🎭 FACE DESIGN (CRITICAL): The face is embedded INTO the object surface itself, not a separate mask attached on top. ' +
-    'NO nose at all (completely remove nose). NO human philtrum. NO realistic human cheekbones. NO realistic skin. ' +
-    'ONLY stylized 3D eyes (large, expressive) and mouth (with depth). ' +
-    'Face must look like an indentation/sculpting on the object body, NOT like a human face stuck on the object. ' +
-    'Simple, clear emotional expression. Object-style face, NOT human-style face. ';
+  // ═══════ 😡/😌/😊 얼굴/팔 디자인 락 (카테고리별 분기) ═══════
+  // 동물은 사물 락 적용 X — 실제 동물 얼굴/구조 유지
+  const FACE_DESIGN_LOCK = isAnimal
+    ? '🎭 ANIMAL FACE: Keep the real animal face structure — natural snout/nose, eyes, ears, fur. Do NOT remove the nose. Do NOT embed face into a surface. The animal is alive, not an object. Emotion shown through animated style facial expression while keeping real animal anatomy. '
+    : ('🎭 OBJECT FACE DESIGN (CRITICAL): The face is embedded INTO the object surface itself, not a separate mask attached on top. ' +
+       'NO nose at all (completely remove nose). NO human philtrum. NO realistic human cheekbones. NO realistic skin. ' +
+       'ONLY stylized 3D eyes (large, expressive) and mouth (with depth). ' +
+       'Face must look like an indentation/sculpting on the object body, NOT like a human face stuck on the object. ' +
+       'Simple, clear emotional expression. Object-style face, NOT human-style face. ');
   
-  const ARMS_DESIGN_LOCK =
-    '💪 ARMS DESIGN (CRITICAL): Two minimal cartoon arms ONLY when needed. ' +
-    'Arm and hand color MUST EXACTLY match the object body color. ' +
-    'If object is white → arms white. If brown → arms brown. If black → arms dark. ' +
-    'NO skin-tone arms. NO mismatched colors. ' +
-    'Arms grow seamlessly from the object body, not attached like a separate puppet. ' +
-    'Hands and arms are SECONDARY — minimal use only. ';
+  const ARMS_DESIGN_LOCK = isAnimal
+    ? '🐾 ANIMAL BODY: Keep real animal anatomy — natural legs/paws/feet, tail, ears. Do NOT add human arms. The animal moves with its natural body. '
+    : ('💪 OBJECT ARMS DESIGN (CRITICAL): Two minimal cartoon arms ONLY when needed for emotion. ' +
+       'Arm and hand color MUST EXACTLY match the object body color. ' +
+       'If object is white → arms white. If brown → arms brown. If black → arms dark. ' +
+       'NO skin-tone arms. NO mismatched colors. ' +
+       'Arms grow seamlessly from the object body, not attached like a separate puppet. ' +
+       'Hands and arms are SECONDARY — minimal use only. ');
 
-  // 🚫 사물 캐릭터화 방지 락 (가이드 핵심)
-  const OBJECT_REALISM_LOCK =
-    '⚠️ ANTI-CHARACTERIZATION RULES: ' +
-    'The object MUST stay in its natural real-world position and usage context. ' +
-    'DO NOT make the object stand upright unless it naturally stands that way. ' +
-    'DO NOT make the object walk, float, jump, fly, or pose like a human. ' +
-    'NO legs, NO feet, NO human-like body posture. ' +
-    'The object behaves according to its real function and normal use. ' +
-    'Real object usage and surrounding situation are PRIMARY. ' +
-    'Face and hands are SECONDARY supporting elements only. ';
+  // 🚫 캐릭터화 방지 락 (동물은 다른 규칙)
+  const OBJECT_REALISM_LOCK = isAnimal
+    ? '⚠️ ANIMAL RULES: The animal stays in natural animal posture and behavior. NO human-like standing on hind legs unless natural for the species. NO human arms or hands. The animal is a real living creature, not an object. '
+    : ('⚠️ ANTI-CHARACTERIZATION RULES (object): ' +
+       'The object MUST stay in its natural real-world position and usage context. ' +
+       'DO NOT make the object stand upright unless it naturally stands that way. ' +
+       'DO NOT make the object walk, float, jump, fly, or pose like a human. ' +
+       'NO legs, NO feet, NO human-like body posture. ' +
+       'The object behaves according to its real function and normal use. ' +
+       'Real object usage and surrounding situation are PRIMARY. ' +
+       'Face and hands are SECONDARY supporting elements only. ');
+
+  // 🎭 감정별 표정/분위기 락
+  const MOOD_EXPRESSION_LOCK = 
+    '🎭 EMOTION (' + moodKey + '): ' +
+    'Expression: ' + moodDef.expression + '. ' +
+    'Atmosphere: ' + moodDef.atmosphere + '. ' +
+    'Motion: ' + moodDef.motion + '. ';
 
   // 🪣 사물별 분노 트리거 상황 + 풍부한 환경 역동성 (imagePrompt에서 사용하므로 미리 정의)
   const getAngrySituationalAction = (objKey, objEn) => {
@@ -1368,7 +1501,24 @@ async function generate(){
       return {action:'crumbs and food bits between keys, sticky residue on the surface', ambient:'crumbs visible between keys, sticky residue gleaming, dust thick, key stuck pressed, RGB lights flickering weakly'};
     return {action:'a messy/neglected situation triggering the anger', ambient:'visible neglect — dust, smell lines, debris, dim flickering indicator, environmental signs of frustration'};
   };
-  const situ = getAngrySituationalAction(S.obj, S.objEn);
+  // 감정별 상황 적용 — 화남이면 기존 angry situation, 차분/기분좋음이면 다른 분위기
+  const angrySitu = getAngrySituationalAction(S.obj, S.objEn);
+  const situ = (() => {
+    if(moodKey === 'angry') return angrySitu;
+    if(moodKey === 'calm'){
+      return {
+        action: 'a calm, well-organized situation showing the ' + objEn + ' being used properly and in normal context',
+        ambient: 'organized environment, gentle natural lighting, peaceful and settled atmosphere, subtle natural movement'
+      };
+    }
+    if(moodKey === 'happy'){
+      return {
+        action: 'a positive, well-used situation where the ' + objEn + ' is being used happily and effectively',
+        ambient: 'bright cheerful lighting, fresh atmosphere, satisfied environment, light positive movement'
+      };
+    }
+    return angrySitu;
+  })();
 
   // ═══════ 🖼️ 이미지 프롬프트 (실제 사용 장면 + 화내는 사물) ═══════
   const imagePrompt = 
@@ -1383,7 +1533,10 @@ async function generate(){
     FACE_DESIGN_LOCK +
     ARMS_DESIGN_LOCK +
     
-    '😠 EXPRESSION: angry expression embedded on the object surface — furrowed stylized eyebrows, narrowed/glaring 3D eyes, mouth open in frustration. NO realistic human face features. ' +
+    MOOD_EXPRESSION_LOCK +
+    '😶 EXPRESSION DETAIL: ' + (isAnimal 
+      ? 'Animal face shows ' + moodDef.expression + ' through animated style, while keeping real animal anatomy. ' 
+      : 'Object surface shows ' + moodDef.expression + '. NO realistic human face features. ') +
     
     '📐 COMPOSITION: The real usage scene and problem situation take up the majority of the frame. The face is integrated into the object naturally. Vertical 9:16 composition. ' +
     
@@ -1425,16 +1578,18 @@ async function generate(){
 'NO face acting yet — just the real object doing its real thing while the problem is visible. ' +
 'Ambient: ' + situ.ambient + '.\n\n' +
 
-'😠 Scene 2 (3-7s) — Anger reaction (object stays in same position):\n' +
-'The face appears on the object surface and shows angry expression — eyebrows furrow, eyes glare, mouth opens with frustration. ' +
-'IMPORTANT: The object DOES NOT stand up, DOES NOT walk, DOES NOT float, DOES NOT change position. It stays exactly where it was in Scene 1. ' +
-'The real function continues running: ' + ctx.funcVisible + '. ' +
-'The object yells this ' + spokenLang + ' line EXACTLY as written (do not translate, do not paraphrase' + (isJP_video?'':', keep 반말 as 반말') + '):\n' +
+'🎭 Scene 2 (3-7s) — ' + moodKey.toUpperCase() + ' reaction (object/animal stays in same position):\n' +
+(isAnimal 
+  ? 'The animal shows ' + moodDef.expression + ', staying in its natural posture. The animal DOES NOT change position dramatically. '
+  : 'The face appears on the object surface and shows: ' + moodDef.expression + '. ' +
+    'IMPORTANT: The object DOES NOT stand up, DOES NOT walk, DOES NOT float, DOES NOT change position. It stays exactly where it was in Scene 1. ' +
+    'The real function continues running: ' + ctx.funcVisible + '. ') +
+'The ' + (isAnimal?'animal':'object') + ' speaks this ' + spokenLang + ' line EXACTLY as written (do not translate, do not paraphrase' + (isJP_video?'':', keep 반말 as 반말') + '):\n' +
 '"' + dialogue + '"\n' +
 (isJP_video
   ? '⚠️ CRITICAL LANGUAGE LOCK: This is JAPANESE. Speak the Japanese dialogue exactly as written. Do NOT translate it into Korean. Do NOT mix Korean words. Do NOT use Korean pronunciation. The voice MUST be Japanese.\n'
   : '⚠️ CRITICAL LANGUAGE LOCK: This is KOREAN. Speak the Korean dialogue exactly as written. Do NOT translate it. The voice MUST be Korean.\n') +
-'Performance tone: angry, scolding, exasperated — but expressed through facial expression, NOT through body posing.\n\n' +
+'Performance tone: ' + moodDef.atmosphere + ' — but expressed through facial expression, NOT through body posing.\n\n' +
 
 '⚠️ ANTI-CHARACTERIZATION RULES (ABSOLUTE):\n' +
 '- The object must stay in its natural real-world position and usage context.\n' +
@@ -1481,7 +1636,7 @@ situ.ambient + '. Keep ambient motion dynamic but not chaotic. The real function
 '- When the face is hidden or occluded, the voice can continue without visible mouth animation.\n\n' +
 
 '🔊 Audio:\n' +
-'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker, angry tone with scolding emotion':'Native Korean speaker, angry adult tone with scolding emotion') + '.\n' +
+'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker, ':'Native Korean speaker, ') + moodDef.voice_tone + '.\n' +
 (isJP_video ? '- ABSOLUTELY NO Korean voice, NO Korean pronunciation, NO Korean accent. Pure Japanese only.\n' : '') +
 '- Voice is audio ONLY, NOT visible text on screen.\n' +
 '- Clear and dry sound. No echo, no reverb.\n' +
