@@ -1175,6 +1175,7 @@ function selMood(el,val){
   document.querySelectorAll('#moodChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');S.mood=val;
   buildTopics(); // 🎯 감정 변경 시 주제 재갱신 (가이드 v3.0 #5)
+  done('s5'); act('s6'); // 감정 선택 → 공감주제 활성화 (대장 v5.3)
   updateSummary();
 }
 // 🗄️ 사용자 추가 항목 저장소 (대장 v4.7 — 같은 브라우저에서 영구 저장)
@@ -1293,7 +1294,10 @@ function selLoc(kr,en){
   S.loc=kr;S.locEn=en;
   S.style='pixar';
   buildMoods('pixar');
-  done('s3');act('s5');act('s6');updateSummary();
+  done('s3');act('s5'); // 장소 선택 → 감정 활성화
+  // sVoice는 항상 active (HTML에서 처리)
+  // s6는 감정 선택 후 활성화
+  updateSummary();
 }
 function addCustom(type){
   const inp=document.getElementById(type==='obj'?'objInput':'locInput');
