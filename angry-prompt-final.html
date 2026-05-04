@@ -367,6 +367,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="tabs">
     <button class="tab active" onclick="switchTab('img')">🖼️ 이미지 프롬프트</button>
     <button class="tab" onclick="switchTab('vid')">🎬 영상 프롬프트</button>
+    <button class="tab" onclick="switchTab('srt')">📝 자막 SRT</button>
   </div>
   <div class="tab-panel active" id="panelImg">
     <div class="scene-tip">💡 선택한 배경을 최우선으로 반영하고, 카테고리별 실제 사용/행동 맥락에 맞춰 생성됩니다.</div>
@@ -386,14 +387,28 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       </div>
       <div class="result-text" id="vidOut"></div>
     </div>
-    <div class="result-card" id="srtCard" style="display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;margin-top:12px;">
+  </div>
+  <div class="tab-panel" id="panelSrt">
+    <div class="scene-tip" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.25);color:#92400e;">
+      💡 영상 편집 프로그램 (<b>캡컷 · 프리미어 · 다빈치 · iMovie</b>)에 .srt 파일 가져오기 하면 시간별로 자막 자동 매칭됩니다.
+    </div>
+    <div class="result-card" id="srtCard" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;">
       <div class="result-top">
-        <span class="result-label" style="color:#78350f;">📝 자막 SRT · 캡컷/프리미어 자동 인식</span>
-        <button class="copy-btn" id="copySrtBtn" onclick="doCopy('srtOut','copySrtBtn')">📋 복사</button>
-        <button class="copy-btn" style="right:70px;background:#10b981;color:white;" onclick="downloadSRTFile()">📄 다운로드</button>
+        <span class="result-label" style="color:#78350f;">📝 자막 SRT 스크립트 (7초)</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="copy-btn" id="copySrtBtn" onclick="doCopy('srtOut','copySrtBtn')">📋 복사</button>
+          <button class="copy-btn" style="background:#10b981;color:white;border-color:#10b981;" onclick="downloadSRTFile()">📄 .srt 다운로드</button>
+        </div>
       </div>
-      <div class="result-text" id="srtOut" style="background:#fffbeb;color:#78350f;"></div>
-      <div style="font-size:10px;color:#78350f;padding:4px 0;">💡 .srt 파일 → 캡컷/프리미어/다빈치에 가져오기 → 시간 자동 매칭!</div>
+      <div class="result-text" id="srtOut" style="background:#fffbeb;color:#78350f;font-family:monospace;font-size:12px;"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;font-size:12px;line-height:1.7;color:var(--sub);">
+      <b style="color:var(--text);">📌 사용 방법</b><br>
+      1. 위 <b>📄 .srt 다운로드</b> 클릭하여 파일 저장<br>
+      2. 영상 편집 프로그램에서 영상 트랙 위에 .srt 파일 드래그 또는 가져오기<br>
+      3. 자막이 시간별로 자동 매칭됨 → 폰트/색깔만 꾸미면 끝!<br><br>
+      <b style="color:var(--text);">🎬 지원 프로그램</b><br>
+      캡컷(CapCut), 프리미어(Adobe Premiere), 다빈치 리졸브, 파이널컷, iMovie, 곰믹스, 무비메이커
     </div>
   </div>
 </div>
@@ -2718,14 +2733,14 @@ extraVideoBlock;
   document.getElementById('imgOut').textContent=imagePrompt;
   document.getElementById('vidOut').textContent=videoPrompt;
 
-  // SRT 자막 생성
+  // SRT 자막 생성 (대장 v5.2 — 항상 탭에 표시)
   const srtText=generateSingleSceneSRT(dialogue,7);
   if(srtText){
     document.getElementById('srtOut').textContent=srtText;
-    document.getElementById('srtCard').style.display='block';
     window._lastSRT=srtText;
   }else{
-    document.getElementById('srtCard').style.display='none';
+    document.getElementById('srtOut').textContent='⚠️ 대사가 없어서 자막을 생성할 수 없어요.\n공감 주제 → AI 대사 생성 후 다시 시도해주세요.';
+    window._lastSRT='';
   }
 
   try {
@@ -2971,10 +2986,12 @@ function downloadSRTFile(){
 }
 
 function switchTab(t){
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['img','vid'][i]===t));
-  ['panelImg','panelVid'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
-  const target=document.getElementById(t==='img'?'panelImg':'panelVid');
-  if(target)target.classList.add('active');
+  const order = ['img','vid','srt'];
+  document.querySelectorAll('.tabs .tab').forEach((b,i)=>b.classList.toggle('active', order[i]===t));
+  ['panelImg','panelVid','panelSrt'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
+  const targetId = t==='img' ? 'panelImg' : (t==='vid' ? 'panelVid' : 'panelSrt');
+  const target = document.getElementById(targetId);
+  if(target) target.classList.add('active');
 }
 function doCopy(textId,btnId){
   const text=document.getElementById(textId).textContent;
