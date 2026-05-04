@@ -274,6 +274,32 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
   <div class="chips" id="moodChips"></div>
 </div>
 
+<!-- 🎤 Step 5: 목소리 + 사투리 (대장 v5.1) -->
+<div class="step" id="sVoice">
+  <div class="step-hd">
+    <div class="step-num">5</div><div class="step-title">🎤 목소리</div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">화자 캐릭터 선택 (영상마다 다른 목소리)</div>
+  <div class="chips" id="voiceChips" style="margin-bottom:14px;">
+    <div class="chip active" data-val="young_male" onclick="selVoice(this)">🧑 청년남</div>
+    <div class="chip" data-val="young_female" onclick="selVoice(this)">👩 청년녀</div>
+    <div class="chip" data-val="middle_male" onclick="selVoice(this)">👨 중년남</div>
+    <div class="chip" data-val="middle_female" onclick="selVoice(this)">🧑‍🦰 중년녀</div>
+    <div class="chip" data-val="old_male" onclick="selVoice(this)">👴 할아버지</div>
+    <div class="chip" data-val="old_female" onclick="selVoice(this)">👵 할머니</div>
+    <div class="chip" data-val="ajumma" onclick="selVoice(this)">💁‍♀️ 아줌마</div>
+    <div class="chip" data-val="kid" onclick="selVoice(this)">👶 아이</div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">사투리</div>
+  <div class="chips" id="dialectChips">
+    <div class="chip active" data-val="standard" onclick="selDialect(this)">🇰🇷 표준어</div>
+    <div class="chip" data-val="busan" onclick="selDialect(this)">🌊 부산</div>
+    <div class="chip" data-val="jeolla" onclick="selDialect(this)">🌾 전라도</div>
+    <div class="chip" data-val="chungcheong" onclick="selDialect(this)">🏞️ 충청도</div>
+    <div class="chip" data-val="jeju" onclick="selDialect(this)">🏝️ 제주</div>
+  </div>
+</div>
+
 <div class="step" id="s6">
   <div class="step-hd">
     <div class="step-num">6</div>
@@ -306,6 +332,34 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <div class="divider"></div>
 <div class="summary-bar" id="summaryBar">항목을 선택하면 여기에 표시됩니다.</div>
+
+<!-- ✨ 추가 지시사항 입력 (대장 v5.0) -->
+<div class="step active" id="sExtra" style="margin-bottom:18px;">
+  <div class="step-hd">
+    <div class="step-num">7</div>
+    <div class="step-title">✨ 추가 지시사항 (선택)</div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6;">
+    이미지·영상 프롬프트에 추가로 강조하고 싶은 내용이 있으면 여기에 적어주세요.<br>
+    예: "표정을 더 과장되게", "배경에 비 내리게", "카메라 줌인 강조", "캐릭터 옷 색깔 빨강으로"
+  </div>
+  <!-- 빠른 추가 태그 -->
+  <div class="chips" id="extraTagChips" style="margin-bottom:8px;">
+    <div class="chip" onclick="addExtraTag('표정 과장되게')">😤 표정 과장</div>
+    <div class="chip" onclick="addExtraTag('카메라 줌인 강조')">🎥 줌인</div>
+    <div class="chip" onclick="addExtraTag('비 내리는 분위기')">🌧️ 비</div>
+    <div class="chip" onclick="addExtraTag('역광 실루엣')">🌅 역광</div>
+    <div class="chip" onclick="addExtraTag('주변 사람들 놀란 표정')">👀 주변 반응</div>
+    <div class="chip" onclick="addExtraTag('따뜻한 조명')">🔥 따뜻한 조명</div>
+    <div class="chip" onclick="addExtraTag('차가운 조명')">❄️ 차가운 조명</div>
+    <div class="chip" onclick="addExtraTag('카메라 흔들림 강조')">📹 카메라 흔들림</div>
+  </div>
+  <textarea id="extraInstructions" placeholder="원하는 강조점이나 꼭 들어갔으면 하는 디테일 자유 입력... (생략 가능)" style="min-height:80px;"></textarea>
+  <div style="font-size:11px;color:var(--muted);margin-top:6px;">
+    💡 같은 브라우저에서 자동 저장됩니다.
+  </div>
+</div>
+
 <div class="err" id="errMsg"></div>
 <button class="gen-btn" id="genBtn" onclick="generate()">🔥 프롬프트 생성하기</button>
 
@@ -881,7 +935,7 @@ const STYLE_DIALOGUE_TONE = {
 };
 
 // ═══ STATE ═══
-const S={country:'kr',cat:null,obj:null,objEn:null,objJp:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'7'};
+const S={country:'kr',cat:null,obj:null,objEn:null,objJp:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'7',voice:'young_male',dialect:'standard'};
 let usedDialogues=[];
 
 function buildTopics(){
@@ -1268,6 +1322,99 @@ function makeChip(label,val,onClick){
 function selDur(el){
   document.querySelectorAll('#durChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');S.dur=el.dataset.val;
+}
+
+// 🎤 목소리 + 사투리 (대장 v5.1)
+const VOICE_PROFILES = {
+  young_male: {
+    label:'청년 남성',
+    angry: 'young Korean male in his 20s, sharp aggressive tone, slightly higher pitch, fast-paced angry rant style',
+    happy: 'young Korean male in his 20s, warm friendly tone, slightly higher pitch, content cheerful style'
+  },
+  young_female: {
+    label:'청년 여성',
+    angry: 'young Korean female in her 20s, sharp confident tone, mid-high pitch, fed-up scolding style',
+    happy: 'young Korean female in her 20s, warm gentle tone, mid-high pitch, sweet content style'
+  },
+  middle_male: {
+    label:'중년 남성',
+    angry: 'middle-aged Korean male in his 40s-50s, deep frustrated tone, lower pitch, lecturing dad-like angry style',
+    happy: 'middle-aged Korean male in his 40s-50s, warm steady tone, lower pitch, satisfied dad-like style'
+  },
+  middle_female: {
+    label:'중년 여성',
+    angry: 'middle-aged Korean female in her 40s-50s, exasperated tone, mid pitch, scolding mom-like angry style',
+    happy: 'middle-aged Korean female in her 40s-50s, warm caring tone, mid pitch, content motherly style'
+  },
+  old_male: {
+    label:'할아버지',
+    angry: 'elderly Korean grandfather in his 60s-70s, raspy authoritative tone, deep slow voice, scolding elder lecture style',
+    happy: 'elderly Korean grandfather in his 60s-70s, warm raspy tone, deep slow voice, kind grandfatherly style'
+  },
+  old_female: {
+    label:'할머니',
+    angry: 'elderly Korean grandmother in her 60s-70s, sharp grandmotherly tone, slightly higher voice, nagging elder style',
+    happy: 'elderly Korean grandmother in her 60s-70s, warm grandmotherly tone, slightly higher voice, loving elder style'
+  },
+  ajumma: {
+    label:'아줌마',
+    angry: 'Korean ajumma (middle-aged woman) in her 40s-50s, loud assertive tone, high-mid pitch, no-nonsense fed-up rant style — classic Korean ajumma scolding energy',
+    happy: 'Korean ajumma in her 40s-50s, warm hearty tone, high-mid pitch, generous caring ajumma style'
+  },
+  kid: {
+    label:'아이',
+    angry: 'Korean child around 7-10 years old, high-pitched cute but firm tone, mock-angry pouty scolding style',
+    happy: 'Korean child around 7-10 years old, high-pitched bright cheerful tone, innocent happy style'
+  }
+};
+
+const DIALECT_PROFILES = {
+  standard: { label:'표준어', en:'standard Seoul Korean accent' },
+  busan: { label:'부산 사투리', en:'Busan/Gyeongsang dialect with characteristic intonation, ending words like "~카노", "~아이가", "~다 아이가", short rising-falling pitch' },
+  jeolla: { label:'전라도 사투리', en:'Jeolla dialect with soft warm intonation, ending words like "~잉", "~당께", "~혀", "~디야"' },
+  chungcheong: { label:'충청도 사투리', en:'Chungcheong dialect with slow drawn-out intonation, ending words like "~유", "~여", "~겨", relaxed pacing' },
+  jeju: { label:'제주 사투리', en:'Jeju dialect with unique island accent, ending words like "~수다", "~우다"' }
+};
+
+function selVoice(el){
+  document.querySelectorAll('#voiceChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.voice = el.dataset.val;
+  saveVoiceSettings();
+}
+function selDialect(el){
+  document.querySelectorAll('#dialectChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.dialect = el.dataset.val;
+  saveVoiceSettings();
+}
+function saveVoiceSettings(){
+  try {
+    localStorage.setItem('angry_voice_v1', JSON.stringify({voice:S.voice, dialect:S.dialect}));
+  } catch(e){}
+}
+function loadVoiceSettings(){
+  try {
+    const raw = localStorage.getItem('angry_voice_v1');
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d.voice){
+      S.voice = d.voice;
+      const el = document.querySelector('#voiceChips .chip[data-val="'+d.voice+'"]');
+      if(el){
+        document.querySelectorAll('#voiceChips .chip').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+      }
+    }
+    if(d.dialect){
+      S.dialect = d.dialect;
+      const el = document.querySelector('#dialectChips .chip[data-val="'+d.dialect+'"]');
+      if(el){
+        document.querySelectorAll('#dialectChips .chip').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+      }
+    }
+  } catch(e){}
 }
 
 // ═══ AI 랜덤 ═══
@@ -1999,6 +2146,31 @@ async function generate(){
   const btn=document.getElementById('genBtn');
   btn.disabled=true;btn.textContent='⏳ 생성 중...';
 
+  // ✨ 사용자 추가 지시사항 (대장 v5.0)
+  const extraInstructions = getExtraInstructions();
+  saveExtraInstructions(); // 한 번 더 저장
+  // 영문 변환 (영상/이미지 프롬프트는 영어 기반)
+  let extraInstructionsEN = '';
+  if(extraInstructions && getApiKey()){
+    try {
+      extraInstructionsEN = await callAI(
+        'You translate Korean creative direction notes for AI image/video prompts into concise English. Output only the translation, no preamble.',
+        'Korean direction notes:\n' + extraInstructions + '\n\nTranslate to concise English (keep it under 200 chars if possible).'
+      );
+    } catch(e){
+      extraInstructionsEN = extraInstructions; // fallback
+    }
+  } else if(extraInstructions){
+    extraInstructionsEN = extraInstructions;
+  }
+  // 프롬프트에 주입할 형식
+  const extraImageBlock = extraInstructionsEN
+    ? '\n\n✨ USER\'S ADDITIONAL EMPHASIS (HIGH PRIORITY): ' + extraInstructionsEN + '. Apply these creative directions while keeping all other rules intact. '
+    : '';
+  const extraVideoBlock = extraInstructionsEN
+    ? '\n\n✨ USER\'S ADDITIONAL EMPHASIS (APPLY THESE):\n' + extraInstructionsEN + '\nIntegrate these creative directions throughout the video while keeping all other rules intact.\n'
+    : '';
+
   let dialogue=document.getElementById('dialogue').value.trim();
   if(!dialogue){
     if(getApiKey()){
@@ -2358,7 +2530,8 @@ async function generate(){
       '🎨 STYLE: Pixar-quality 3D animation style. The animal looks alive and real, NOT like a stuffed toy or product. ' +
       
       '🚫 NEGATIVES: No human posing, no standing on hind legs unnaturally, no human arms, no text, no subtitles, no captions, no watermarks, no logos. ' +
-      'Do NOT make it look like a cushion, pet bed, furniture, toy, plushie, or product.';
+      'Do NOT make it look like a cushion, pet bed, furniture, toy, plushie, or product.' +
+      extraImageBlock;
   } else {
     // 📦 사물 전용 이미지 프롬프트 (강화된 안티-사람화)
     imagePrompt = 
@@ -2398,7 +2571,8 @@ async function generate(){
       'NO human nose, NO realistic human face, NO skin-toned arms, NO separate mask-like face. ' +
       'NO action where the object pours/uses ITSELF (e.g. milk carton pouring its own milk, kettle pouring itself). ' +
       'NO text, NO subtitles, NO captions, NO watermarks, NO logos. ' +
-      'NO duplicated faces, NO multiple faces, NO floating face. Only ONE face embedded on the main object body.';
+      'NO duplicated faces, NO multiple faces, NO floating face. Only ONE face embedded on the main object body.' +
+      extraImageBlock;
   }
 
   const functionReveal = getFunctionReveal(S.obj, S.mood);
@@ -2408,6 +2582,15 @@ async function generate(){
   const isJP_video = S.country==='jp';
   const spokenLang = isJP_video ? 'Japanese' : 'Korean';
   const voiceLang = isJP_video ? 'Natural Japanese voice' : 'Natural Korean voice';
+  
+  // 🎤 목소리 프로필 빌드 (대장 v5.1)
+  const voiceProfile = VOICE_PROFILES[S.voice] || VOICE_PROFILES.young_male;
+  const dialectProfile = DIALECT_PROFILES[S.dialect] || DIALECT_PROFILES.standard;
+  const moodKeyVoice = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
+  const voiceCharacterDesc = (moodKeyVoice === 'happy') ? voiceProfile.happy : voiceProfile.angry;
+  const voiceFullDesc = isJP_video
+    ? voiceCharacterDesc.replace('Korean','Japanese') // 일본어 모드일 때
+    : voiceCharacterDesc + (S.dialect !== 'standard' ? '. Speak with ' + dialectProfile.en : '. Standard Seoul Korean accent');
 
   // 🔍 일본어 모드인데 한글 섞이면 차단
   if(isJP_video && /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(dialogue||'')){
@@ -2454,7 +2637,8 @@ async function generate(){
 'Performance tone: ' + moodDef.atmosphere + '.\n\n' +
 
 '🔊 Audio:\n' +
-'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker, ':'Native Korean speaker, ') + moodDef.voice_tone + '.\n' +
+'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker. ':'Native Korean speaker. ') + voiceFullDesc + '. ' + moodDef.voice_tone + '.\n' +
+'- 🎤 SPEAKER CHARACTER: ' + voiceProfile.label + (S.dialect !== 'standard' ? ' speaking ' + dialectProfile.label : '') + '. Voice MUST match this character age, gender, and tone consistently throughout.\n' +
 '- Voice is audio ONLY, NOT visible text.\n' +
 '- No background music, no BGM, no soundtrack.\n\n' +
 
@@ -2465,7 +2649,8 @@ async function generate(){
 '- Dialogue is spoken audio ONLY.\n\n' +
 
 '🎨 Style:\n' +
-'Pixar-quality 3D animation. The animal looks alive and real. Vertical 9:16.';
+'Pixar-quality 3D animation. The animal looks alive and real. Vertical 9:16.' +
+extraVideoBlock;
   } else {
     // 📦 사물 전용 영상 프롬프트
     videoPrompt =
@@ -2515,7 +2700,8 @@ async function generate(){
 '- Exactly TWO arms only. Hands and arms are SECONDARY.\n\n' +
 
 '🔊 Audio:\n' +
-'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker, ':'Native Korean speaker, ') + moodDef.voice_tone + '.\n' +
+'- ' + voiceLang + '. ' + (isJP_video?'Native Japanese speaker. ':'Native Korean speaker. ') + voiceFullDesc + '. ' + moodDef.voice_tone + '.\n' +
+'- 🎤 SPEAKER CHARACTER: ' + voiceProfile.label + (S.dialect !== 'standard' ? ' speaking ' + dialectProfile.label : '') + '. Voice MUST match this character age, gender, and tone consistently throughout.\n' +
 '- Voice is audio ONLY, NOT visible text.\n' +
 '- No background music, no BGM, no soundtrack.\n\n' +
 
@@ -2525,7 +2711,8 @@ async function generate(){
 '- NO human nose, NO skin-toned arms, NO separate mask-like face.\n' +
 '- Dialogue is spoken audio ONLY.\n\n' +
 
-'🎨 Style: Pixar-like 3D animation. The object is recognizable as a real product first. Vertical 9:16.';
+'🎨 Style: Pixar-like 3D animation. The object is recognizable as a real product first. Vertical 9:16.' +
+extraVideoBlock;
   }
 
   document.getElementById('imgOut').textContent=imagePrompt;
@@ -2808,8 +2995,46 @@ function doCopy(textId,btnId){
 function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',4000);}
 function hideErr(){document.getElementById('errMsg').style.display='none';}
 
+// ✨ 추가 지시사항 관리 (대장 v5.0)
+const EXTRA_INSTRUCTIONS_KEY = 'angry_extra_instructions_v1';
+function addExtraTag(tag){
+  const ta = document.getElementById('extraInstructions');
+  if(!ta) return;
+  const cur = ta.value.trim();
+  // 이미 있으면 추가 X
+  if(cur.includes(tag)) return;
+  ta.value = cur ? (cur + ', ' + tag) : tag;
+  saveExtraInstructions();
+}
+function saveExtraInstructions(){
+  try {
+    const ta = document.getElementById('extraInstructions');
+    if(ta) localStorage.setItem(EXTRA_INSTRUCTIONS_KEY, ta.value || '');
+  } catch(e){}
+}
+function loadExtraInstructions(){
+  try {
+    const saved = localStorage.getItem(EXTRA_INSTRUCTIONS_KEY) || '';
+    const ta = document.getElementById('extraInstructions');
+    if(ta && saved) ta.value = saved;
+  } catch(e){}
+}
+function getExtraInstructions(){
+  const ta = document.getElementById('extraInstructions');
+  return ta ? (ta.value || '').trim() : '';
+}
+
 window.addEventListener('load',()=>{
   buildTopics();
+  // ✨ 추가 지시사항 복원 + 자동 저장
+  loadExtraInstructions();
+  // 🎤 목소리/사투리 복원 (대장 v5.1)
+  loadVoiceSettings();
+  const extraTa = document.getElementById('extraInstructions');
+  if(extraTa){
+    extraTa.addEventListener('input', saveExtraInstructions);
+    extraTa.addEventListener('blur', saveExtraInstructions);
+  }
   try {
     const stats=JSON.parse(localStorage.getItem('usage_stats')||'{}');
     stats.totalVisits=(stats.totalVisits||0)+1;
