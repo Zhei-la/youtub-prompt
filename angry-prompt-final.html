@@ -191,7 +191,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <header>
   <div class="logo">쇼츠 3D 프롬프트 생성기</div>
-  <div class="tagline">감정형 사물·동물 AI 영상 <span class="byline">by 제일라</span> <span style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:0;text-transform:none;white-space:nowrap;">v4.7 📍 장소맥락</span></div>
+  <div class="tagline">감정형 사물·동물 AI 영상 <span class="byline">by 제일라</span> <span style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:0;text-transform:none;white-space:nowrap;">v4.9 ⚡ 7초단정</span></div>
 </header>
 
 <div id="apiKeyBanner">
@@ -300,7 +300,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">🇰🇷 한국어 뜻 (참고용)</div>
       <div id="dialogueTransText" style="color:var(--text);"></div>
     </div>
-    <div class="dialogue-note">💡 <b>화남</b>: 분노 + 정보(박테리아·수치) + 해결책 3단 구조<br>💡 <b>기분좋음</b>: 칭찬 + 효과 정보(수치) + 더 좋아지는 꿀팁 3단 구조</div>
+    <div class="dialogue-note">💡 <b>화남</b>: 분노 + 정보(수치) + 해결책 단정조 (3~4문장)<br>💡 <b>기분좋음</b>: 칭찬 + 효과(수치) + 꿀팁 단정조 (3~4문장)<br>💡 ⏱️ 7초 분량 / "이거 알아?" 질문형 X / 단정조만</div>
   </div>
 </div>
 
@@ -351,7 +351,8 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 </footer>
 
 <script>
-const DB = {
+const DB_BY_COUNTRY = {
+  kr: {
   food:{objs:[{kr:'☕ 커피잔',en:'coffee mug'},{kr:'🍜 라면 그릇',en:'ramen bowl'},{kr:'🍔 햄버거',en:'burger'},{kr:'🥤 음료캔',en:'soda can'},{kr:'🍕 피자 조각',en:'pizza slice'},{kr:'🥛 우유팩',en:'milk carton'},{kr:'🍩 도넛',en:'donut'},{kr:'🍜 컵라면',en:'instant noodle cup'},{kr:'🌶️ 떡볶이',en:'tteokbokki'},{kr:'🍶 소주병',en:'soju bottle'},{kr:'🍱 도시락',en:'lunchbox'},{kr:'🧃 주스팩',en:'juice box'},{kr:'🍦 아이스크림',en:'ice cream cone'},{kr:'🥚 계란',en:'egg'},{kr:'🍞 식빵',en:'bread loaf'},{kr:'🧋 버블티',en:'bubble tea cup'}],
     locs:[{kr:'밤의 번화한 식당 테이블',en:'on a busy restaurant table with warm evening lighting'},{kr:'새벽 편의점 카운터',en:'on a convenience store counter at 3am under harsh fluorescent light'},{kr:'아침 햇살 주방 조리대',en:'on a kitchen countertop bathed in soft morning sunlight'},{kr:'창가 카페 나무 테이블',en:'on a worn wooden café table beside a fogged window'},{kr:'서울 포장마차 안',en:'inside a steaming Seoul pojangmacha street stall'},{kr:'냉장고 안 차가운 빛',en:'inside a refrigerator under cold clinical white light'},{kr:'혼밥 1인용 테이블',en:'on a solo dining table in a late-night restaurant corner'}]},
   object:{objs:[{kr:'🗑️ 쓰레기통',en:'trash can'},{kr:'🧴 손세정제',en:'soap dispenser'},{kr:'☂️ 우산',en:'umbrella'},{kr:'🐷 돼지저금통',en:'piggy bank'},{kr:'📬 우체통',en:'mailbox'},{kr:'🧯 소화기',en:'fire extinguisher'},{kr:'🧹 청소기',en:'vacuum cleaner'},{kr:'🪠 뚫어뻥',en:'toilet plunger'},{kr:'💦 스프레이 통',en:'spray bottle'},{kr:'🪣 양동이',en:'bucket'},{kr:'🧻 화장지 롤',en:'toilet paper roll'},{kr:'🪥 칫솔',en:'toothbrush'},{kr:'🦷 치아',en:'tooth'},{kr:'💡 전구',en:'light bulb'},{kr:'🔒 자물쇠',en:'padlock'},{kr:'🧽 수세미',en:'kitchen sponge'}],
@@ -387,7 +388,49 @@ const DB = {
     locs:[{kr:'이른 아침 주방',en:'on a kitchen countertop in the early morning'},{kr:'식당 주방 러시아워',en:'inside a restaurant kitchen during rush hour'}]},
   tool:{objs:[{kr:'🔧 렌치',en:'wrench'},{kr:'🔨 망치',en:'hammer'},{kr:'🪛 드라이버',en:'screwdriver'},{kr:'🧰 공구함',en:'toolbox'}],
     locs:[{kr:'공사 현장',en:'at a dusty construction site'},{kr:'차고 작업대',en:'on a garage workbench under a work lamp'}]}
+  },
+  // 🇯🇵 일본 문화 데이터 (대장 v4.8 — 일본 특화 사물/장소)
+  jp: {
+  food:{objs:[{kr:'🍱 편의점 도시락',en:'convenience store bento',jp:'コンビニ弁当'},{kr:'🍙 오니기리',en:'rice ball onigiri',jp:'おにぎり'},{kr:'🍜 컵라면 (닛신)',en:'instant cup noodle',jp:'カップ麺'},{kr:'🍣 회전초밥 접시',en:'conveyor sushi plate',jp:'回転寿司の皿'},{kr:'🥟 교자',en:'gyoza dumplings',jp:'餃子'},{kr:'🍡 단고',en:'dango skewer',jp:'団子'},{kr:'🥛 우유팩 (테트라)',en:'tetra milk pack',jp:'牛乳パック'},{kr:'🍵 녹차캔',en:'green tea can',jp:'緑茶缶'},{kr:'🍶 사케병',en:'sake bottle',jp:'日本酒の瓶'},{kr:'🍺 캔맥주',en:'canned beer',jp:'缶ビール'},{kr:'🍮 푸딩',en:'pudding cup',jp:'プリン'},{kr:'🍦 모찌 아이스',en:'mochi ice cream',jp:'もちアイス'},{kr:'🥢 일회용 젓가락',en:'disposable chopsticks',jp:'割り箸'},{kr:'🍡 미타라시',en:'mitarashi dango',jp:'みたらし'},{kr:'🥚 타마고',en:'tamago egg',jp:'卵'}],
+    locs:[{kr:'세븐일레븐 카운터',en:'at a 7-Eleven counter under bright Japanese convenience store lighting',jp:'セブンイレブンのカウンター'},{kr:'이자카야 카운터석',en:'at an izakaya counter seat with hanging red lanterns',jp:'居酒屋のカウンター席'},{kr:'규동집 1인 좌석',en:'at a solo gyudon shop counter seat',jp:'牛丼屋の一人席'},{kr:'편의점 옆 길가 의자',en:'on a sidewalk bench beside a Japanese convenience store',jp:'コンビニ横のベンチ'},{kr:'료칸 다다미방 식탁',en:'on a tatami room low table at a ryokan',jp:'旅館の和室の座卓'},{kr:'학생 자취방 코타츠',en:'on a college student kotatsu table in a small studio',jp:'学生の一人暮らしのコタツ'}]},
+  object:{objs:[{kr:'🗑️ 쓰레기 분류통',en:'sorted trash bin',jp:'分別ゴミ箱'},{kr:'☂️ 비닐우산',en:'plastic vinyl umbrella',jp:'ビニール傘'},{kr:'🐷 마네키네코 저금통',en:'maneki-neko piggy bank',jp:'招き猫貯金箱'},{kr:'📬 일본식 우체통',en:'Japanese red mailbox',jp:'郵便ポスト'},{kr:'🧴 핸드비누',en:'hand soap dispenser',jp:'ハンドソープ'},{kr:'🎌 일본 부적 (오마모리)',en:'omamori amulet',jp:'お守り'},{kr:'🧹 코로코로 클리너',en:'lint roller cleaner',jp:'コロコロ'},{kr:'🪥 일본식 칫솔',en:'compact Japanese toothbrush',jp:'歯ブラシ'},{kr:'🧻 화장지 롤',en:'toilet paper roll',jp:'トイレットペーパー'},{kr:'💡 전구',en:'light bulb',jp:'電球'},{kr:'🎋 부적 카드',en:'fortune slip',jp:'おみくじ'},{kr:'🧽 수세미',en:'kitchen sponge',jp:'スポンジ'}],
+    locs:[{kr:'다다미방',en:'in a small tatami room with shoji screens',jp:'和室'},{kr:'겐칸 (현관)',en:'in a Japanese genkan entryway with shoes lined up',jp:'玄関'},{kr:'일본 욕실 유닛바스',en:'in a Japanese unit bathroom',jp:'ユニットバス'},{kr:'좁은 도쿄 자취방',en:'in a tiny Tokyo studio apartment',jp:'狭い東京の一人暮らし'},{kr:'일본 빨래 발코니',en:'on a Japanese laundry balcony with futon airing',jp:'物干しベランダ'},{kr:'편의점 입구',en:'at a Japanese convenience store entrance',jp:'コンビニの入口'}]},
+  electronics:{objs:[{kr:'📱 폴더폰',en:'flip phone',jp:'ガラケー'},{kr:'💻 노트북',en:'laptop',jp:'ノートパソコン'},{kr:'📺 TV',en:'television',jp:'テレビ'},{kr:'🎮 닌텐도 컨트롤러',en:'Nintendo controller',jp:'任天堂コントローラー'},{kr:'🎧 워크맨 이어폰',en:'walkman earbuds',jp:'ウォークマンのイヤホン'},{kr:'⌨️ 키보드',en:'keyboard',jp:'キーボード'},{kr:'🖱️ 마우스',en:'mouse',jp:'マウス'},{kr:'⌚ 손목시계',en:'wristwatch',jp:'腕時計'},{kr:'📷 디카',en:'compact digital camera',jp:'デジカメ'},{kr:'🎤 가라오케 마이크',en:'karaoke microphone',jp:'カラオケマイク'}],
+    locs:[{kr:'아키하바라 전자상가',en:'in an Akihabara electronics store',jp:'秋葉原の電気街'},{kr:'어수선한 자취방 책상',en:'on a cluttered single-room apartment desk',jp:'散らかった一人暮らしの机'},{kr:'카라오케 룸',en:'inside a Japanese karaoke booth',jp:'カラオケルーム'},{kr:'사무실 책상',en:'on a Japanese office desk during work hours',jp:'オフィスの机'},{kr:'편의점 매대',en:'on a convenience store electronics shelf',jp:'コンビニの売り場'}]},
+  furniture:{objs:[{kr:'🪑 좌식 의자',en:'floor zaisu chair',jp:'座椅子'},{kr:'🛏️ 후톤',en:'futon mattress',jp:'布団'},{kr:'🟫 코타츠 테이블',en:'kotatsu heated table',jp:'こたつ'},{kr:'🪞 와시츠 거울',en:'wagashitsu mirror',jp:'和室の鏡'},{kr:'🪵 쇼지 미닫이문',en:'shoji sliding door',jp:'障子'},{kr:'🪴 봉제 화분',en:'small bonsai pot',jp:'盆栽'},{kr:'💡 와시 등',en:'washi paper lamp',jp:'和紙ランプ'},{kr:'🛋️ 자부톤 방석',en:'zabuton floor cushion',jp:'座布団'}],
+    locs:[{kr:'료칸 다다미방',en:'in a ryokan tatami room with low table',jp:'旅館の和室'},{kr:'학생 좁은 자취방',en:'in a tiny student one-room apartment',jp:'学生の狭い一人暮らし'},{kr:'전통 일본 가옥',en:'in a traditional Japanese house with shoji and tatami',jp:'伝統的な日本家屋'},{kr:'일본 사무실',en:'in a Japanese office',jp:'日本のオフィス'}]},
+  vehicle:{objs:[{kr:'🚕 일본 택시',en:'Japanese taxi',jp:'日本のタクシー'},{kr:'🚄 신칸센',en:'Shinkansen bullet train',jp:'新幹線'},{kr:'🚲 마마차리',en:'mamachari bicycle',jp:'ママチャリ'},{kr:'🛵 50cc 스쿠터',en:'50cc scooter',jp:'50ccスクーター'},{kr:'🛒 슈퍼 카트',en:'supermarket cart',jp:'スーパーのカート'},{kr:'🚌 도쿄 시내버스',en:'Tokyo city bus',jp:'東京の市バス'}],
+    locs:[{kr:'시부야 스크램블 교차로',en:'at the Shibuya scramble crossing',jp:'渋谷スクランブル交差点'},{kr:'도쿄 야간 거리',en:'on a Tokyo street at night under neon',jp:'東京の夜の街'},{kr:'역 앞 자전거 주차장',en:'at a bike lot in front of a Japanese station',jp:'駅前の駐輪場'},{kr:'시내버스 정류장',en:'at a Japanese bus stop',jp:'バス停'}]},
+  animal:{objs:[{kr:'🐱 일본 길고양이',en:'Japanese street cat',jp:'地域猫'},{kr:'🐶 시바견',en:'shiba inu',jp:'柴犬'},{kr:'🐹 햄스터',en:'hamster',jp:'ハムスター'},{kr:'🐰 우사기 토끼',en:'rabbit',jp:'うさぎ'},{kr:'🐧 펭귄',en:'penguin',jp:'ペンギン'},{kr:'🦊 여우',en:'fox',jp:'狐'}],
+    locs:[
+      {kr:'고양이섬 풍경',en:'on a Japanese cat island walkway',jp:'猫島'},
+      {kr:'벚꽃길 산책',en:'on a sakura cherry blossom walking path',jp:'桜並木'},
+      {kr:'펫카페 (도쿄)',en:'in a Tokyo pet café with patrons and pet seats',jp:'ペットカフェ'},
+      {kr:'후시미 이나리 신사',en:'at Fushimi Inari shrine path with red gates',jp:'伏見稲荷神社'},
+      {kr:'동물병원 대기실',en:'in a Japanese veterinary clinic waiting area',jp:'動物病院の待合室'},
+      {kr:'아파트 베란다',en:'on a small Japanese apartment balcony with sunlight',jp:'マンションのベランダ'}
+    ]},
+  nature:{objs:[{kr:'🌸 벚꽃잎',en:'sakura petal',jp:'桜の花びら'},{kr:'🌵 선인장',en:'cactus',jp:'サボテン'},{kr:'⛈️ 츠유 먹구름',en:'rainy season thundercloud',jp:'梅雨の雨雲'},{kr:'🪨 료안지 정원 돌',en:'Ryoanji garden stone',jp:'龍安寺の庭石'},{kr:'🌋 후지산',en:'Mount Fuji',jp:'富士山'},{kr:'🍄 마츠타케 버섯',en:'matsutake mushroom',jp:'松茸'}],
+    locs:[{kr:'후지산 자락',en:'at the foot of Mount Fuji',jp:'富士山の麓'},{kr:'료안지 돌정원',en:'in the Ryoanji rock garden',jp:'龍安寺の石庭'},{kr:'벚꽃길',en:'on a sakura cherry blossom path',jp:'桜並木'},{kr:'아라시야마 대나무숲',en:'in the Arashiyama bamboo grove',jp:'嵐山の竹林'}]},
+  toy:{objs:[{kr:'🧸 다루마 인형',en:'daruma doll',jp:'達磨'},{kr:'🤖 건프라 피규어',en:'Gunpla figure',jp:'ガンプラ'},{kr:'🧱 레고',en:'LEGO brick',jp:'レゴ'},{kr:'🐱 마네키네코',en:'maneki-neko cat',jp:'招き猫'},{kr:'🪀 켄다마',en:'kendama toy',jp:'けん玉'},{kr:'♟️ 쇼기 말',en:'shogi piece',jp:'将棋の駒'}],
+    locs:[{kr:'아키하바라 피규어샵',en:'in an Akihabara figure shop',jp:'秋葉原のフィギュアショップ'},{kr:'어린이 방 다다미',en:'on a tatami floor in a kids room',jp:'子供部屋の畳'},{kr:'오타쿠 컬렉터 진열장',en:'on an otaku collector display shelf',jp:'オタクコレクターの棚'}]},
+  stationery:{objs:[{kr:'✏️ 연필',en:'pencil',jp:'鉛筆'},{kr:'📎 스테이플러',en:'stapler',jp:'ホチキス'},{kr:'🗒️ 포스트잇',en:'sticky note pad',jp:'付箋'},{kr:'🧹 지우개',en:'eraser',jp:'消しゴム'},{kr:'✂️ 가위',en:'scissors',jp:'はさみ'},{kr:'🖊️ 볼펜',en:'ballpoint pen',jp:'ボールペン'},{kr:'📓 츠바메 노트',en:'tsubame study notebook',jp:'ツバメノート'}],
+    locs:[{kr:'학생 책상 (수험생)',en:"on a Japanese exam-prep student's desk late at night",jp:'受験生の机'},{kr:'학교 교실',en:'in a Japanese classroom after school',jp:'放課後の教室'},{kr:'사무실 책상',en:'on a cluttered Japanese office desk',jp:'散らかったオフィスの机'}]},
+  sports:{objs:[{kr:'⚾ 야구공',en:'baseball',jp:'野球ボール'},{kr:'🏀 농구공',en:'basketball',jp:'バスケットボール'},{kr:'🥋 검도 죽도',en:'kendo bamboo sword',jp:'剣道の竹刀'},{kr:'🏋️ 덤벨',en:'dumbbell',jp:'ダンベル'},{kr:'🥊 복싱 글러브',en:'boxing glove',jp:'ボクシンググローブ'},{kr:'⚽ 축구공',en:'soccer ball',jp:'サッカーボール'}],
+    locs:[{kr:'고등학교 야구부 운동장',en:"on a Japanese high school baseball field",jp:'高校野球部のグラウンド'},{kr:'헬스장',en:'in a Japanese gym under fluorescent lights',jp:'ジム'},{kr:'학교 체육관',en:'in a Japanese school gymnasium',jp:'学校の体育館'}]},
+  fashion:{objs:[{kr:'👟 일본 운동화',en:'Japanese sneaker',jp:'スニーカー'},{kr:'👜 토트백',en:'tote bag',jp:'トートバッグ'},{kr:'🎩 후도 모자',en:'fedora hat',jp:'フェドラ帽'},{kr:'🕶️ 선글라스',en:'sunglasses',jp:'サングラス'},{kr:'👘 유카타',en:'yukata robe',jp:'浴衣'},{kr:'👠 하이힐',en:'high heel shoe',jp:'ハイヒール'}],
+    locs:[{kr:'하라주쿠 패션 부티크',en:'in a Harajuku fashion boutique',jp:'原宿のブティック'},{kr:'시부야 109',en:'inside Shibuya 109 mall',jp:'渋谷109'},{kr:'마츠리 (축제) 거리',en:'on a Japanese matsuri festival street',jp:'お祭りの通り'}]},
+  building:{objs:[{kr:'🚦 일본 신호등',en:'Japanese traffic light',jp:'信号機'},{kr:'🏧 ATM',en:'Japanese ATM',jp:'ATM'},{kr:'🎰 자판기',en:'vending machine',jp:'自動販売機'},{kr:'📞 공중전화',en:'public phone box',jp:'公衆電話'},{kr:'🚥 보행자 신호 멜로디',en:'pedestrian signal with melody',jp:'歩行者信号'},{kr:'⛩️ 토리이',en:'torii gate',jp:'鳥居'}],
+    locs:[{kr:'시부야 스크램블 교차로',en:'at the Shibuya scramble crossing',jp:'渋谷スクランブル交差点'},{kr:'도쿄 지하철역',en:'in a Tokyo subway station',jp:'東京の地下鉄駅'},{kr:'마츠리 시기 신사 거리',en:'on a shrine street during matsuri season',jp:'祭りの神社通り'}]},
+  kitchen:{objs:[{kr:'🍳 일본식 프라이팬',en:'Japanese frying pan',jp:'フライパン'},{kr:'🔪 일식 식칼',en:'Japanese kitchen knife',jp:'包丁'},{kr:'🥢 젓가락',en:'chopsticks',jp:'箸'},{kr:'🫕 일식 냄비',en:'Japanese cooking pot',jp:'鍋'},{kr:'🍵 차주전자',en:'tea kettle',jp:'急須'},{kr:'🍽️ 라멘 그릇',en:'ramen bowl',jp:'ラーメン丼'}],
+    locs:[{kr:'아침 일본 주방',en:'in a Japanese kitchen in the early morning',jp:'朝の日本の台所'},{kr:'라멘집 주방',en:'in a Japanese ramen shop kitchen during rush hour',jp:'ラーメン屋の厨房'},{kr:'이자카야 카운터 주방',en:'behind a Japanese izakaya counter',jp:'居酒屋のカウンター裏'}]},
+  tool:{objs:[{kr:'🔧 렌치',en:'wrench',jp:'レンチ'},{kr:'🔨 망치',en:'hammer',jp:'金槌'},{kr:'🪛 드라이버',en:'screwdriver',jp:'ドライバー'},{kr:'🧰 공구함',en:'toolbox',jp:'工具箱'}],
+    locs:[{kr:'일본 공사장',en:'at a Japanese construction site',jp:'日本の建設現場'},{kr:'차고 작업대',en:'on a Japanese garage workbench',jp:'ガレージの作業台'}]}
+  }
 };
+
+// 호환성을 위한 DB alias (kr이 기본)
+const DB = DB_BY_COUNTRY.kr;
 
 // 크기 힌트
 const OBJ_SIZE = {
@@ -1023,6 +1066,16 @@ function selCountry(el){
   document.querySelectorAll('#countryChips .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   S.country=el.dataset.val;
+  // 🇯🇵 국가 바꾸면 모든 선택 초기화 (사물/장소가 국가별로 다름)
+  S.cat = null; S.obj = null; S.objEn = null; S.objJp = '';
+  S.loc = null; S.locEn = null;
+  document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));
+  // obj/loc/topic chips 비우기
+  const objW = document.getElementById('objChips'); if(objW) objW.innerHTML='';
+  const locW = document.getElementById('locChips'); if(locW) locW.innerHTML='';
+  const topicW = document.getElementById('topicChips'); if(topicW) topicW.innerHTML='';
+  // 단계 리셋: s1 active, 나머지 비활성
+  act('s1'); deact('s2'); deact('s3'); deact('s5'); deact('s6');
   updateSummary();
 }
 function selCat(el){
@@ -1103,18 +1156,29 @@ function removeCustomFromStorage(type, cat, val){
 
 function buildObjs(cat){
   const w=document.getElementById('objChips');w.innerHTML='';
-  DB[cat].objs.forEach(o=>w.appendChild(makeChip(o.kr,o.en,()=>selObj(o.kr,o.en))));
-  // 사용자 저장된 커스텀 아이템 복원
-  const customs = getCustomForCategory('obj', cat);
+  // 🇯🇵 국가별 DB 사용 (대장 v4.8)
+  const dbForCountry = DB_BY_COUNTRY[S.country] || DB_BY_COUNTRY.kr;
+  const catData = dbForCountry[cat];
+  if(!catData || !catData.objs){ console.warn('카테고리 데이터 없음:', S.country, cat); return; }
+  catData.objs.forEach(o=>{
+    // 일본 모드면 jp 라벨도 같이 보이게
+    const label = (S.country === 'jp' && o.jp) ? (o.kr + ' / ' + o.jp) : o.kr;
+    const chip = makeChip(label, o.en, ()=>{
+      // selObj에 jp 정보도 전달
+      S.objJp = o.jp || '';
+      selObj(o.kr, o.en);
+    });
+    w.appendChild(chip);
+  });
+  // 사용자 저장된 커스텀 아이템 복원 (카테고리별 + 국가별)
+  const customs = getCustomForCategory('obj', S.country + '_' + cat);
   customs.forEach(val=>{
     const c = makeChip('✏️ '+val, val, ()=>selObj(val,val));
-    // 삭제 버튼 클릭시 storage에서도 제거
     const delBtn = c.querySelector('.del');
     if(delBtn){
-      const orig = delBtn.onclick;
       delBtn.onclick = (e)=>{
         e.stopPropagation();
-        removeCustomFromStorage('obj', cat, val);
+        removeCustomFromStorage('obj', S.country + '_' + cat, val);
         c.remove();
       };
     }
@@ -1132,16 +1196,22 @@ function selObj(kr,en){
 }
 function buildLocs(cat){
   const w=document.getElementById('locChips');w.innerHTML='';
-  DB[cat].locs.forEach(l=>w.appendChild(makeChip('📍 '+l.kr,l.en,()=>selLoc(l.kr,l.en))));
+  const dbForCountry = DB_BY_COUNTRY[S.country] || DB_BY_COUNTRY.kr;
+  const catData = dbForCountry[cat];
+  if(!catData || !catData.locs){ console.warn('장소 데이터 없음:', S.country, cat); return; }
+  catData.locs.forEach(l=>{
+    const label = (S.country === 'jp' && l.jp) ? ('📍 '+l.kr+' / '+l.jp) : ('📍 '+l.kr);
+    w.appendChild(makeChip(label, l.en, ()=>selLoc(l.kr, l.en)));
+  });
   // 사용자 저장된 커스텀 장소 복원
-  const customs = getCustomForCategory('loc', cat);
+  const customs = getCustomForCategory('loc', S.country + '_' + cat);
   customs.forEach(val=>{
     const c = makeChip('📍✏️ '+val, val, ()=>selLoc(val,val));
     const delBtn = c.querySelector('.del');
     if(delBtn){
       delBtn.onclick = (e)=>{
         e.stopPropagation();
-        removeCustomFromStorage('loc', cat, val);
+        removeCustomFromStorage('loc', S.country + '_' + cat, val);
         c.remove();
       };
     }
@@ -1203,7 +1273,7 @@ function selDur(el){
 // ═══ AI 랜덤 ═══
 async function aiRandom(step){
   if(step===1){
-    const cats=Object.keys(DB);
+    const cats=Object.keys(DB_BY_COUNTRY[S.country] || DB_BY_COUNTRY.kr);
     const el=document.querySelector('#catChips .chip[data-val="'+cats[Math.floor(Math.random()*cats.length)]+'"]');
     if(el)selCat(el);return;
   }
@@ -1214,8 +1284,10 @@ async function aiRandom(step){
     const btn=document.querySelector('#s'+step+' .btn-sm');
     const ot=btn.textContent;btn.textContent='⏳...';btn.disabled=true;
     try{
-      // 카테고리별 엄격한 가이드라인
-      const CAT_GUIDE = {
+      // 🇯🇵 국가별 가이드라인 (대장 v4.8)
+      const isJP_ai = S.country === 'jp';
+      const countryDesc = isJP_ai ? '일본' : '한국';
+      const CAT_GUIDE_KR = {
         food: '한국 사람이 자주 먹는 음식/식품/디저트 (예: 김밥, 떡볶이, 라면, 치킨, 삼겹살, 아이스크림). 판타지나 희귀한 것 금지',
         object: '일상에서 매일 쓰는 생활 사물 (예: 휴대폰, 이어폰, 안경, 지갑, 열쇠, 머리끈, 우산). 판타지 아이템 금지',
         electronics: '전자제품/가전 (예: TV, 냉장고, 세탁기, 노트북, 선풍기, 가습기, 공유기)',
@@ -1231,16 +1303,33 @@ async function aiRandom(step){
         kitchen: '주방용품 (예: 프라이팬, 도마, 칼, 컵, 접시, 냄비, 주걱)',
         tool: '공구/장비 (예: 망치, 드라이버, 렌치, 톱, 전동드릴)'
       };
-      const guide = CAT_GUIDE[S.cat] || '이 카테고리에 속하는 흔한 일상 아이템만';
+      const CAT_GUIDE_JP = {
+        food: '일본 사람이 자주 먹는 음식 (예: 오니기리, 라멘, 회전초밥, 도시락, 우동, 야키니쿠, 모찌, 다이후쿠, 푸딩, 사케). 한국 음식 X',
+        object: '일본 일상 사물 (예: 마네키네코, 부적 오마모리, 비닐우산, 코로코로 클리너, 다이소 정리함, 후로시키 보자기)',
+        electronics: '일본 전자제품 (예: 가라케 폴더폰, 닌텐도 스위치, 가라오케 마이크, 워크맨, 디지카메, 일본식 코타츠 히터)',
+        furniture: '일본식 가구 (예: 후톤, 코타츠, 좌식 의자/자이스, 자부톤, 쇼지 미닫이문, 다다미)',
+        vehicle: '일본 탈것 (예: 신칸센, 마마차리 자전거, 50cc 스쿠터, 도쿄 메트로, 일본 택시)',
+        animal: '일본 동물 문화 (예: 시바견, 일본 길고양이/지역묘, 후쿠로우 부엉이, 사슴 (나라공원))',
+        nature: '일본 자연물 (예: 벚꽃잎, 후지산, 단풍 모미지, 료안지 정원 돌, 마츠타케 버섯)',
+        toy: '일본 장난감/굿즈 (예: 다루마, 마네키네코, 건프라, 켄다마, 쇼기 말, 가챠 캡슐)',
+        stationery: '일본 문구 (예: 츠바메 노트, 펜텔 샤프, 마스킹테이프, 인감 도장, 무인양품 노트)',
+        sports: '일본 스포츠 (예: 검도 죽도, 야구 (고시엔), 스모, 유도, 가라테 도복)',
+        fashion: '일본 패션 (예: 유카타, 기모노, 토트백, 하라주쿠 스타일 운동화, 마츠리 하치마키)',
+        building: '일본 건물/공간 (예: 토리이, 신사, 자판기, 일본 우체통, 가라오케 부스, 파친코)',
+        kitchen: '일본 주방용품 (예: 일식 식칼, 차주전자 큐스, 라멘 그릇, 젓가락, 텟판, 와기리 도마)',
+        tool: '일본 공구 (예: 노코기리 톱, 카나즈치 망치, 일본식 정리 공구함)'
+      };
+      const CAT_GUIDE = isJP_ai ? CAT_GUIDE_JP : CAT_GUIDE_KR;
+      const guide = CAT_GUIDE[S.cat] || ('이 카테고리에 속하는 ' + countryDesc + ' 일상 아이템만');
       const already = Array.from(document.querySelectorAll('#'+(isObj?'objChips':'locChips')+' .chip')).map(c=>c.textContent).join(', ');
 
       const sys = isObj
-        ? '너는 한국 일상 오브젝트 큐레이터다.\n\n** 필수 규칙 **\n1. ' + guide + '\n2. 절대 카테고리 외 엉뚱한 것 넣지 말 것 ("행운양말", "마법봉", "유니콘" 같은 것 금지)\n3. 오브젝트 참견/화내기 컨셉에 어울리는 친숙한 사물만\n4. 한국 사람이 보면 "아 이거!" 즉시 알아보는 것만\n5. 반드시 JSON만. 설명·주석·코드블록 금지.\n\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name"}]}'
-        : '배경 장소 생성기. 선택된 오브젝트가 자연스럽게 있을 만한 실제 한국 일상 공간.\n반드시 JSON만. 포맷: {"items":[{"kr":"한글 장소","en":"English location phrase"}]}';
+        ? '너는 ' + countryDesc + ' 일상 오브젝트 큐레이터다.\n\n** 필수 규칙 **\n1. ' + guide + '\n2. 절대 카테고리 외 엉뚱한 것 넣지 말 것\n3. 오브젝트 참견/화내기 컨셉에 어울리는 친숙한 사물만\n4. ' + countryDesc + ' 사람이 보면 "아 이거!" 즉시 알아보는 것만\n' + (isJP_ai ? '5. 일본 문화 특화 사물 위주. 한국 전용 사물 (소주, 김치, 떡볶이 등) 금지\n6. 반드시 JSON만. 일본어 카타카나/한자 표기도 포함.\n\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name","jp":"日本語表記"}]}' : '5. 반드시 JSON만. 설명·주석·코드블록 금지.\n\n포맷: {"items":[{"kr":"이모지 한글명","en":"English name"}]}')
+        : '배경 장소 생성기. 선택된 오브젝트가 자연스럽게 있을 만한 실제 ' + countryDesc + ' 일상 공간.' + (isJP_ai ? ' 일본 특화 장소만 (편의점/이자카야/료칸/다다미방/카라오케/시부야/하라주쿠/신사 등). 한국 장소 금지.' : '') + '\n반드시 JSON만. 포맷: {"items":[{"kr":"한글 장소","en":"English location phrase"' + (isJP_ai ? ',"jp":"日本語"' : '') + '}]}';
 
       const usr = isObj
-        ? '카테고리: '+S.cat+' ('+guide+')\n\n이 카테고리에 속하는 한국 일상 오브젝트 6개 생성. 이모지 포함, 판타지/엉뚱한 것 금지.\n\n'+(already?'이미 있는 것 (중복 금지): '+already+'\n\n':'')+'JSON만.'
-        : '카테고리: '+S.cat+', 오브젝트: '+(S.obj||'미지정')+'\n이 오브젝트가 자연스럽게 있을 만한 한국 실제 공간 5개. JSON만.';
+        ? '카테고리: '+S.cat+' ('+guide+')\n국가: '+countryDesc+'\n\n이 카테고리에 속하는 ' + countryDesc + ' 일상 오브젝트 6개 생성. 이모지 포함, 판타지/엉뚱한 것 금지.\n\n'+(already?'이미 있는 것 (중복 금지): '+already+'\n\n':'')+'JSON만.'
+        : '카테고리: '+S.cat+', 오브젝트: '+(S.obj||'미지정')+'\n국가: '+countryDesc+'\n이 오브젝트가 자연스럽게 있을 만한 ' + countryDesc + ' 실제 공간 5개. JSON만.';
 
       const r=await callAI(sys,usr);
       let cleaned=r.replace(/```json|```/g,'').trim();
@@ -1250,10 +1339,12 @@ async function aiRandom(step){
       const target=document.getElementById(isObj?'objChips':'locChips');
       d.items.forEach(it=>{
         const kr=it.kr||it.en;const en=it.en||it.kr;
+        const jp=it.jp||'';
+        const labelSuffix = (isJP_ai && jp) ? (' / ' + jp) : '';
         target.appendChild(
           isObj
-            ? makeChip('✨ '+kr, en, ()=>selObj('✨ '+kr, en))
-            : makeChip('✨📍 '+kr, en, ()=>selLoc('✨📍 '+kr, en))
+            ? makeChip('✨ '+kr+labelSuffix, en, ()=>{ S.objJp = jp; selObj('✨ '+kr, en); })
+            : makeChip('✨📍 '+kr+labelSuffix, en, ()=>selLoc('✨📍 '+kr, en))
         );
       });
     }catch(e){
@@ -1350,28 +1441,31 @@ async function genDialogue(regen){
 [예시3 - 엘리베이터 × 스피커폰]
 "진짜 이거 너한테만 몇 번째야? 좁은 공간 다섯 명 갇혀있는데 너 혼자 엄마랑 스피커폰으로 30층까지 가. 방금 저 할아버지 인상 쓰는 거 봤어? 뒤에 학생 이어폰 꽂고도 네 목소리 다 들린대. 창피한 줄 알아. 이어폰 꽂든가 끊든가. 공공장소라는 개념이 없어?"`;
 
-  const REFS_10 = `[예시1 - 쓰레기통 × 바닥에 버리기]
-"야 나 바로 옆에 있는데 바닥에 던지는 거 뭐냐? 세 걸음도 못 걷냐? 진짜 어이없다."
+  const REFS_10 = `[예시1 - 쓰레기통 × 바닥 투기 — 7초 단정조]
+"나 쓰레기통인데! 바로 옆에 던지지마! 세 걸음만 와서 안에 넣어. 바닥 떨어진 쓰레기는 미화원 두 번 일이야!"
 
-[예시2 - 캔음료 × 안 닦고 마시기]
-"야 닦고 마셔! 뚜껑에 뭐 묻었는지 알고 그냥 입 대? 티슈 한 장이야 한 장."
+[예시2 - 컵라면 × 편의점 방치 — 7초 단정조]
+"나 컵라면 빈컵인데! 편의점 테이블에 두고 가지마! 알바생이 하루 200개씩 치워. 국물은 비우고 컵은 컵 칸에 넣어!"
 
-[예시3 - 운동화 × 현관 방치]
-"일주일째 이 꼴이야. 흙 다 말라붙어서 부서지는 중이다. 5분이면 되는 걸 왜 안 해?"`;
+[예시3 - 운동화 × 현관 방치 — 7초 단정조]
+"나 운동화인데! 일주일째 흙 묻은 채로 두지마! 굳으면 가죽 부식이야. 5분 솔질하면 끝이라고!"`;
 
   const refs = REFS_10;
 
-  const structure = `【필수 구조 - 7초】
-① 분노 폭발 직격 (1문장): 강하게 시작 ("야 너", "미친", "진짜")
-② 구체적 짜증 포인트 (1~2문장): 숫자/사실 포함 + 분노 마무리
-총 2~3문장. 약한 타박 아니라 분노 전달.`;
+  const structure = `【필수 구조 - 7초 단정조】
+① 분노 시작 (1문장): "나 [사물]인데! [행동] 하지마!"
+② 사실 단정 (1~2문장): 구체적 숫자/사실 단정문 (질문 X)
+③ 해결 단정 (1문장): "[방법] 해라!" 명령조
+총 3~4문장 최대. 7초 음성 분량. "이거 알아?" 같은 질문 절대 금지.`;
 
   const BAN_RULES = `
 ⛔ 절대 금지 (이거 나오면 완전 실패):
 - "~하면 안 되냐?" / "한번만" / "제발 좀" → 너무 조심스러움. 분노 아님.
+- "이거 알아?" / "~지?" / "~걸?" / "~았어?" / "~인 거 알아?" → 질문/확인 어미 전면 금지
 - "구석에 쳐박혀", "관심 받고 싶다", "숨은 친구" → 감성팔이 비유
 - "~좋을 것 같아" / "~어때?" → 제안하지 말고 쏘아붙여야 함
 - 정중한 부탁 톤 전체 금지. 이건 앵그리야.
+- 5문장 이상 길게 쓰기 — 7초 분량 초과
 - 구체적 숫자/사실 없는 모호한 호소
 
 ✅ 반드시 포함:
@@ -1440,24 +1534,41 @@ async function genDialogue(regen){
 이건 단순 "고마워" 대사가 아니다.
 **"칭찬 + 효과/이유 정보 + 더 좋아지는 꿀팁"** 3박자가 무조건 필수.
 
-【대사 3단 구조 — 무조건 이 순서】
-1) 현재 잘 관리되는 칭찬 (1~2문장):
-   "난 [사물]야, 이렇게 [잘 관리해줘서/깨끗하게 써줘서/매일 챙겨줘서] 너무 [깨끗하게 유지되고 있어/오래 쓰고 있어/제 기능 다 하고 있어]"
-   → 주인이 잘 해주고 있는 구체적 행동 + 만족
+⏱️⏱️⏱️ 분량 절대 규칙 — 7초 안에 끝나야 한다 (대장 v4.9):
+- 총 3~4문장 (40~60자)
+- 절대 5문장 이상 금지
+- 한 문장은 짧고 따뜻하게 (10~15자 권장)
+- 7초면 음성 합성으로 약 2.5문장 분량
+- 길게 쓰지 마라. 짧고 부드럽게.
 
-2) 효과/이유 정보 (2~3문장): 진짜 사실 + 숫자
-   "이렇게만 해주면 → [구체적 효과/이유]"
-   → "수명이 평균 2배로 늘어나"
-   → "박테리아 99%까지 안 생기는 거 알아?"
-   → "전기세 한 달 5천원씩 절약되는 거"
-   → "인테리어 가구도 5년 → 평생 쓰는 거지"
-   → 구체적 숫자/배수/효과 반드시
+🚫🚫🚫 절대 금지 표현 (대장 v4.9 — 질문형 추방):
+- "이거 알아?" 절대 금지 (질문 X)
+- "~지?" "~걸?" "~알지?" "~았어?" 같은 질문/확인 어미 금지
+- "~인 거 알아?" "~인 거 봤어?" 금지
+- 시청자에게 묻지 마라. 그냥 단정해서 말해라.
 
-3) 더 좋아지는 추가 꿀팁 (1~2문장):
-   "이거에 더해서 [추가 행동] 까지만 해주면 → [더 큰 효과]"
-   → "이거 계속하면 진짜 [장기 효과]"
-   → "[월 1회 이거 한 가지] 만 더 해주면 평생 쓸 수 있어"
-   → 시청자가 "오 이거까지 해야 되는구나" 하게
+✅ 단정조로만 써라:
+- "이렇게 하면 [결과 단정]이야"
+- "[숫자] 효과가 있어"
+- "[방법] 하면 더 좋아"
+- 질문 X, 단정만 O
+
+【대사 3단 구조 — 짧고 부드럽게】
+1) 칭찬 시작 (1문장):
+   "난 [사물]야, 이렇게 [잘 해줘서] 너무 [상태]야"
+   → 짧고 따뜻하게 1문장
+
+2) 효과 단정 (1~2문장):
+   → "이렇게 하면 [효과/숫자]야"
+   → "수명이 2배 늘어나"
+   → "박테리아 99% 안 생겨"
+   → 단정문, 질문 X
+   → 구체적 숫자/배수/효과
+
+3) 추가 꿀팁 단정 (1문장):
+   → "[추가 행동] 하면 [더 큰 효과]야"
+   → "[방법] 하면 평생 써"
+   → 단정조
 
 ⚠️⚠️⚠️ "고마워, 잘해줘서 좋아" 만 반복하면 실패다.
 반드시 진짜 사실 + 구체적 수치 + 더 좋아지는 추가 행동 들어가야 한다.
@@ -1465,31 +1576,40 @@ async function genDialogue(regen){
 이 콘텐츠 컨셉: **잘 관리되는 사물이 주인을 칭찬하면서 + 진짜 정보 + 더 잘하는 법까지 알려주는 영상**.
 **시청자 반응 목표**: "내가 제대로 하고 있구나 + 이거까지 하면 더 좋겠다 + 진짜 배웠다"
 
-⚠️⚠️⚠️ 장소 컨텍스트 절대 규칙 (대장 v4.7):
+⚠️⚠️⚠️ 장소 컨텍스트 절대 규칙:
 사용자가 선택한 "장소"가 user 메시지에 명시되어 있다.
 그 장소에서 실제로 일어나는 상황만 묘사해라.
 장소와 무관한 다른 곳 얘기 절대 금지.
 
-【좋은 예시】
-"난 우유팩이야, 이렇게 매일 헹궈서 평평하게 펴서 분리수거 해줘서 너무 고마워. 이렇게만 해주면 종이팩 재활용률이 100%까지 올라가고, 일반 종량제로 갈 때보다 자원 낭비가 80% 줄어든대. 이거에 더해서 라벨 떼고 안쪽까지 살짝 헹궈주면 완벽한 재활용 등급이 되는 거야. 이렇게 계속하면 환경도 살리고 종량제봉투 비용도 한 달에 만원씩 아낄 수 있어. 진짜 모범 시민이야~"
+【좋은 7초 단정조 예시】
 
-"난 노트북이야, 매주 키보드 닦아주고 통풍구 청소해줘서 너무 깨끗하게 유지되고 있어. 이렇게만 해주면 발열이 30%까지 줄어서 성능 유지되고 평균 수명이 5년에서 8년으로 늘어나는 거 알아? 이거에 더해서 한 달에 한 번 캔에어로 키캡 사이까지 청소해주면 평생 쓸 수 있어. 좋은 노트북 오래 쓰면 환경에도 좋고 새 거 사는 비용도 아끼는 거지. 진짜 잘하고 있어~"
+"난 우유팩이야, 매일 헹궈서 분리수거 해줘서 너무 고마워. 이렇게 하면 재활용률 100%고 종량제비도 월 만원 절약돼. 라벨까지 떼면 완벽 등급이야!"
+
+"난 강아지야, 매일 산책 시켜줘서 너무 행복해. 이렇게 하면 분리불안 80% 줄고 평균 수명 1.5년 늘어. 같은 시간에 가면 더 좋아!"
+
+"난 노트북이야, 매주 청소해줘서 깨끗해. 이렇게 하면 발열 30% 줄고 수명이 5년에서 8년으로 늘어. 월 1번 캔에어로 키캡 사이까지 털어줘!"
 
 절대 금지:
 - 화내기, 훈계하기, "야 너" 같은 표현
 - 민폐 상황·부정적 주제
 - "고마워, 잘해줘서 좋다" 만 반복 (정보 0개)
 - 모호한 표현 ("좋다", "행복해" 만 있고 사실 없음)
+- "이거 알아?" "~지?" "~걸?" 같은 질문 어미
 
-【출력 형식】 한국어 대사 본문만 출력. 5~7문장. 설명/머리말 금지.
+【출력 형식】 
+- 한국어 대사 본문만 출력. 설명/머리말 금지.
+- ⏱️ 3~4문장 (7초 분량) — 절대 길게 쓰지 마라
+- 단정조만, 질문/확인 어미 절대 금지
 
 【출력 전 자가 체크】
 1. "난 [사물]야," 또는 "난 [사물]이야," 로 시작했나? 느낌표 X
-2. 주인이 잘 해주는 구체적 행동 명시했나?
-3. 효과/이유 정보 (수치/사실) 들어갔나? 없으면 다시.
-4. 더 좋아지는 추가 꿀팁 들어갔나? 없으면 다시.
-5. "고마워" "좋다"만 반복하면 다시.
-6. 선택된 장소와 맞지 않는 상황 묘사 있으면 다시.`;
+2. 3~4문장 안에 끝났나? 5문장 이상이면 줄여라.
+3. "이거 알아?" "~지?" 같은 질문 어미 있으면 단정조로 바꿔라.
+4. 효과/이유 정보 (수치/사실) 들어갔나? 없으면 다시.
+5. 더 좋아지는 추가 꿀팁 들어갔나? 없으면 다시.
+6. "고마워" "좋다"만 반복하면 다시.
+7. 선택된 장소와 맞지 않는 상황 묘사 있으면 다시.
+8. 7초 음성으로 자연스러운 분량인가?`;
   } else {
     // 😤 angry (기본) — 기존 분노 시스템 프롬프트 유지
     systemPrompt = isJP_dlg
@@ -1503,11 +1623,22 @@ async function genDialogue(regen){
 - 怒りは「なんだけど！」の後から爆発する
 - このパターンはどんな状況でも絶対変えない
 
+⏱️⏱️⏱️ 分量ルール (大将 v4.9): 7秒で終わる
+- 合計3~4文 (40~60字)
+- 5文以上は絶対禁止
+- 短く強く
+
+🚫🚫🚫 質問形禁止 (大将 v4.9):
+- 「知ってる?」「~でしょ?」「~だろ?」絶対禁止
+- 視聴者に質問しない、断定形のみ
+- 「~だ」「~なんだ」「~しろ」断定/命令形
+
 このコンテンツのコンセプト: **物が本当にブチギレて人にツッコむ動画**。軽い文句ではなく、怒り爆発レベル。
-**情報 + 怒り** の二兎を追う。視聴者が「ムカつくけど確かにそうだ」となるように。
+**情報 + 怒り** の二兎を追う。短く強く断定的に。
 ${researchText}
 
-【参考例 - この強度で書け】
+【参考例 - 7秒断定形で書け】
+"オレ牛乳パックなんだけど！洗わずに捨てるな！12時間で菌100倍だ。リサイクルもされない。すすいで平らにしてから捨てろ!"
 ${refs}
 
 【今回の構造】
@@ -1557,22 +1688,42 @@ ${BAN_RULES}
 이 영상은 단순히 "야 이러지 마!" 가 아니다.
 **"화남 + 진짜 정보 + 해결책"** 3박자가 무조건 들어가야 한다.
 
-【대사 3단 구조 — 무조건 이 순서】
-1) 분노 표출 (1~2문장): "나 [사물]인데! 너 진짜 [행동] 하지마!"
-   → 무엇을 화내는지 명확히
+⏱️⏱️⏱️ 분량 절대 규칙 — 7초 안에 끝나야 한다 (대장 v4.9):
+- 총 3~4문장 (40~60자)
+- 절대 5문장 이상 금지
+- 한 문장은 짧고 임팩트 있게 (10~15자 권장)
+- 7초면 음성 합성으로 약 2.5문장 분량
+- 길게 쓰지 마라. 짧고 강하게.
 
-2) 진짜 현실 정보 (2~3문장): 위 웹 검색 정보 또는 사실 기반
-   → "이거 알아? 안 씻고 버리면 박테리아가 12시간 만에 100배 증식해"
-   → "음식물쓰레기 냄새의 80%가 사실 이거 때문이야"
-   → "재활용도 안 되고 일반쓰레기로 분류돼"
-   → 구체적 숫자/사실/원인 반드시 포함
-   → 시청자가 "어 이거 진짜 몰랐네" 하게 만들어라
+🚫🚫🚫 절대 금지 표현 (대장 v4.9 — 질문형 추방):
+- "이거 알아?" 절대 금지 (질문 X)
+- "~지?" "~걸?" "~알지?" "~았어?" 같은 질문/확인 어미 금지
+- "~인 거 알아?" "~인 거 봤어?" 금지
+- 시청자에게 묻지 마라. 그냥 단정해서 말해라.
 
-3) 해결책 / 올바른 방법 (1~2문장): "이렇게 하면 좋아"
-   → "물로 한 번만 헹궈서 평평하게 펴서 버려"
-   → "분리수거 마크 확인하고 종이팩만 따로"
-   → 구체적이고 실행 가능한 방법
-   → 잔소리 톤이지만 진짜 도움되는 정보
+✅ 단정조로만 써라:
+- "이렇게 하면 [결과 단정]"
+- "안 하면 [결과 단정]"
+- "그냥 [동작]해라"
+- "[숫자]야"  
+- "[사실]이야"
+- 질문 X, 단정만 O
+
+【대사 3단 구조 — 짧고 강하게】
+1) 분노 시작 (1문장):
+   "나 [사물]인데! 이거 하지마!" 또는 "나 [사물]인데! [행동] 좀 그만해!"
+   → 짧고 강한 1문장
+
+2) 사실 단정 (1~2문장): 
+   → "이러면 [구체적 결과/숫자]야"
+   → "[몇 시간/몇 배/몇 %] [영향]이라고"  
+   → 질문 X, 단정문으로
+   → 예: "12시간이면 박테리아 100배다", "재활용 안 되고 종량제로 직행이야"
+
+3) 해결책 단정 (1문장):
+   → "[행동] 해라!"
+   → "[방법] 그게 끝이야"
+   → 명령조 단정
 
 ⚠️⚠️⚠️ "그냥 더럽다" "방치되어 있다" 만 반복하면 실패다.
 반드시 진짜 사실 + 구체적 수치 + 명확한 해결법 들어가야 한다.
@@ -1580,7 +1731,7 @@ ${BAN_RULES}
 이 콘텐츠 컨셉: **사물이 진짜 빡쳐서 정보까지 알려주는 영상**.
 **시청자 반응 목표**: "빡치네 + 근데 진짜 몰랐던 거 배웠다 + 이제 안 그래야지"
 
-⚠️⚠️⚠️ 장소 컨텍스트 절대 규칙 (대장 v4.7):
+⚠️⚠️⚠️ 장소 컨텍스트 절대 규칙:
 사용자가 선택한 "장소"가 user 메시지에 명시되어 있다.
 그 장소에서 실제로 일어나는 상황만 묘사해라.
 - 편의점이면 → 편의점 손님이 다 먹고 그대로 두고 가는 상황
@@ -1593,10 +1744,13 @@ ${researchText}
 【참고 예시 - 이 정도 강도 + 정보성으로 써야 함】
 ${refs}
 
-⭐ 정보성 분노 대사 추가 예시:
-"나 우유팩인데! 안 씻고 버리지 마! 우유 단백질이 12시간만 지나도 박테리아 폭발적으로 증식해서 음식물쓰레기 냄새의 진짜 원인이 나야. 재활용도 안 돼서 종량제봉투로 가는 거 알아? 물로 한 번만 헹궈서 평평하게 펴서 종이팩 분리수거함에 넣어. 1초면 끝나는 걸 안 하니까 이 사단이 나는 거야!"
+⭐ 7초 단정조 정보분노 대사 예시:
 
-"나 키보드인데! 책상 위에서 과자 먹지 마! 키보드 안에 들어간 부스러기는 변기보다 박테리아 5배 많아진다는 연구 봤어? 키캡 한 번만 분리해서 청소해봐, 거기서 나온 거 보면 너 충격 받을걸. 무선 키보드면 뒤집어서 털고, 유선이면 분해 청소 검색해서 한 달에 한 번만 닦아. 진짜 그것만 해도 수명 두 배는 늘어.."
+"나 우유팩인데! 안 씻고 그냥 버리지 마! 12시간이면 박테리아 100배 폭증이야. 종이팩 재활용도 안 돼서 종량제 직행이라고. 헹궈서 평평하게 펴서 종이팩함에 넣어!"
+
+"나 컵라면 빈컵인데! 편의점에 그대로 두고 가지마! 알바생이 하루 200개씩 치우는데 컵 따로 분리만 해도 5초야. 국물은 따로 비우고 컵은 컵 칸에 넣어라!"
+
+"나 키보드인데! 위에서 과자 먹지마! 키보드 안 부스러기는 변기보다 박테리아 5배다. 한 달에 한 번 캔에어로 털고 알코올로 닦아!"
 
 【이번 대사 구조】
 ${structure}
@@ -1615,27 +1769,29 @@ ${BAN_RULES}
 - 각도5: 환경/생태적 피해 + 분리수거·자원낭비
 매번 다른 각도, 다른 정보, 다른 해결책으로.
 
-✅ 좋은 시작 + 정보 + 해결 패턴:
-"나 [사물]인데! [행동 하지마]! 이거 알아? [실제 사실/숫자]. [구체적 영향]. [올바른 방법]. 그것만 하면 끝나는 걸 왜 안 하냐!"
+✅ 좋은 패턴 (단정조):
+"나 [사물]인데! [행동] 하지마! [구체적 사실/숫자]. [방법] 해라!"
 
 ❌ 절대 금지 패턴:
 - "그냥 더럽다, 진짜 화나, 짜증나"만 반복 (정보 없음)
 - "야 너!" 시작 (자기소개 빠짐)
-- 사실 없이 감정만 표출
-- 해결책 없이 화만 내기
+- "이거 알아?" "~지?" "~걸?" 같은 질문/확인 어미
+- 5문장 이상 길게 쓰기
 
 【출력 형식】
 - 한국어 대사 본문만 출력 (설명/서두/주석 없이)
-- 분노 → 정보 → 해결책 3단 구조 필수
-- 5~7문장 분량 (7초 분량 맞게)
-- 웹 검색 정보를 반드시 녹여서 "오 진짜 몰랐네" 느낌
+- 분노 → 정보 단정 → 해결 단정 3단 구조 필수
+- ⏱️ 3~4문장 (7초 분량) — 절대 길게 쓰지 마라
+- 단정조만, 질문/확인 어미 절대 금지
+- 웹 검색 정보를 단정문으로 녹여라
 
 ⚠️ 출력 전 스스로 체크:
 1. "나 [사물]인데!" 로 시작했나?
-2. 구체적 사실/숫자/원인 (정보) 들어갔나? 없으면 다시 써.
-3. 올바른 방법/해결책 들어갔나? 없으면 다시 써.
-4. "그냥 더럽다" 식의 모호한 표현만 있으면 → 다시 써.
-5. 진짜 시청자가 "오 이거 새로 배웠다" 할 만한가?
+2. 3~4문장 안에 끝났나? 5문장 이상이면 줄여라.
+3. "이거 알아?" "~지?" 같은 질문 어미 있으면 단정조로 바꿔라.
+4. 구체적 사실/숫자 (정보) 들어갔나? 없으면 다시 써.
+5. 단정형 해결책 들어갔나? 없으면 다시 써.
+6. 7초 음성으로 자연스러운 분량인가?
 부족하면 다시 써.`;
   }
   // 🎭 감정별 시스템 프롬프트 분기 끝
