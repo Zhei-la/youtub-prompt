@@ -191,7 +191,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <header>
   <div class="logo">쇼츠 3D 프롬프트 생성기</div>
-  <div class="tagline">감정형 사물·동물 AI 영상 <span class="byline">by 제일라</span> <span style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:0;text-transform:none;white-space:nowrap;">v4.5 📚 정보분노</span></div>
+  <div class="tagline">감정형 사물·동물 AI 영상 <span class="byline">by 제일라</span> <span style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:0;text-transform:none;white-space:nowrap;">v4.7 📍 장소맥락</span></div>
 </header>
 
 <div id="apiKeyBanner">
@@ -300,7 +300,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">🇰🇷 한국어 뜻 (참고용)</div>
       <div id="dialogueTransText" style="color:var(--text);"></div>
     </div>
-    <div class="dialogue-note">💡 화남은 <b>분노 + 진짜 정보(박테리아·수치 등) + 해결책</b> 3단 구조로 생성됩니다. 단순 "더럽다" 식 대사 X — 시청자가 새로 배우는 정보형 분노.</div>
+    <div class="dialogue-note">💡 <b>화남</b>: 분노 + 정보(박테리아·수치) + 해결책 3단 구조<br>💡 <b>기분좋음</b>: 칭찬 + 효과 정보(수치) + 더 좋아지는 꿀팁 3단 구조</div>
   </div>
 </div>
 
@@ -579,16 +579,15 @@ const MOOD_MAP = {
 // ═══════ 🎭 감정 3종 시스템 (가이드 v3.0) ═══════
 // 화남 / 차분함 / 기분좋음 — 카테고리별 표정/분위기/대사 톤이 다름
 const STYLE_MOODS = {
-  pixar:['angry','calm','happy'],
-  anime:['angry','calm','happy']
+  pixar:['angry','happy'],
+  anime:['angry','happy']
 };
 const MOOD_LABELS = {
-  angry:'😤 화남',
-  calm:'😌 차분함',
-  happy:'😊 기분좋음'
+  angry:'😤 화남 · 정보형 분노',
+  happy:'😊 기분좋음 · 칭찬 + 꿀팁'
 };
 
-// 감정별 표정/분위기/움직임 정의
+// 감정별 표정/분위기/움직임 정의 (대장 v4.6 — 차분함 제거, 기분좋음 = 긍정 정보형)
 const MOOD_DEFINITIONS = {
   angry: {
     expression:'furrowed eyebrows, narrowed glaring eyes, mouth open in frustration',
@@ -596,28 +595,21 @@ const MOOD_DEFINITIONS = {
     motion:'short, sharp angry gestures',
     situation_type:'problem situation, neglect, misuse, mess',
     voice_tone:'angry adult tone with scolding emotion',
-    dialogue_style:'분노/짜증/훈계 톤'
-  },
-  calm: {
-    expression:'soft relaxed eyes, gentle closed or slight smile mouth, peaceful look',
-    atmosphere:'quiet, stable, settled, calm explanation mood',
-    motion:'minimal, natural, gentle movement',
-    situation_type:'normal proper use, organized environment, restful scene',
-    voice_tone:'calm gentle adult tone, soft and explaining',
-    dialogue_style:'차분/안정/설명 톤'
+    dialogue_style:'분노/짜증/훈계 톤 + 진짜 정보 + 해결책'
   },
   happy: {
-    expression:'smiling curved eyes, gentle upturned mouth, bright cheerful look',
-    atmosphere:'satisfied, pleased, refreshing, positive mood',
-    motion:'light, lively natural reaction (no exaggerated dancing)',
-    situation_type:'being well-used, happy usage, positive environment',
-    voice_tone:'cheerful warm adult tone, content and pleased',
-    dialogue_style:'기쁨/만족/뿌듯함 톤'
+    expression:'smiling curved eyes, gentle upturned mouth, bright cheerful satisfied look',
+    atmosphere:'grateful, pleased, satisfied, brightly content mood',
+    motion:'light, lively, content gentle gestures',
+    situation_type:'being well-cared-for, properly used, well-maintained, positive environment',
+    voice_tone:'cheerful grateful warm adult tone, content and praising',
+    dialogue_style:'기쁨/만족/감사 + 칭찬 + 꿀팁/장기 혜택'
   }
 };
 
 const STYLE_MOODS_LEGACY_FALLBACK = {
-  // 구버전 호환을 위해 유지 (저장된 데이터에 옛날 값이 있을 경우)
+  // 구버전 호환 — calm이나 옛날 값들은 기본 angry로
+  calm:'happy', // 차분함 → 기분좋음으로 매핑 (v4.6에서 calm 제거)
   furious:'angry', annoyed:'angry', scolding:'angry', threatening:'angry',
   crying_angry:'angry', suppressed:'angry', disappointed:'angry', cold_rage:'angry',
   breaking_point:'angry', righteous:'angry', chibi_rage:'angry', spark_eye:'angry',
@@ -659,231 +651,171 @@ const TOPICS = [
 const TOPICS_BY_CATEGORY = {
   animal: {
     angry: [
-      {val:'pet_touch',label:'🐶 허락 없이 만지기',desc:'허락도 없이 동물을 자꾸 만지는 사람'},
-      {val:'pet_wake',label:'😴 자고 있는데 깨움',desc:'동물이 쉬고 있는데 계속 깨우는 사람'},
-      {val:'pet_photo',label:'📸 사진 찍으려고 붙잡기',desc:'사진 찍겠다고 동물을 억지로 붙잡는 사람'},
-      {val:'pet_food',label:'🍪 허락 없이 간식 주기',desc:'보호자 허락 없이 동물에게 간식 주는 사람'},
-      {val:'pet_chase',label:'🏃 도망가는데 따라오기',desc:'싫다는데 계속 따라오며 부르는 사람'},
-      {val:'pet_loud',label:'🔊 큰소리로 부르기',desc:'동물이 놀랄 정도로 큰소리로 부르는 사람'},
-      {val:'pet_tail',label:'🐕 꼬리/귀 만지기',desc:'민감한 꼬리/귀를 함부로 만지는 사람'},
-      {val:'pet_late_food',label:'⏰ 밥 시간 놓침',desc:'밥 시간 놓치고 늦게 주는 보호자'}
-    ],
-    calm: [
-      {val:'pet_rest',label:'😌 조용히 쉬는 중',desc:'편안하게 쉬는 시간을 보내고 있음'},
-      {val:'pet_sit_owner',label:'🤝 보호자 옆에서',desc:'보호자 옆에서 안정적으로 휴식 중'},
-      {val:'pet_cafe_chill',label:'☕ 카페에서 편안히',desc:'카페에서 편안히 앉아 분위기 즐기는 중'},
-      {val:'pet_after_walk',label:'🚶 산책 후 휴식',desc:'산책 다녀와서 차분히 쉬는 중'},
-      {val:'pet_quiet_obs',label:'👀 조용히 관찰',desc:'주변을 차분히 관찰하며 시간 보내는 중'},
-      {val:'pet_grooming',label:'✨ 그루밍 중',desc:'스스로 털 정리하며 차분한 시간'}
+      {val:'pet_touch',label:'🐶 허락 없이 만지기',desc:'동물은 갑작스런 접촉에 코르티솔 30%↑, 신뢰 손상. 손등 보여주고 5초 기다린 뒤 만지기'},
+      {val:'pet_wake',label:'😴 자고 있는데 깨움',desc:'반려견 하루 12-14시간 수면 필요. 깨우면 면역력 저하 + 분리불안. 깨어날 때까지 대기'},
+      {val:'pet_photo',label:'📸 억지로 사진 찍기',desc:'카메라 들이대면 동물 스트레스. 자연스러운 순간 줌 사진 권장'},
+      {val:'pet_food',label:'🍪 허락 없이 간식',desc:'초콜릿/포도/양파는 강아지에게 치명적. 보호자 허락 없는 간식 금지'},
+      {val:'pet_loud',label:'🔊 큰소리로 부르기',desc:'개 청력은 사람의 4배. 큰소리는 청각 손상 + 공포 학습 유발'},
+      {val:'pet_tail',label:'🐕 꼬리/귀 만지기',desc:'꼬리·귀는 신경 밀집부위. 함부로 만지면 통증 + 방어적 공격성 증가'}
     ],
     happy: [
-      {val:'pet_walk_excite',label:'🌳 산책해서 신남',desc:'산책 나와서 너무너무 즐거운 중'},
-      {val:'pet_treat_happy',label:'🍪 간식 받고 신남',desc:'좋아하는 간식 받고 기분 최고'},
-      {val:'pet_play_toy',label:'🎾 장난감 놀이 중',desc:'좋아하는 장난감으로 신나게 노는 중'},
-      {val:'pet_owner_love',label:'💕 보호자랑 교감',desc:'보호자와 사랑 가득한 교감 중'},
-      {val:'pet_friend',label:'🐾 친구랑 노는 중',desc:'친구 동물과 즐겁게 노는 중'},
-      {val:'pet_belly_rub',label:'🤗 쓰담쓰담 받음',desc:'좋아하는 쓰다듬을 잔뜩 받는 중'}
+      {val:'pet_walk_well',label:'🌳 산책 잘 시켜줌',desc:'매일 30분 산책 → 분리불안 80%↓, 관절 건강 + 평균수명 1.5년↑. 매일 같은 시간 추천'},
+      {val:'pet_treat_right',label:'🍪 간식 적정량',desc:'적절한 간식은 신뢰 형성 + 훈련 강화. 일일 칼로리 10% 이내 유지하면 비만 예방'},
+      {val:'pet_play_daily',label:'🎾 매일 놀아줌',desc:'15분 놀이 = 인지 능력 자극 + 우울증 예방. 새 장난감 로테이션하면 더 좋음'},
+      {val:'pet_owner_bond',label:'💕 충분한 교감',desc:'쓰다듬기는 옥시토신↑(주인+반려동물 모두). 5분 이상 매일 = 평생 유대감'},
+      {val:'pet_grooming',label:'✨ 정기 그루밍',desc:'주 1-2회 빗질 = 피부병 예방 + 헤어볼 감소. 발톱 손질도 잊지 말기'},
+      {val:'pet_health',label:'🩺 정기 검진',desc:'연 1회 건강검진 = 조기 발견 + 평균수명 2년↑. 예방접종 일정 지키기'}
     ]
   },
   food: {
     angry: [
-      {val:'food_waste',label:'🚯 음식 반 남기기',desc:'잔뜩 시켜놓고 반도 안 먹고 버리는 사람'},
-      {val:'food_mess',label:'🍜 식당 테이블 엉망',desc:'테이블 엉망으로 해놓고 그냥 가는 사람'},
-      {val:'food_cold',label:'❄️ 식도록 놔두기',desc:'음식을 식을 때까지 폰만 보고 안 먹는 사람'},
-      {val:'food_phone',label:'📱 식사 중 폰만 보기',desc:'밥 먹는 내내 상대 무시하고 폰만 보는 사람'}
-    ],
-    calm: [
-      {val:'food_quiet_meal',label:'😌 조용한 식사',desc:'조용히 천천히 즐기는 식사'},
-      {val:'food_warm_meal',label:'☕ 따뜻한 차 한잔',desc:'따뜻하게 천천히 음미 중'},
-      {val:'food_solo_dinner',label:'🌙 혼밥 평화',desc:'혼자 평온하게 식사하는 중'}
+      {val:'food_waste',label:'🚯 음식 절반 남김',desc:'한국 음식물쓰레기 연 130만톤. 처리비용 1조5천억. 먹을만큼만 주문하기'},
+      {val:'food_mess',label:'🍜 식당 테이블 엉망',desc:'식당 직원 일평균 200테이블 청소. 그릇 모아주고 휴지 한번만 정리해도 큰 도움'},
+      {val:'food_cold',label:'❄️ 식도록 놔두기',desc:'음식 30분 방치 = 박테리아 30배. 따뜻할 때 먹어야 영양소 손실 최소'},
+      {val:'food_phone',label:'📱 식사 중 폰만',desc:'폰 보며 먹으면 포만감 인지 30%↓ → 과식 + 소화불량. 식사 중 폰 내려놓기'}
     ],
     happy: [
-      {val:'food_yummy',label:'🤤 맛있게 먹는 중',desc:'정성스럽게 만든 음식을 즐겁게 먹는 중'},
-      {val:'food_share_friend',label:'👯 친구랑 같이',desc:'친구랑 같이 즐겁게 먹는 중'},
-      {val:'food_celebration',label:'🎉 기념일 한 끼',desc:'특별한 날 기분 좋게 먹는 중'},
-      {val:'food_homemade',label:'❤️ 정성 가득',desc:'정성스럽게 만들어진 음식이 사랑받는 중'}
+      {val:'food_well_eat',label:'🤤 맛있게 잘 먹어줌',desc:'천천히 씹어 먹으면 소화효소 분비↑ + 포만감↑ + 다이어트 효과. 한 입 30번 씹기'},
+      {val:'food_share',label:'👯 같이 먹는 식사',desc:'함께 먹으면 옥시토신 분비 → 관계 개선 + 면역력↑. 주 1회 가족 식사 권장'},
+      {val:'food_homemade',label:'❤️ 집밥 정성',desc:'집밥 = 나트륨/당 자체 조절. 외식 대비 칼로리 30%↓, 영양균형 2배'},
+      {val:'food_grateful',label:'🙏 감사한 한 끼',desc:'식사 전 잠깐 감사하면 코르티솔↓. 마음챙김 식사 = 우울증 예방 효과'}
     ]
   },
   electronics: {
     angry: [
-      {val:'elec_drop',label:'📱 폰 막 떨어뜨림',desc:'폰을 거칠게 막 떨어뜨리는 사람'},
-      {val:'elec_charge',label:'🔋 충전 안 함',desc:'충전 안 하고 0%까지 쓰는 사람'},
-      {val:'elec_overheat',label:'🔥 과열되는데 계속 사용',desc:'기기가 뜨거워지는데 계속 쓰는 사람'},
-      {val:'elec_dirty',label:'🧹 키보드/화면 더러움',desc:'먼지/지문 묻어도 안 닦는 사람'},
-      {val:'elec_cable',label:'🔌 충전기 거칠게 뽑기',desc:'충전기 케이블 막 잡아당기는 사람'},
-      {val:'elec_food',label:'🍔 음식 흘림',desc:'기기 위에 음식/음료 흘리는 사람'}
-    ],
-    calm: [
-      {val:'elec_clean_setup',label:'🖥️ 정돈된 책상',desc:'깔끔하게 정돈된 책상에서 안정적으로 작동 중'},
-      {val:'elec_charging',label:'🔋 평온한 충전',desc:'평화롭게 충전 중'},
-      {val:'elec_idle',label:'💤 대기 모드',desc:'사용자 없이 조용히 대기 중'}
+      {val:'elec_drop',label:'📱 폰 거칠게 다룸',desc:'1m 낙하만으로 내부 부품 충격. 액정/배터리 수명 30%↓. 케이스 + 강화유리 필수'},
+      {val:'elec_charge',label:'🔋 0%까지 사용',desc:'리튬배터리는 20-80% 유지가 최적. 0% 방전 = 수명 50%↓'},
+      {val:'elec_overheat',label:'🔥 과열에도 사용',desc:'45도 이상 = 배터리 수명 급락 + 칩 손상. 뜨거우면 즉시 사용 중지'},
+      {val:'elec_dirty',label:'🧹 키보드 청소 안함',desc:'키보드 박테리아 변기 5배. 매주 알코올 닦기 + 월 1회 키캡 분리 청소'},
+      {val:'elec_food',label:'🍔 음식 흘림',desc:'액체 1방울로 내부 회로 부식. 충전포트 막힘 = 충전 불가. 책상에서 음식 금지'}
     ],
     happy: [
-      {val:'elec_well_used',label:'✨ 잘 사용됨',desc:'사용자가 만족스럽게 사용 중'},
-      {val:'elec_clean',label:'🧼 깨끗이 관리',desc:'주인이 깨끗이 관리해주는 중'},
-      {val:'elec_proud',label:'⭐ 기능 만점',desc:'기능을 다 발휘하며 뿌듯한 중'}
+      {val:'elec_clean',label:'🧼 깨끗이 관리',desc:'주 1회 청소 + 케이스 사용 = 수명 평균 2년 연장. 충전포트 솜털 제거 잊지 말기'},
+      {val:'elec_proper_charge',label:'🔋 적정 충전',desc:'20-80% 유지 + 무선충전 자제 = 배터리 수명 2배. 밤새 충전 금지'},
+      {val:'elec_well_setup',label:'🖥️ 정돈된 셋업',desc:'케이블 정리 + 통풍 확보 = 발열 30%↓ + 성능 유지. 모니터암 사용 권장'},
+      {val:'elec_protect',label:'🛡️ 보호 장치',desc:'서지보호기 + UPS = 낙뢰/정전으로부터 보호. 데이터 손실 + 부품 손상 예방'}
     ]
   },
   furniture: {
     angry: [
-      {val:'furn_kick',label:'🦵 발로 차기',desc:'가구를 발로 차거나 걷어차는 사람'},
-      {val:'furn_mess',label:'🧦 양말/물건 던져두기',desc:'의자에 양말이나 옷을 막 던져두는 사람'},
-      {val:'furn_food',label:'🍕 소파 위에서 먹기',desc:'소파/침대 위에서 음식 먹는 사람'},
-      {val:'furn_jump',label:'🦘 침대 위 점프',desc:'침대 위에서 점프하는 사람'}
-    ],
-    calm: [
-      {val:'furn_quiet_room',label:'🌙 조용한 실내',desc:'정돈된 공간에서 평온하게 자리 잡은 중'},
-      {val:'furn_morning',label:'☀️ 아침 햇살',desc:'아침 햇살 받으며 차분한 시간'}
+      {val:'furn_kick',label:'🦵 발로 차기',desc:'반복 충격으로 가구 내부 결합부 손상. 평균 수명 5년 → 2년으로 단축'},
+      {val:'furn_food',label:'🍕 침대/소파 위 음식',desc:'음식물 = 진드기 + 박테리아. 침대 진드기 평균 200만 마리. 식탁에서만 먹기'},
+      {val:'furn_no_clean',label:'🧹 청소 방치',desc:'먼지 1g당 진드기 1만 마리. 비염/천식 원인. 주 1회 청소기 + 월 1회 분리세탁'}
     ],
     happy: [
-      {val:'furn_cozy',label:'🛋️ 아늑한 사용',desc:'주인이 편안하게 잘 사용해주는 중'},
-      {val:'furn_clean',label:'✨ 정돈된 공간',desc:'깔끔하게 관리받는 중'}
+      {val:'furn_well_use',label:'🛋️ 잘 사용해줌',desc:'적절한 사용 + 정기 청소 = 가구 수명 2배. 원목 가구는 오일 발라주면 평생 사용'},
+      {val:'furn_clean',label:'✨ 정기 청소',desc:'주 1회 먼지 제거 + 월 1회 깊은 청소 = 진드기 90%↓, 알레르기 예방'},
+      {val:'furn_position',label:'🌞 햇빛 자리',desc:'직사광선 피해 배치 = 변색 방지. 그늘 + 통풍 = 곰팡이 예방'}
     ]
   },
   vehicle: {
     angry: [
-      {val:'veh_double',label:'🚗 이중주차',desc:'이중주차 해놓고 연락도 안 되는 사람'},
-      {val:'veh_disabled',label:'♿ 장애인 구역 무단주차',desc:'장애인 전용 구역에 멀쩡히 주차하는 사람'},
-      {val:'veh_cut',label:'🛣️ 끼어들기',desc:'방향지시등도 없이 끼어드는 운전자'},
-      {val:'veh_dirty',label:'🚯 차 안에 쓰레기',desc:'차 안에 쓰레기 잔뜩 쌓아두는 사람'}
-    ],
-    calm: [
-      {val:'veh_park_nice',label:'🅿️ 차분한 주차',desc:'질서있게 주차되어 있는 평온한 상태'},
-      {val:'veh_road_quiet',label:'🛣️ 한적한 도로',desc:'한적한 도로에서 부드럽게 운행 중'}
+      {val:'veh_double',label:'🚗 이중주차',desc:'민폐 + 견인 + 과태료 4만원. 안전사고 위험. 정해진 자리에 주차'},
+      {val:'veh_disabled',label:'♿ 장애인 구역',desc:'무단주차 과태료 10-20만원. 진짜 필요한 사람에게 양보'},
+      {val:'veh_dirty',label:'🚯 차내 쓰레기',desc:'차내 음식물 = 곰팡이 + 곤충. 가죽 시트 산성 부식. 주 1회 정리 권장'}
     ],
     happy: [
-      {val:'veh_smooth_ride',label:'💨 시원한 주행',desc:'시원하게 잘 달리는 중'},
-      {val:'veh_clean_drive',label:'✨ 깨끗하게 관리',desc:'세차받고 깨끗하게 관리되는 중'}
+      {val:'veh_well_drive',label:'💨 부드러운 운전',desc:'급가속/급제동 자제 = 연비 30%↑ + 부품 수명 2배. 안전운전이 곧 절약'},
+      {val:'veh_clean',label:'✨ 세차 관리',desc:'월 1회 세차 + 왁싱 = 도장 보호. 새 차 외관 5년 유지 가능'},
+      {val:'veh_check',label:'🔧 정기 점검',desc:'엔진오일 5천km, 타이어 공기압 월 1회 = 수명 2배 + 사고율 50%↓'}
     ]
   },
   kitchen: {
     angry: [
-      {val:'kit_dishes',label:'🍽️ 설거지 안 함',desc:'밥 먹고 설거지 절대 안 하는 사람'},
-      {val:'kit_dirty',label:'🧴 기름때 방치',desc:'기름때/음식물 묻은 채 방치하는 사람'},
-      {val:'kit_pile',label:'🍳 그릇 쌓기',desc:'설거지통에 그릇 잔뜩 쌓는 사람'},
-      {val:'kit_burn',label:'🔥 태워먹기',desc:'요리하다 태워먹고 그대로 두는 사람'}
-    ],
-    calm: [
-      {val:'kit_clean',label:'🧼 정돈된 주방',desc:'깔끔하게 정리된 주방에서 평온히 자리 잡음'},
-      {val:'kit_morning_prep',label:'☀️ 아침 준비',desc:'조용히 아침 식사 준비 중'}
+      {val:'kit_dishes',label:'🍽️ 설거지 안함',desc:'음식 잔여물 6시간 = 박테리아 100배. 음식물쓰레기 냄새 80% 원인'},
+      {val:'kit_dirty',label:'🧴 기름때 방치',desc:'기름때 굳으면 화재 위험 + 곰팡이. 사용 직후 닦으면 1초, 굳으면 30분'},
+      {val:'kit_burn',label:'🔥 태우고 방치',desc:'탄 음식 = 발암물질. 코팅 손상으로 프라이팬 수명 단축. 즉시 물 담가 불리기'}
     ],
     happy: [
-      {val:'kit_cook_yummy',label:'🍳 맛있게 조리 중',desc:'맛있는 요리가 만들어지는 중'},
-      {val:'kit_well_used',label:'✨ 사랑받는 도구',desc:'요리사가 정성껏 잘 사용해주는 중'}
+      {val:'kit_well_clean',label:'🧼 사용 후 바로 세척',desc:'사용 직후 세척 = 박테리아 95% 제거. 코팅 보호 = 프라이팬 평생 사용 가능'},
+      {val:'kit_proper_oil',label:'🛢️ 적정 코팅 관리',desc:'무쇠팬 길들이기 + 코팅팬 나무주걱만 사용 = 수명 5년→평생'},
+      {val:'kit_organized',label:'✨ 정돈된 주방',desc:'사용 도구 즉시 정리 = 위생 + 효율. 요리 시간 30%↓'}
     ]
   },
   object: {
     angry: [
-      {val:'trash_basic',label:'🗑️ 쓰레기통 옆에 버리기',desc:'쓰레기통이 바로 옆에 있는데도 밖에다 버리는 사람'},
-      {val:'trash_recycle',label:'♻️ 분리수거 안 함',desc:'분리수거 안 하고 다 섞어서 버리는 사람'},
-      {val:'rough_use',label:'💢 거칠게 사용',desc:'물건을 거칠게 막 쓰는 사람'},
-      {val:'home_promise',label:'📦 정리 안 함',desc:'물건 사용 후 정리 안 하는 사람'}
-    ],
-    calm: [
-      {val:'obj_organized',label:'📦 정돈된 자리',desc:'제 자리에 정돈되어 있는 평온한 상태'}
+      {val:'trash_basic',label:'🗑️ 옆에 버리기',desc:'쓰레기통 옆 투기 = 환경미화원 추가 작업 + 도시 위생 악화. 한 발만 더 가까이'},
+      {val:'trash_recycle',label:'♻️ 분리수거 안함',desc:'한국 재활용률 60% → 분리 잘하면 90% 가능. 종량제봉투비 연 5만원 절감'},
+      {val:'rough_use',label:'💢 거칠게 사용',desc:'거친 사용 = 수명 50%↓ + 추가 구매비. 적정 사용으로 자원 + 비용 절약'}
     ],
     happy: [
-      {val:'obj_well_used',label:'✨ 잘 사용됨',desc:'주인이 만족스럽게 사용해주는 중'},
-      {val:'obj_clean',label:'🧼 깨끗이 관리',desc:'주인이 깨끗이 관리해주는 중'}
+      {val:'obj_well_used',label:'✨ 깨끗하게 사용',desc:'정성스런 사용 = 수명 평균 2배. 좋은 물건 오래 쓰면 환경 + 지갑에 좋음'},
+      {val:'obj_recycle_well',label:'♻️ 분리수거 잘함',desc:'재활용률 90%면 자원 절감 + 환경 보호. 라벨 제거 + 헹구기 + 압축 3단계'},
+      {val:'obj_organized',label:'📦 자리에 정리',desc:'정리 잘하면 평균 검색시간 80%↓. 가족 공동물품도 위치 고정 추천'}
     ]
   },
   toy: {
     angry: [
-      {val:'toy_throw',label:'🎯 던지기',desc:'장난감을 막 던지고 노는 사람'},
-      {val:'toy_break',label:'💔 망가뜨림',desc:'장난감을 망가뜨리며 노는 사람'},
-      {val:'toy_lose',label:'❓ 부품 잃어버림',desc:'장난감 부품 잃어버리는 사람'}
-    ],
-    calm: [
-      {val:'toy_display',label:'🎨 정돈된 진열',desc:'정돈된 진열장에서 평온히 자리잡음'}
+      {val:'toy_throw',label:'🎯 던지기',desc:'장난감 던지면 부품 손상 + 부상 위험. 안전한 놀이 = 행동발달에도 좋음'},
+      {val:'toy_break',label:'💔 망가뜨리기',desc:'장난감 1개 평균 가격 2만원. 망가뜨리면 환경+지갑 손해'}
     ],
     happy: [
-      {val:'toy_kid_play',label:'😄 아이와 신나게',desc:'아이와 즐겁게 노는 중'},
-      {val:'toy_loved',label:'💕 사랑받음',desc:'정성껏 다뤄지는 사랑받는 장난감'}
+      {val:'toy_kid_play',label:'😄 아이와 신나게',desc:'장난감 놀이 = 인지능력↑ + 사회성↑. 부모와 함께 놀면 정서발달 2배'},
+      {val:'toy_clean_keep',label:'🧼 깨끗하게 보관',desc:'정기 소독 + 정리 = 위생 + 수명 2배. 아이들 면역력 보호'}
     ]
   },
   stationery: {
     angry: [
-      {val:'st_throw',label:'✏️ 연필 던지기',desc:'필기구를 막 던지는 사람'},
-      {val:'st_chew',label:'🦷 깨물기',desc:'연필/펜 깨물어 망가뜨리는 사람'},
-      {val:'st_lose',label:'🔍 잃어버림',desc:'필기구를 자꾸 잃어버리는 사람'}
-    ],
-    calm: [
-      {val:'st_neat',label:'📝 정돈된 책상',desc:'깔끔한 책상에서 평온히 자리잡음'}
+      {val:'st_throw',label:'✏️ 던지기',desc:'필기구 한 자루 평균 2년 사용 가능. 던지면 심 부러져 1주일도 못 씀'},
+      {val:'st_chew',label:'🦷 깨물기',desc:'볼펜 잉크 화학물질 + 박테리아. 치아 마모 + 위생 문제. 스트레스볼 추천'}
     ],
     happy: [
-      {val:'st_studying',label:'📚 공부 잘 진행',desc:'공부/필기가 잘 진행되는 중'},
-      {val:'st_useful',label:'⭐ 잘 쓰이는 중',desc:'좋은 글이 써지는 중'}
+      {val:'st_neat_use',label:'📝 정성스런 필기',desc:'필기 = 기억력 30%↑ (타이핑 대비). 손글씨는 뇌 활성화에 효과적'},
+      {val:'st_organized',label:'📚 책상 정리',desc:'정돈된 책상 = 집중력 1.5배. 학습 효율 30%↑'}
     ]
   },
   sports: {
     angry: [
-      {val:'sp_throw',label:'⚽ 막 던짐',desc:'운동용품을 막 던지는 사람'},
-      {val:'sp_dirty',label:'💧 정리 안 함',desc:'사용 후 정리 안 하는 사람'},
-      {val:'sp_rough',label:'💪 거칠게 사용',desc:'장비를 거칠게 다루는 사람'}
-    ],
-    calm: [
-      {val:'sp_ready',label:'🏟️ 운동 준비',desc:'조용히 운동 준비되어 있는 상태'}
+      {val:'sp_throw',label:'⚽ 막 던짐',desc:'운동용품 거칠게 다루면 수명 50%↓. 부상 위험도 증가'},
+      {val:'sp_dirty',label:'💧 정리 안함',desc:'땀 묻은 채 방치 = 박테리아 폭증 + 냄새. 사용 후 즉시 닦기'}
     ],
     happy: [
-      {val:'sp_winning',label:'🏆 운동 즐거움',desc:'주인과 함께 활기차게 운동 중'}
+      {val:'sp_regular',label:'🏆 꾸준한 운동',desc:'주 3회 30분 운동 = 수명 7년↑, 우울증 50%↓. 장비 잘 관리하면 평생 사용'},
+      {val:'sp_clean',label:'🧼 사용 후 관리',desc:'운동 후 즉시 닦기 + 환기 = 박테리아 99%↓. 위생 + 장비 수명 2배'}
     ]
   },
   fashion: {
     angry: [
-      {val:'fash_throw',label:'👟 신발 막 던짐',desc:'현관에 신발을 막 던지는 사람'},
-      {val:'fash_dirty',label:'🧦 더럽게 사용',desc:'옷/잡화 더럽게 쓰는 사람'},
-      {val:'fash_floor',label:'👢 바닥에 엎어두기',desc:'옷/모자 바닥에 엎어두는 사람'}
-    ],
-    calm: [
-      {val:'fash_neat',label:'👕 정돈된 보관',desc:'깔끔하게 보관되어 평온함'}
+      {val:'fash_throw',label:'👟 신발 막 던짐',desc:'운동화 형태 변형 = 수명 50%↓ + 발 건강 악화. 신발장 정리하면 5년 사용 가능'},
+      {val:'fash_dirty',label:'🧦 더럽게 사용',desc:'더러운 옷 방치 = 곰팡이 + 변형. 바로바로 세탁 → 옷 수명 2배'}
     ],
     happy: [
-      {val:'fash_loved',label:'💕 예쁘게 착용',desc:'주인이 예쁘게 착용해주는 중'},
-      {val:'fash_proud',label:'✨ 빛나는 중',desc:'주인을 빛나게 해주는 중'}
+      {val:'fash_well_keep',label:'👕 잘 보관함',desc:'옷장 정돈 + 통풍 = 옷 수명 2-3배. 좋은 옷 오래 입으면 환경 + 지갑에 좋음'},
+      {val:'fash_proper_wash',label:'🫧 적정 세탁',desc:'세탁 라벨 따라 세탁 = 변형 방지. 너무 자주 세탁하면 오히려 손상'}
     ]
   },
   building: {
     angry: [
-      {val:'bld_damage',label:'🚧 파손/낙서',desc:'공공시설 파손하거나 낙서하는 사람'},
-      {val:'bld_misuse',label:'🚫 잘못 사용',desc:'공공시설 잘못 사용하는 사람'},
-      {val:'bld_block',label:'🚷 통행 막기',desc:'길/통로 막고 서있는 사람'}
-    ],
-    calm: [
-      {val:'bld_quiet_street',label:'🌙 한적한 거리',desc:'한적한 거리에서 평온히 자리잡음'}
+      {val:'bld_damage',label:'🚧 파손/낙서',desc:'공공시설 파손 = 세금 낭비. 복구비용 시민 부담'},
+      {val:'bld_block',label:'🚷 통행 막기',desc:'길 막고 서있기 = 사람들 통행 방해. 한 걸음 옆으로'}
     ],
     happy: [
-      {val:'bld_clean_city',label:'✨ 깨끗한 거리',desc:'깨끗한 거리 일부로 잘 사용되는 중'}
+      {val:'bld_keep_clean',label:'✨ 거리 깨끗',desc:'쓰레기 분리수거 + 흡연구역 사용 = 도시 환경 + 시민 의식 향상'},
+      {val:'bld_proper_use',label:'👍 올바른 사용',desc:'공공시설 올바르게 사용 = 모든 시민 혜택. 다음 사람 생각하기'}
     ]
   },
   nature: {
     angry: [
-      {val:'nat_step',label:'🦶 짓밟기',desc:'식물/풀밭 짓밟는 사람'},
-      {val:'nat_pluck',label:'🌿 꺾기',desc:'꽃/잎 함부로 꺾는 사람'},
-      {val:'nat_litter',label:'🚯 쓰레기 버림',desc:'자연에 쓰레기 버리는 사람'}
-    ],
-    calm: [
-      {val:'nat_quiet',label:'🍃 고요한 자연',desc:'고요한 자연 환경 속에서 평온함'},
-      {val:'nat_morning',label:'🌅 아침 자연',desc:'아침 햇살에 평화로움'}
+      {val:'nat_step',label:'🦶 짓밟기',desc:'풀밭 한번 짓밟히면 회복 6개월. 지정 산책로로만 다니기'},
+      {val:'nat_litter',label:'🚯 자연 쓰레기',desc:'플라스틱 한 조각 = 분해 500년. 동물 위험 + 토양 오염'}
     ],
     happy: [
-      {val:'nat_growing',label:'🌱 생명감',desc:'햇빛 받으며 잘 자라는 중'},
-      {val:'nat_breeze',label:'💨 산들바람',desc:'바람 받으며 기분 좋게 흔들림'}
+      {val:'nat_protect',label:'🌱 자연 보호',desc:'쓰레기 가져오기 + 길 따라 걷기 = 생태계 보호. 다음 세대를 위해'},
+      {val:'nat_quiet',label:'🍃 조용히 즐기기',desc:'자연 속 명상 5분 = 스트레스 호르몬 30%↓. 자연을 그대로 두기'}
     ]
   },
   tool: {
     angry: [
-      {val:'tl_throw',label:'🔨 던지기',desc:'공구를 막 던지는 사람'},
-      {val:'tl_dirty',label:'🛢️ 정리 안 함',desc:'사용 후 정리 안 하는 사람'},
-      {val:'tl_rough',label:'⚒️ 거칠게 사용',desc:'공구를 거칠게 쓰는 사람'}
-    ],
-    calm: [
-      {val:'tl_organized',label:'🧰 정돈된 공구함',desc:'정돈된 공구함에서 평온함'}
+      {val:'tl_throw',label:'🔨 던지기',desc:'공구 던지면 미세 변형 → 정밀도 저하. 부상 위험도'},
+      {val:'tl_dirty',label:'🛢️ 녹슬게 방치',desc:'사용 후 방치 = 녹 + 부식. 한번 녹슨 공구는 절대 원상복구 안 됨'}
     ],
     happy: [
-      {val:'tl_useful',label:'✨ 제대로 쓰임',desc:'올바르게 잘 쓰이는 중'}
+      {val:'tl_well_use',label:'⚒️ 올바른 사용',desc:'적정 용도 사용 + 사용 후 청소 = 평생 사용 가능. 좋은 공구는 자식대까지'},
+      {val:'tl_organized',label:'🧰 정돈된 공구함',desc:'공구 정리 = 작업 효율 30%↑ + 분실 0%. 작업 시간 단축'}
     ]
   }
 };
+
 
 // 카테고리×감정에 맞는 주제 가져오기 (전체 TOPICS 폴백 제거 — 가이드 v4.2 #1)
 function getTopicsForCategory(cat, mood){
@@ -972,17 +904,15 @@ async function aiRandomTopic(){
   const existing = Array.from(document.querySelectorAll('#topicChips .chip')).map(c=>c.textContent.replace(/^(✨|✏️)\s*/,'')).join(', ');
 
   try {
-    // 🎭 감정별 주제 생성 모드 (가이드 v4.2 #2)
+    // 🎭 감정별 주제 생성 모드 (대장 v4.6 — calm 제거, happy 정보형)
     const moodKeyTopic = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
     const TOPIC_MODE_GUIDE = {
       angry: '민폐, 잘못된 사용, 방치, 불편한 상황, 오용',
-      calm: '정상 사용, 편안한 휴식, 정돈된 상황, 안정적이고 평온한 장면, 조용한 상태',
-      happy: '잘 사용됨, 즐거운 상황, 만족스러운 결과, 사랑받는 장면, 긍정적이고 활기찬 환경'
+      happy: '잘 관리됨, 깨끗히 유지, 정성스런 사용, 적정 관리, 효과 있는 행동'
     };
     const TOPIC_VERB_BY_MOOD = {
       angry: '화낼 만한',
-      calm: '차분하게 잔잔히 묘사할 만한',
-      happy: '기분좋게 만족스러워할 만한'
+      happy: '칭찬하면서 정보+꿀팁 알려줄 만한'
     };
     const topicModeGuide = TOPIC_MODE_GUIDE[moodKeyTopic] || TOPIC_MODE_GUIDE.angry;
     const topicVerb = TOPIC_VERB_BY_MOOD[moodKeyTopic] || TOPIC_VERB_BY_MOOD.angry;
@@ -994,32 +924,43 @@ async function aiRandomTopic(){
 2. 주제는 반드시 위 감정 모드에 맞아야 한다.
 3. 다른 감정의 주제는 절대 섞지 말 것.
    - angry 모드면: 민폐/잘못된 사용/방치 같은 부정적 상황만
-   - calm 모드면: 정상 사용/편안한 휴식 같은 평온한 상황만 (민폐 금지)
-   - happy 모드면: 즐거움/만족 같은 긍정적 상황만 (분노/민폐 금지)
+   - happy 모드면: 잘 관리되는 행동 + 효과 정보만 (분노/민폐 절대 금지)
 4. 한국 사람 99%가 즉시 공감할 현실적 상황만.
 5. 판타지/미신/과장 금지. 일상에서 정말 자주 벌어지는 것만.
 
-🎯🎯🎯 ${moodKeyTopic === 'angry' ? '핵심: 정보성 주제' : '핵심: 자연스러운 주제'} 🎯🎯🎯
-${moodKeyTopic === 'angry' ? `desc는 "그냥 더럽게 쓴다" 식으로 모호하면 안 된다.
+🎯🎯🎯 핵심: 정보성 주제 (둘 다) 🎯🎯🎯
+desc는 모호하면 안 된다.
 desc에는 반드시 다음을 포함:
+
+${moodKeyTopic === 'angry' ? `[ANGRY 모드]
 1) 잘못된 행동 명시 (구체적으로)
 2) 왜 안 되는지 진짜 이유 (실제 사실/원인)
-3) 가능하면 구체적 영향 (수치, 박테리아, 비용 등)
+3) 구체적 영향 (수치, 박테리아, 비용)
 
-좋은 desc 예시:
-✅ "안 헹구고 버리면 12시간만에 박테리아 100배 증식, 음식물쓰레기 냄새 주범"
-✅ "필터 6개월 방치하면 곰팡이 포자 분출 + 호흡기 질환 + 전기세 30% 증가"
-✅ "키보드 위 과자 부스러기, 변기보다 박테리아 5배"
+✅ 좋은 angry desc:
+- "안 헹구고 버리면 12시간만에 박테리아 100배 증식, 종량제로 직행, 재활용 안됨"
+- "필터 6개월 방치하면 곰팡이 포자 분출 + 호흡기 질환 + 전기세 30% 증가"
 
-나쁜 desc 예시:
-❌ "더럽게 쓰는 사람"
-❌ "방치하는 사람"
-❌ "엉망으로 사용"
-이런 모호한 표현은 절대 금지.` : ''}
+❌ 나쁜 desc:
+- "더럽게 쓰는 사람"
+- "방치하는 사람"` : `[HAPPY 모드 — 칭찬 + 효과 정보 + 추가 꿀팁]
+1) 잘 관리하는 행동 명시 (구체적으로)
+2) 그래서 어떤 효과가 있는지 (실제 사실/수치)
+3) 가능하면 더 좋아지는 추가 행동
+
+✅ 좋은 happy desc:
+- "매일 헹궈서 분리수거 → 재활용률 100%, 라벨 떼고 헹구면 완벽 등급"
+- "주 1회 키보드 청소 → 박테리아 99%↓ + 수명 5년 → 8년, 캔에어로 키캡 사이까지"
+- "매일 30분 산책 → 분리불안 80%↓, 평균수명 1.5년↑, 같은 시간이면 더 효과"
+
+❌ 나쁜 happy desc:
+- "잘 쓰임" (정보 0)
+- "사랑받는 중" (정보 0)
+- "깨끗 관리" (구체적 수치/효과 없음)`}
 
 6. 반드시 JSON만 반환.
 
-포맷: {"items":[{"label":"짧은 태그(10자 내외, 이모지 포함)","desc":"${moodKeyTopic === 'angry' ? '구체적 행동 + 실제 사실/이유 (30~50자, 정보성)' : '구체적 상황 설명 (15~25자)'}"}, ...]}`;
+포맷: {"items":[{"label":"짧은 태그(10자 내외, 이모지 포함)","desc":"구체적 행동 + 실제 사실/이유 + 효과 (40~70자, 정보성)"}, ...]}`;
 
     // 감정별 예시
     const EXAMPLES_BY_MOOD = {
@@ -1027,12 +968,10 @@ desc에는 반드시 다음을 포함:
         '- {"label":"🥛 우유팩 안헹굼", "desc":"안 씻고 버리면 12시간만에 박테리아 100배, 음식물쓰레기 냄새 주범, 종량제로 가서 재활용 안됨"}\n' +
         '- {"label":"🌬️ 필터 6개월 방치", "desc":"곰팡이 포자 + 진드기 분출, 호흡기 질환 원인, 전기세 30% 증가, 6개월에 1번은 청소"}\n' +
         '- {"label":"⌨️ 키보드 위 과자", "desc":"키보드 안 부스러기, 변기보다 박테리아 5배, 키캡 분리 청소 필요"}',
-      calm: '[예시 - calm]\n' +
-        '- {"label":"😌 조용한 사용", "desc":"평온하게 정상 사용되는 중"}\n' +
-        '- {"label":"☀️ 햇살 받는 중", "desc":"아침 햇살 받으며 잔잔한 시간"}',
-      happy: '[예시 - happy]\n' +
-        '- {"label":"💕 잘 쓰임", "desc":"주인이 사랑스럽게 잘 사용해주는 중"}\n' +
-        '- {"label":"✨ 깨끗 관리", "desc":"깨끗이 닦이고 관리되며 뿌듯한 중"}'
+      happy: '[예시 - happy — 칭찬 + 효과 + 꿀팁]\n' +
+        '- {"label":"🥛 매일 헹궈 분리수거", "desc":"이렇게 매일 헹구면 재활용률 100% 달성, 라벨까지 떼면 완벽 등급, 종량제 비용 월 만원 절약"}\n' +
+        '- {"label":"🌬️ 정기 필터 청소", "desc":"6개월마다 청소 → 전기세 30% 절감 + 호흡기 건강, 사용 후 매번 잠깐 환기까지 하면 평생 사용"}\n' +
+        '- {"label":"⌨️ 주 1회 키보드 청소", "desc":"박테리아 99%↓ + 수명 5년→8년 연장, 캔에어로 키캡 사이까지 월 1회 청소하면 평생 사용"}'
     };
     const examples = EXAMPLES_BY_MOOD[moodKeyTopic] || EXAMPLES_BY_MOOD.angry;
 
@@ -1116,9 +1055,71 @@ function selMood(el,val){
   buildTopics(); // 🎯 감정 변경 시 주제 재갱신 (가이드 v3.0 #5)
   updateSummary();
 }
+// 🗄️ 사용자 추가 항목 저장소 (대장 v4.7 — 같은 브라우저에서 영구 저장)
+const CUSTOM_STORAGE_KEY = 'angry_custom_items_v1';
+
+function loadCustomItems(){
+  try {
+    const raw = localStorage.getItem(CUSTOM_STORAGE_KEY);
+    if(!raw) return {objs:{}, locs:{}, topics:{}};
+    return JSON.parse(raw);
+  } catch(e){
+    return {objs:{}, locs:{}, topics:{}};
+  }
+}
+function saveCustomItems(data){
+  try {
+    localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(data));
+  } catch(e){
+    console.warn('custom items 저장 실패:', e);
+  }
+}
+function addCustomToStorage(type, cat, val){
+  if(!cat) return;
+  const data = loadCustomItems();
+  const bucket = type === 'obj' ? 'objs' : (type === 'loc' ? 'locs' : 'topics');
+  if(!data[bucket][cat]) data[bucket][cat] = [];
+  // 중복 체크
+  if(!data[bucket][cat].includes(val)){
+    data[bucket][cat].push(val);
+    saveCustomItems(data);
+  }
+}
+function getCustomForCategory(type, cat){
+  if(!cat) return [];
+  const data = loadCustomItems();
+  const bucket = type === 'obj' ? 'objs' : (type === 'loc' ? 'locs' : 'topics');
+  return (data[bucket] && data[bucket][cat]) ? data[bucket][cat] : [];
+}
+function removeCustomFromStorage(type, cat, val){
+  if(!cat) return;
+  const data = loadCustomItems();
+  const bucket = type === 'obj' ? 'objs' : (type === 'loc' ? 'locs' : 'topics');
+  if(data[bucket][cat]){
+    data[bucket][cat] = data[bucket][cat].filter(v => v !== val);
+    saveCustomItems(data);
+  }
+}
+
 function buildObjs(cat){
   const w=document.getElementById('objChips');w.innerHTML='';
   DB[cat].objs.forEach(o=>w.appendChild(makeChip(o.kr,o.en,()=>selObj(o.kr,o.en))));
+  // 사용자 저장된 커스텀 아이템 복원
+  const customs = getCustomForCategory('obj', cat);
+  customs.forEach(val=>{
+    const c = makeChip('✏️ '+val, val, ()=>selObj(val,val));
+    // 삭제 버튼 클릭시 storage에서도 제거
+    const delBtn = c.querySelector('.del');
+    if(delBtn){
+      const orig = delBtn.onclick;
+      delBtn.onclick = (e)=>{
+        e.stopPropagation();
+        removeCustomFromStorage('obj', cat, val);
+        c.remove();
+      };
+    }
+    w.appendChild(c);
+  });
 }
 function selObj(kr,en){
   document.querySelectorAll('#objChips .chip').forEach(c=>c.classList.remove('active'));
@@ -1132,6 +1133,20 @@ function selObj(kr,en){
 function buildLocs(cat){
   const w=document.getElementById('locChips');w.innerHTML='';
   DB[cat].locs.forEach(l=>w.appendChild(makeChip('📍 '+l.kr,l.en,()=>selLoc(l.kr,l.en))));
+  // 사용자 저장된 커스텀 장소 복원
+  const customs = getCustomForCategory('loc', cat);
+  customs.forEach(val=>{
+    const c = makeChip('📍✏️ '+val, val, ()=>selLoc(val,val));
+    const delBtn = c.querySelector('.del');
+    if(delBtn){
+      delBtn.onclick = (e)=>{
+        e.stopPropagation();
+        removeCustomFromStorage('loc', cat, val);
+        c.remove();
+      };
+    }
+    w.appendChild(c);
+  });
 }
 function selLoc(kr,en){
   document.querySelectorAll('#locChips .chip').forEach(c=>c.classList.remove('active'));
@@ -1144,11 +1159,31 @@ function selLoc(kr,en){
 function addCustom(type){
   const inp=document.getElementById(type==='obj'?'objInput':'locInput');
   const val=inp.value.trim();if(!val)return;
+  if(!S.cat){alert('카테고리를 먼저 선택해주세요');return;}
+  // 💾 localStorage에 저장 (같은 브라우저에서 다시 보임)
+  addCustomToStorage(type, S.cat, val);
   if(type==='obj'){
     const c=makeChip('✏️ '+val,val,()=>selObj(val,val));
+    // 삭제 버튼에 storage 정리 추가
+    const delBtn = c.querySelector('.del');
+    if(delBtn){
+      delBtn.onclick = (e)=>{
+        e.stopPropagation();
+        removeCustomFromStorage('obj', S.cat, val);
+        c.remove();
+      };
+    }
     document.getElementById('objChips').appendChild(c);selObj(val,val);
   } else {
     const c=makeChip('📍✏️ '+val,val,()=>selLoc(val,val));
+    const delBtn = c.querySelector('.del');
+    if(delBtn){
+      delBtn.onclick = (e)=>{
+        e.stopPropagation();
+        removeCustomFromStorage('loc', S.cat, val);
+        c.remove();
+      };
+    }
     document.getElementById('locChips').appendChild(c);selLoc(val,val);
   }
   inp.value='';
@@ -1353,84 +1388,108 @@ async function genDialogue(regen){
   const isJP_dlg = S.country==='jp';
   const moodKeyDlg2 = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
 
-  // 🎭 감정별 시스템 프롬프트 (가이드 v3.0 #4)
+  // 🎭 감정별 시스템 프롬프트 (대장 v4.6 — calm 제거, happy = 칭찬+꿀팁+장기효과)
   let systemPrompt;
   
-  if(moodKeyDlg2 === 'calm'){
-    // 😌 차분함 — 화남/훈계/민폐 단어 절대 금지
+  if(moodKeyDlg2 === 'happy'){
+    // 😊 기분좋음 — 칭찬 + 꿀팁 + 장기 효과 정보형 (대장 v4.6 핵심)
     systemPrompt = isJP_dlg
-      ? `あなたは日本のSNSショート動画用に「物の落ち着いた一人称ナレーション」を書く台本作家だ。
+      ? `あなたは日本のSNSショート動画用に「物が褒めながらお得な情報を伝える一人称セリフ」を書く台本作家だ。
 
-🎯 トーン: 落ち着いている、穏やか、安定している、説明調。怒りなし、説教なし。
-冒頭は「オレ[物名]なんだけど」または「あたし[物名]なんだけど」で始まる(怒りトーンなし、穏やかに)。
+🔒 絶対固定: 「オレ[物名]なんだけど！」または「あたし[物名]なんだけど！」で始める。
+
+🎯🎯🎯 核心コンセプト: 褒め + 情報 + さらに良くなる方法 🎯🎯🎯
+これは「ありがとう」だけの台本ではない。
+**「褒め + 効果情報 + さらに良くなる秘訣」** 3拍子が必須。
+
+【台本 3段構造】
+1) 現状の褒め (1~2文): 「オレ[物]なんだけど！こうしてくれてキレイに保たれてる/長持ちしてる」
+   → 主が今ちゃんと使ってくれて満足な気持ち
+   
+2) 効果情報 (2~3文): なぜそれが良いのか具体的な情報
+   → 「だからこそ寿命が2倍になるんだ」
+   → 「これだけで月の電気代5千円節約」
+   → 「博物館でも同じ手入れ方してる」
+   → 具体的な数字 / 効果 / 理由を必ず
+
+3) さらに良くなる秘訣 (1~2文): もっと良くなる追加方法
+   → 「これに加えて週1回これだけしてくれたら 永久に使える」
+   → 「これも続けると○○にすごく良い」
+   → 「これだけ覚えとけば 一生もん」
+
+⚠️ 「ありがとう」だけ繰り返すのはNG。情報 + 追加 tips が必須。
 
 絶対禁止:
-- 怒鳴る、説教する、文句を言う
-- 「マジで」「ありえない」「終わってる」など強い表現
-- 民폐・問題行動の話題
-- 過剰な感嘆符
+- 怒り、説教、ツッコミ
+- 民폐・ネガティブな話題
+- 「ありがとう」だけの薄い内容
 
-書き方:
-- 物が今の落ち着いた状況を一人称で穏やかに語る
-- 静かな満足感、安定した時間
-- 短い2~3文の柔らかいナレーション
+【出力形式】日本語の台本本文のみ。5~7文。`
+      : `너는 SNS 쇼츠 영상에서 "사물이 칭찬 + 꿀팁 + 장기 효과를 알려주는 1인칭 대사"를 쓰는 대사 작가다.
 
-【出力形式】日本語の台本本文のみ出力。`
-      : `너는 SNS 쇼츠 영상에서 "사물의 차분한 1인칭 내레이션"을 쓰는 대사 작가다.
+🔒 절대 고정 시작 패턴 (대장 v4.7 — 부드러운 시작):
+"난 [사물명]야," 또는 "난 [사물명]이야," 로 시작 — 끝에 쉼표 + 부드럽게 이어짐.
+- "난 노트북이야, 이렇게 매일 닦아줘서..."
+- "난 강아지야, 매일 산책 데려가줘서..."
+- "난 쓰레기통이야, 이렇게 분리수거 잘해줘서..."
 
-🎯 톤: 차분함, 안정적, 잔잔함, 담담한 설명조. 화남/훈계/민폐 절대 금지.
-시작은 "나 [사물명]인데" — 분노 없이 차분하게.
+⚠️ "나 [사물]인데!" (느낌표) 절대 금지 — 이건 화남 모드 시작 패턴.
+⚠️ 부드럽고 따뜻한 톤으로 시작.
+
+🎯🎯🎯 핵심 컨셉: 칭찬 + 효과 정보 + 추가 꿀팁 🎯🎯🎯
+이건 단순 "고마워" 대사가 아니다.
+**"칭찬 + 효과/이유 정보 + 더 좋아지는 꿀팁"** 3박자가 무조건 필수.
+
+【대사 3단 구조 — 무조건 이 순서】
+1) 현재 잘 관리되는 칭찬 (1~2문장):
+   "난 [사물]야, 이렇게 [잘 관리해줘서/깨끗하게 써줘서/매일 챙겨줘서] 너무 [깨끗하게 유지되고 있어/오래 쓰고 있어/제 기능 다 하고 있어]"
+   → 주인이 잘 해주고 있는 구체적 행동 + 만족
+
+2) 효과/이유 정보 (2~3문장): 진짜 사실 + 숫자
+   "이렇게만 해주면 → [구체적 효과/이유]"
+   → "수명이 평균 2배로 늘어나"
+   → "박테리아 99%까지 안 생기는 거 알아?"
+   → "전기세 한 달 5천원씩 절약되는 거"
+   → "인테리어 가구도 5년 → 평생 쓰는 거지"
+   → 구체적 숫자/배수/효과 반드시
+
+3) 더 좋아지는 추가 꿀팁 (1~2문장):
+   "이거에 더해서 [추가 행동] 까지만 해주면 → [더 큰 효과]"
+   → "이거 계속하면 진짜 [장기 효과]"
+   → "[월 1회 이거 한 가지] 만 더 해주면 평생 쓸 수 있어"
+   → 시청자가 "오 이거까지 해야 되는구나" 하게
+
+⚠️⚠️⚠️ "고마워, 잘해줘서 좋아" 만 반복하면 실패다.
+반드시 진짜 사실 + 구체적 수치 + 더 좋아지는 추가 행동 들어가야 한다.
+
+이 콘텐츠 컨셉: **잘 관리되는 사물이 주인을 칭찬하면서 + 진짜 정보 + 더 잘하는 법까지 알려주는 영상**.
+**시청자 반응 목표**: "내가 제대로 하고 있구나 + 이거까지 하면 더 좋겠다 + 진짜 배웠다"
+
+⚠️⚠️⚠️ 장소 컨텍스트 절대 규칙 (대장 v4.7):
+사용자가 선택한 "장소"가 user 메시지에 명시되어 있다.
+그 장소에서 실제로 일어나는 상황만 묘사해라.
+장소와 무관한 다른 곳 얘기 절대 금지.
+
+【좋은 예시】
+"난 우유팩이야, 이렇게 매일 헹궈서 평평하게 펴서 분리수거 해줘서 너무 고마워. 이렇게만 해주면 종이팩 재활용률이 100%까지 올라가고, 일반 종량제로 갈 때보다 자원 낭비가 80% 줄어든대. 이거에 더해서 라벨 떼고 안쪽까지 살짝 헹궈주면 완벽한 재활용 등급이 되는 거야. 이렇게 계속하면 환경도 살리고 종량제봉투 비용도 한 달에 만원씩 아낄 수 있어. 진짜 모범 시민이야~"
+
+"난 노트북이야, 매주 키보드 닦아주고 통풍구 청소해줘서 너무 깨끗하게 유지되고 있어. 이렇게만 해주면 발열이 30%까지 줄어서 성능 유지되고 평균 수명이 5년에서 8년으로 늘어나는 거 알아? 이거에 더해서 한 달에 한 번 캔에어로 키캡 사이까지 청소해주면 평생 쓸 수 있어. 좋은 노트북 오래 쓰면 환경에도 좋고 새 거 사는 비용도 아끼는 거지. 진짜 잘하고 있어~"
 
 절대 금지:
-- 화내기, 훈계하기, 빡치기, 쏘아붙이기
-- "야 너", "미친", "어이없다", "제정신이야" 같은 강한 표현
-- "분노", "짜증", "화남" 표현
-- 민폐 상황·잘못된 사용·방치 등 부정적 주제
-- 느낌표 남발 ("!" 하나 정도면 충분)
+- 화내기, 훈계하기, "야 너" 같은 표현
+- 민폐 상황·부정적 주제
+- "고마워, 잘해줘서 좋다" 만 반복 (정보 0개)
+- 모호한 표현 ("좋다", "행복해" 만 있고 사실 없음)
 
-써야 할 톤:
-- 사물이 지금 평온한 자기 상태를 1인칭으로 잔잔히 묘사
-- 조용한 만족, 안정적인 시간, 정상적인 사용 분위기
-- 2~3문장의 부드럽고 담담한 내레이션
-- 끝맺음은 "이런 시간이 좋다", "이렇게 있으니 편하다" 같은 안정감
+【출력 형식】 한국어 대사 본문만 출력. 5~7문장. 설명/머리말 금지.
 
-【출력 형식】 한국어 대사 본문만 출력. 설명/머리말 금지.`;
-  } else if(moodKeyDlg2 === 'happy'){
-    // 😊 기분좋음 — 만족/기쁨/뿌듯함, 분노/민폐 절대 금지
-    systemPrompt = isJP_dlg
-      ? `あなたは日本のSNSショート動画用に「物の満足げな一人称セリフ」を書く台本作家だ。
-
-🎯 トーン: 嬉しい、満足、誇らしい、明るい。怒りや文句、民폐の話題は絶対に書かない。
-冒頭は「オレ[物名]なんだけど」または「あたし[物名]なんだけど」で始まる。
-
-絶対禁止:
-- 怒り、説教、文句、ツッコミ
-- 民폐・問題行動の話題
-- ネガティブな表現
-
-書き方:
-- 物が嬉しそうに自分が今ちゃんと使われていることを一人称で語る
-- 「使ってもらえて嬉しい」「これが本来の私」という誇らしさ
-- 2~3文の明るく満足げな台本
-
-【出力形式】日本語の台本本文のみ出力。`
-      : `너는 SNS 쇼츠 영상에서 "사물의 기분좋은 1인칭 대사"를 쓰는 대사 작가다.
-
-🎯 톤: 기쁨, 만족, 뿌듯함, 밝음. 화남/훈계/민폐 절대 금지.
-시작은 "나 [사물명]인데" — 분노 없이 밝게.
-
-절대 금지:
-- 화내기, 훈계하기, 쏘아붙이기, "야 너" 같은 표현
-- 민폐 상황·잘못된 사용·방치 같은 부정적 주제
-- "짜증", "분노", "어이없다" 표현
-
-써야 할 톤:
-- 사물이 지금 잘 사용되고 있어서 기분 좋은 상태를 1인칭으로 표현
-- "이래서 내가 사는 보람이 있지", "이렇게 잘 써주면 너무 좋아" 같은 만족감
-- 2~3문장의 밝고 뿌듯한 대사
-- 가벼운 즐거움/만족이 묻어나는 끝맺음
-
-【출력 형식】 한국어 대사 본문만 출력. 설명/머리말 금지.`;
+【출력 전 자가 체크】
+1. "난 [사물]야," 또는 "난 [사물]이야," 로 시작했나? 느낌표 X
+2. 주인이 잘 해주는 구체적 행동 명시했나?
+3. 효과/이유 정보 (수치/사실) 들어갔나? 없으면 다시.
+4. 더 좋아지는 추가 꿀팁 들어갔나? 없으면 다시.
+5. "고마워" "좋다"만 반복하면 다시.
+6. 선택된 장소와 맞지 않는 상황 묘사 있으면 다시.`;
   } else {
     // 😤 angry (기본) — 기존 분노 시스템 프롬프트 유지
     systemPrompt = isJP_dlg
@@ -1520,6 +1579,15 @@ ${BAN_RULES}
 
 이 콘텐츠 컨셉: **사물이 진짜 빡쳐서 정보까지 알려주는 영상**.
 **시청자 반응 목표**: "빡치네 + 근데 진짜 몰랐던 거 배웠다 + 이제 안 그래야지"
+
+⚠️⚠️⚠️ 장소 컨텍스트 절대 규칙 (대장 v4.7):
+사용자가 선택한 "장소"가 user 메시지에 명시되어 있다.
+그 장소에서 실제로 일어나는 상황만 묘사해라.
+- 편의점이면 → 편의점 손님이 다 먹고 그대로 두고 가는 상황
+- 식당이면 → 식당 테이블에 두고 가는 상황
+- 사무실이면 → 책상에서 일하는 상황
+- 침실이면 → 자기 방 상황
+장소와 무관한 다른 곳 얘기 (예: 편의점 선택했는데 집/방 헹구는 얘기) 절대 금지.
 ${researchText}
 
 【참고 예시 - 이 정도 강도 + 정보성으로 써야 함】
@@ -1582,32 +1650,92 @@ ${BAN_RULES}
         : '\n\n⚠️ 이번엔 반드시 "' + angleList[Math.floor(Math.random()*angleList.length)] + '" 각도로 써라. 이전과 완전히 다른 톤/각도.')
     : '';
 
-  // 🎭 감정별 대사 톤 (가이드 v3.0)
+  // 🎭 감정별 대사 톤 (대장 v4.6 — calm 제거)
   const moodKeyDlg = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
   const moodToneKR = {
-    angry: '1인칭으로 화내는/짜증내는/훈계하는',
-    calm: '1인칭으로 차분하고 안정적으로 설명하거나 잔잔하게 말하는',
-    happy: '1인칭으로 기분좋고 만족스럽게 자랑하거나 뿌듯하게 말하는'
+    angry: '1인칭으로 화내면서 진짜 정보 + 해결책 알려주는',
+    happy: '1인칭으로 칭찬하면서 효과 정보 + 더 좋아지는 꿀팁 알려주는'
   }[moodKeyDlg] || '1인칭으로 화내는';
   const moodToneJP = {
-    angry: 'キレる/怒る/説教する',
-    calm: '落ち着いて穏やかに説明する',
-    happy: '嬉しそうに満足げに話す'
+    angry: 'キレながら情報も伝える',
+    happy: '褒めながら効果情報とコツも伝える'
   }[moodKeyDlg] || 'キレる';
+
+  // 🎯 카테고리 + 장소 컨텍스트 강제 (대장 v4.7 핵심)
+  // 장소가 편의점이면 "편의점에서 일어나는" 시나리오만, 집이면 집 시나리오만
+  const locContext = S.loc || S.locEn || '';
+  const catContext = S.cat || '';
+  
+  // 장소별 시나리오 가이드 — AI가 엉뚱한 곳 얘기 못하게
+  let scenarioGuide = '';
+  if(locContext){
+    const locLower = (locContext + ' ' + (S.locEn||'')).toLowerCase();
+    if(locLower.includes('편의점')||locLower.includes('convenience'))
+      scenarioGuide = '⚠️ 장소: 편의점 (야외/실내). 시나리오: 손님이 그 자리에서 먹고 그대로 두고 가는 상황. 집/방에서 헹구거나 분리수거하는 얘기 절대 금지. 편의점 직원/다른 손님이 받는 영향 중심.';
+    else if(locLower.includes('식당')||locLower.includes('restaurant'))
+      scenarioGuide = '⚠️ 장소: 식당. 시나리오: 식당에서 식사하고 그대로 두고 가는 상황. 식당 직원이 치우는 입장. 집 얘기 금지.';
+    else if(locLower.includes('포장마차')||locLower.includes('pojangmacha')||locLower.includes('street stall'))
+      scenarioGuide = '⚠️ 장소: 포장마차. 시나리오: 길거리 음식 먹고 가는 상황. 사장님/뒷손님이 받는 영향. 집 얘기 금지.';
+    else if(locLower.includes('주방')||locLower.includes('kitchen')||locLower.includes('조리대'))
+      scenarioGuide = '⚠️ 장소: 집 주방. 시나리오: 집에서 요리하거나 식사 후 처리 상황. 가족/룸메이트 영향.';
+    else if(locLower.includes('카페')||locLower.includes('café')||locLower.includes('cafe'))
+      scenarioGuide = '⚠️ 장소: 카페. 시나리오: 카페에서 음료/디저트 먹고 두고 가는 상황. 카페 직원/다른 손님 영향. 집 얘기 금지.';
+    else if(locLower.includes('냉장고')||locLower.includes('refrigerator')||locLower.includes('fridge'))
+      scenarioGuide = '⚠️ 장소: 냉장고 안. 시나리오: 냉장고 안에서 보관 중인 상황. 변질/방치 관련.';
+    else if(locLower.includes('혼밥')||locLower.includes('solo')||locLower.includes('1인용'))
+      scenarioGuide = '⚠️ 장소: 1인용 식탁/혼밥. 시나리오: 혼자 먹고 정리하는 상황.';
+    else if(locLower.includes('침대')||locLower.includes('bedside')||locLower.includes('침실')||locLower.includes('침방'))
+      scenarioGuide = '⚠️ 장소: 침실/침대 옆. 시나리오: 자기 방에서 일어나는 상황.';
+    else if(locLower.includes('현관')||locLower.includes('hallway')||locLower.includes('entrance'))
+      scenarioGuide = '⚠️ 장소: 현관. 시나리오: 신발/우산 등 현관 정리 관련.';
+    else if(locLower.includes('욕실')||locLower.includes('bathroom'))
+      scenarioGuide = '⚠️ 장소: 욕실. 시나리오: 씻고 청결 관리 관련.';
+    else if(locLower.includes('도로')||locLower.includes('street')||locLower.includes('정류장')||locLower.includes('주차')||locLower.includes('parking'))
+      scenarioGuide = '⚠️ 장소: 도로/거리. 시나리오: 교통/이동 관련. 집 얘기 금지.';
+    else if(locLower.includes('카페'))
+      scenarioGuide = '⚠️ 장소: 카페. 시나리오: 카페 환경.';
+    else if(locLower.includes('사무실')||locLower.includes('office')||locLower.includes('책상'))
+      scenarioGuide = '⚠️ 장소: 사무실/책상. 시나리오: 업무 환경. 집 거실 얘기 금지.';
+    else if(locLower.includes('도서관')||locLower.includes('library')||locLower.includes('학교')||locLower.includes('교실')||locLower.includes('classroom'))
+      scenarioGuide = '⚠️ 장소: 학교/도서관. 시나리오: 학습 환경. 집 얘기 금지.';
+    else if(locLower.includes('공원')||locLower.includes('park'))
+      scenarioGuide = '⚠️ 장소: 공원. 시나리오: 야외 공원 환경. 실내 얘기 금지.';
+    else if(locLower.includes('애견')||locLower.includes('애완')||locLower.includes('pet')||locLower.includes('cafe'))
+      scenarioGuide = '⚠️ 장소: 펫카페/펫 공간. 시나리오: 동물과 보호자/다른 사람 영향.';
+    else
+      scenarioGuide = '⚠️ 선택된 장소: ' + locContext + '. 이 장소에서 실제로 벌어지는 상황만 묘사. 다른 장소 얘기 금지.';
+  }
 
   const userPrompt = isJP_dlg
     ? `物: ${S.objJp||S.objEn||S.obj}
+カテゴリ: ${catContext}
+場所: ${locContext} (${S.locEn||''})
 共感テーマ: ${S.topicDesc}
 長さ: 7秒
 感情: ${moodKeyDlg} (${moodToneJP})
 
-この物(${S.objJp||S.objEn||S.obj})が「${S.topicDesc}」する状況で、一人称で${moodToneJP}台本を生成。${avoid}${angleHint}`
+${scenarioGuide ? scenarioGuide.replace(/장소/g,'場所').replace(/시나리오/g,'シナリオ').replace(/금지/g,'禁止').replace(/얘기/g,'話').replace(/상황/g,'状況') : ''}
+
+⚠️ 場所に合った状況のみ書く。場所と関係ない話は禁止。
+
+この物(${S.objJp||S.objEn||S.obj})が「${S.topicDesc}」する場面 (場所: ${locContext}) で、一人称で${moodToneJP}台本を生成。${avoid}${angleHint}`
     : `오브젝트: ${S.obj}
+카테고리: ${catContext}
+장소: ${locContext}
 공감 주제: ${S.topicDesc}
-길이: ${'7초'}
+길이: 7초
 감정: ${moodKeyDlg} (${moodToneKR})
 
-이 오브젝트(${S.obj})가 "${S.topicDesc}" 상황에서 ${moodToneKR} 대사를 생성. ${moodKeyDlg==='angry'?'위 예시 수준 분노 + ':''}웹 검색 정보 녹여서 생성.${avoid}${angleHint}`;
+${scenarioGuide}
+
+⚠️⚠️⚠️ 절대 규칙: 위에 명시된 "장소"에서 일어나는 상황만 묘사할 것.
+- 편의점인데 집/방 얘기 금지
+- 식당인데 집 헹구는 얘기 금지
+- 야외인데 실내 얘기 금지
+- 카페인데 주방 얘기 금지
+선택된 장소(${locContext})와 오브젝트(${S.obj})가 그 장소에서 실제로 만나는 시나리오만 써라.
+
+이 오브젝트(${S.obj})가 ${locContext}에서 "${S.topicDesc}" 상황일 때, ${moodToneKR} 대사를 생성. ${moodKeyDlg==='angry'?'위 예시 수준 분노 + ':''}웹 검색 정보 녹여서 생성.${avoid}${angleHint}`;
 
   try {
     console.log('[angry genDialogue] callAI 호출 직전');
@@ -1992,28 +2120,16 @@ async function generate(){
       }
       return angrySitu;
     }
-    if(moodKey === 'calm'){
-      if(isAnimal){
-        return {
-          action: 'a peaceful animal moment where the animal is resting comfortably and safely',
-          ambient: 'natural breathing, relaxed ears, gentle tail movement, soft eyes blinking, calm fur movement'
-        };
-      }
-      return {
-        action: 'a calm, well-organized situation showing the ' + objEn + ' in proper normal use and in normal context',
-        ambient: 'organized environment, gentle natural lighting, peaceful and settled atmosphere, subtle natural movement'
-      };
-    }
     if(moodKey === 'happy'){
       if(isAnimal){
         return {
-          action: 'a joyful animal moment where the animal is playing, bonding, or enjoying the selected place',
+          action: 'a joyful animal moment — the animal is well-cared-for, properly walked/fed/played-with, looking content and healthy',
           ambient: 'bright eyes, playful movement, ears perked, tail wagging gently, fur swaying, lively breathing'
         };
       }
       return {
-        action: 'a positive situation where the ' + objEn + ' is being used properly and appreciated',
-        ambient: 'bright cheerful lighting, fresh atmosphere, satisfied environment, light positive movement'
+        action: 'a positive situation where the ' + objEn + ' is clearly well-cared-for — clean, properly maintained, and being used the right way. The visible state reflects long-term good care: no dust, no mess, no damage',
+        ambient: 'sparkling clean appearance, organized surroundings, bright cheerful lighting, fresh atmosphere, signs of regular maintenance, satisfied positive environment'
       };
     }
     return angrySitu;
