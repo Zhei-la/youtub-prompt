@@ -1023,17 +1023,206 @@ const TOPICS_BY_CATEGORY = {
 
 
 // 카테고리×감정에 맞는 주제 가져오기 (전체 TOPICS 폴백 제거 — 가이드 v4.2 #1)
+// 🎯 사물별 직접 관련 주제 매핑 (대장 v5.5 — 60/30/10 가중치 시스템)
+// 키워드 → [직접관련 주제 배열]
+const OBJECT_DIRECT_TOPICS = {
+  // ═══ 야채 ═══
+  spinach_시금치: {
+    angry: [
+      {val:'sp_overcook',label:'🥬 시금치 너무 오래 데침',desc:'시금치 5분 이상 끓이면 비타민C 90% 파괴. 30초 데치고 찬물에 헹궈야'},
+      {val:'sp_no_wash',label:'💧 안 씻고 조리',desc:'농약 + 잔류 흙. 흐르는 물에 30초 + 식초물 3분 후 조리'},
+      {val:'sp_old_storage',label:'🥶 오래 방치',desc:'시금치는 3~4일이 최대. 일주일 넘으면 노란잎 + 영양가 0'}
+    ],
+    happy: [
+      {val:'sp_quick_blanch',label:'⚡ 30초 데치기',desc:'끓는 물에 30초 + 찬물 → 영양소 100% + 색감 살아남'},
+      {val:'sp_paper_wrap',label:'📰 키친타월 보관',desc:'젖은 키친타월에 감싸 야채칸 → 일주일 신선도 유지'}
+    ]
+  },
+  carrot_당근: {
+    angry: [
+      {val:'cr_no_peel',label:'🥕 안 벗기고 사용',desc:'당근 껍질 농약 잔류량 8배. 식초물 3분 후 껍질 벗겨야'},
+      {val:'cr_overcook',label:'🔥 너무 오래 익힘',desc:'10분 이상 끓이면 베타카로틴 흡수율 30%↓. 살짝 익혀야'}
+    ],
+    happy: [
+      {val:'cr_oil_cook',label:'🫒 기름과 함께',desc:'당근 + 기름 = 베타카로틴 흡수율 6배 증가. 볶거나 굽기'},
+      {val:'cr_carrot_top',label:'🌿 당근 잎 활용',desc:'당근 잎 = 비타민C 6배. 버리지 말고 페스토나 무침으로'}
+    ]
+  },
+  onion_양파: {
+    angry: [
+      {val:'on_wrong_cut',label:'🧅 결 따라 자르기',desc:'결 따라 자르면 매운맛 ↑. 결 반대로 잘라야 매운맛 80%↓'},
+      {val:'on_eye_irritate',label:'😢 눈 매워하면서 자름',desc:'미리 5분 냉장 → 눈 안 매움. 황화합물 휘발 억제'}
+    ],
+    happy: [
+      {val:'on_caramelize',label:'🍯 캐러멜라이즈',desc:'약불 30분 = 단맛 폭발 + 항산화성분 5배 증가'},
+      {val:'on_skin_use',label:'🧅 양파 껍질',desc:'양파 껍질 = 케르세틴 30배. 육수에 우려내면 면역력↑'}
+    ]
+  },
+  potato_감자: {
+    angry: [
+      {val:'pt_green_eat',label:'☠️ 초록 부분 먹기',desc:'감자 초록색 = 솔라닌 독성. 두통/구토 유발. 깊게 도려내야'},
+      {val:'pt_fridge_storage',label:'🥶 냉장보관 잘못',desc:'감자 냉장 → 전분이 당으로 변환 → 발암물질 아크릴아마이드'}
+    ],
+    happy: [
+      {val:'pt_dark_storage',label:'🌑 어둡고 서늘하게',desc:'감자 + 사과 같이 보관 = 싹나는 거 막아줌. 4주 신선'}
+    ]
+  },
+  tomato_토마토: {
+    angry: [
+      {val:'tm_fridge_taste',label:'🥶 냉장보관 = 맛 없어짐',desc:'10도 이하 보관시 풍미 분자 파괴. 상온이 최고'},
+      {val:'tm_unripe_eat',label:'🍅 덜 익은 거 먹음',desc:'녹색 토마토 = 토마틴 독성. 빨갛게 익은 후 먹어야'}
+    ],
+    happy: [
+      {val:'tm_cooked_lycopene',label:'🔥 익히면 라이코펜 ↑',desc:'생토마토 대비 익힌 토마토 라이코펜 흡수율 4배. 토마토소스가 정답'}
+    ]
+  },
+  // ═══ 고기 ═══
+  beef_소고기: {
+    angry: [
+      {val:'bf_wrong_cut',label:'🔪 결 따라 자르기',desc:'결 따라 자르면 질김 → 부드러움 50%↓. 결 반대로 자르기'},
+      {val:'bf_overcook',label:'🔥 너무 오래 익힘',desc:'70도 넘으면 단백질 응고 → 질겨짐 + 육즙 손실 60%'},
+      {val:'bf_thaw_room',label:'🌡️ 실온 해동',desc:'실온 해동 = 박테리아 번식 6배. 냉장 해동 12시간이 정답'}
+    ],
+    happy: [
+      {val:'bf_rest_meat',label:'⏱️ 굽고 5분 휴지',desc:'구운 직후 5분 휴지 → 육즙 재분배 → 부드러움 30%↑'}
+    ]
+  },
+  chicken_닭: {
+    angry: [
+      {val:'ck_wash_chicken',label:'💧 닭 씻으면 위험',desc:'생닭 씻으면 살모넬라 1.5m까지 튀김. 절대 씻지 말고 바로 조리'},
+      {val:'ck_undercook',label:'🌡️ 덜 익히기',desc:'닭 내부 75도 이하 = 살모넬라 생존. 핑크색 보이면 더 익혀야'}
+    ],
+    happy: [
+      {val:'ck_brine_juicy',label:'🧂 브라이닝 (소금물 절임)',desc:'30분 소금물 절임 → 육즙 함량 40%↑'}
+    ]
+  },
+  // ═══ 음료 ═══
+  cola_콜라: {
+    angry: [
+      {val:'co_mouth_drink',label:'😬 입 대고 마시기',desc:'침이랑 만나서 1억배 박테리아. 컵에 따라 마셔야'},
+      {val:'co_open_long',label:'🥤 오래 두고 마심',desc:'개봉 후 24시간 = 김 다 빠지고 박테리아 100배'}
+    ],
+    happy: [
+      {val:'co_cold_better',label:'🧊 차게 마시기',desc:'영하 1도가 단맛 인지 최고. 단맛 30%↓ 느끼기 + 갈증 해소↑'}
+    ]
+  },
+  // ═══ 가전 (예시) ═══
+  ac_에어컨: {
+    angry: [
+      {val:'ac_no_filter',label:'🌫️ 필터 안 청소',desc:'6개월 방치 = 곰팡이 포자 5배 + 전기세 30%↑'},
+      {val:'ac_low_temp',label:'🥶 18도로 켜기',desc:'18도 = 냉방병 + 전기세 폭탄. 26도가 최적'}
+    ],
+    happy: [
+      {val:'ac_clean_monthly',label:'✨ 월 1회 필터 청소',desc:'전기세 30%↓ + 수명 2배 + 알레르기 예방'}
+    ]
+  }
+};
+
+// 🎯 카테고리 일반 주제 (조리 도구·상황 등 — 30%/10% 비중)
+const CATEGORY_INDIRECT_TOPICS = {
+  cooking: {
+    process: { // 조리 과정 (30%)
+      angry: [
+        {val:'pr_dirty_cut',label:'🔪 도마 안 씻고',desc:'고기 자른 도마 그대로 채소 자르면 살모넬라 교차오염'},
+        {val:'pr_dull_knife',label:'🔪 무딘 칼 사용',desc:'무딘 칼 = 부상 위험 3배 + 세포 파괴로 풍미 손실'},
+        {val:'pr_pan_overheat',label:'🔥 팬 너무 달구기',desc:'200도 이상 = 발암물질 PAHs 발생. 중불이 정답'}
+      ],
+      happy: [
+        {val:'pr_sharp_knife',label:'🔪 잘 갈린 칼',desc:'예리한 칼 = 세포 안 다침 = 풍미 + 영양 보존'}
+      ]
+    },
+    situation: { // 보관/상황 (10%)
+      angry: [
+        {val:'st_food_waste',label:'🚯 음식 낭비',desc:'한국 가정 1인당 음식물쓰레기 연 130kg'}
+      ],
+      happy: [
+        {val:'st_meal_prep',label:'🥗 미리 손질',desc:'주말 1시간 미리 손질 → 평일 조리시간 70%↓'}
+      ]
+    }
+  }
+};
+
+// 🎯 사물 키워드 매칭 (한/영/일 병행)
+function matchObjectToDirectTopics(obj, objEn){
+  if(!obj && !objEn) return null;
+  const text = ((obj || '') + ' ' + (objEn || '')).toLowerCase();
+  
+  // 야채
+  if(/spinach|시금치|코마츠나/.test(text)) return OBJECT_DIRECT_TOPICS.spinach_시금치;
+  if(/carrot|당근|닌징/.test(text)) return OBJECT_DIRECT_TOPICS.carrot_당근;
+  if(/onion|양파|타마네기/.test(text)) return OBJECT_DIRECT_TOPICS.onion_양파;
+  if(/potato|감자|자가이모/.test(text)) return OBJECT_DIRECT_TOPICS.potato_감자;
+  if(/tomato|토마토/.test(text)) return OBJECT_DIRECT_TOPICS.tomato_토마토;
+  
+  // 고기
+  if(/beef|소고기|와규/.test(text)) return OBJECT_DIRECT_TOPICS.beef_소고기;
+  if(/chicken|닭|카라아게/.test(text)) return OBJECT_DIRECT_TOPICS.chicken_닭;
+  
+  // 음료
+  if(/cola|콜라|코카콜라/.test(text)) return OBJECT_DIRECT_TOPICS.cola_콜라;
+  
+  // 가전
+  if(/ac|에어컨|aircon/.test(text)) return OBJECT_DIRECT_TOPICS.ac_에어컨;
+  
+  return null; // 매칭 안 되면 카테고리 기본 사용
+}
+
+// 🎯 60/30/10 비율로 주제 섞기
+function mixTopicsByWeight(direct, process, situation, totalCount){
+  totalCount = totalCount || 6;
+  const result = [];
+  
+  // 60% 직접 관련 (4개 이상)
+  const directCount = Math.max(2, Math.floor(totalCount * 0.6));
+  if(direct && direct.length){
+    result.push(...direct.slice(0, directCount));
+  }
+  
+  // 30% 조리 관련 (2개)
+  const processCount = Math.max(1, Math.floor(totalCount * 0.3));
+  if(process && process.length){
+    // 직접 주제와 중복 안 되는 것만
+    const existing = new Set(result.map(t => t.val));
+    const filtered = process.filter(t => !existing.has(t.val));
+    result.push(...filtered.slice(0, processCount));
+  }
+  
+  // 10% 상황 관련 (1개)
+  const situationCount = Math.max(1, Math.floor(totalCount * 0.1));
+  if(situation && situation.length){
+    const existing = new Set(result.map(t => t.val));
+    const filtered = situation.filter(t => !existing.has(t.val));
+    result.push(...filtered.slice(0, situationCount));
+  }
+  
+  return result;
+}
+
 function getTopicsForCategory(cat, mood){
   const moodKey = STYLE_MOODS_LEGACY_FALLBACK[mood] || mood || 'angry';
   
+  // 🎯 1단계: 선택된 사물에 맞는 직접 관련 주제 찾기 (대장 v5.5)
+  const directTopics = matchObjectToDirectTopics(S.obj, S.objEn);
+  
+  if(directTopics && directTopics[moodKey] && directTopics[moodKey].length){
+    // 사물 매칭됨 → 60/30/10 비율로 섞기
+    const direct = directTopics[moodKey] || [];
+    const indirectData = CATEGORY_INDIRECT_TOPICS[cat];
+    const process = (indirectData && indirectData.process && indirectData.process[moodKey]) || [];
+    const situation = (indirectData && indirectData.situation && indirectData.situation[moodKey]) || [];
+    
+    const mixed = mixTopicsByWeight(direct, process, situation, 6);
+    if(mixed.length > 0) return mixed;
+  }
+  
+  // 2단계: 사물 매칭 실패 → 카테고리 일반 주제 (기존 시스템)
   if(cat && TOPICS_BY_CATEGORY[cat] && TOPICS_BY_CATEGORY[cat][moodKey]) {
     return TOPICS_BY_CATEGORY[cat][moodKey];
   }
-  // 감정 데이터 없으면 angry 폴백 (사용성 유지)
+  // 감정 데이터 없으면 angry 폴백
   if(cat && TOPICS_BY_CATEGORY[cat] && TOPICS_BY_CATEGORY[cat].angry) {
     return TOPICS_BY_CATEGORY[cat].angry;
   }
-  // ⚠️ 전체 TOPICS 폴백 제거 — 카테고리/감정 무관 주제 섞임 방지
   return [];
 }
 
@@ -1132,6 +1321,24 @@ async function aiRandomTopic(){
   try {
     // 🎭 감정별 주제 생성 모드 (대장 v4.6 — calm 제거, happy 정보형)
     const moodKeyTopic = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
+    
+    // 🎯 사물별 컨텍스트 자동 감지 (대장 v5.5 — 직접 관련 주제만)
+    const objText = ((S.obj || '') + ' ' + (S.objEn || '')).toLowerCase();
+    let objectTypeContext = '';
+    if(/spinach|시금치/.test(objText)){
+      objectTypeContext = '\n\n📌 시금치 직접 관련 주제 우선:\n- 데치는 시간 (30초 vs 5분 차이)\n- 영양소 손실 (비타민C, 엽산)\n- 보관법 (키친타올 감싸기)\n- 농약 세척\n- 결 따라 자르기\n금지: 튀김/기름재사용/육류조리법 (시금치와 무관)';
+    } else if(/carrot|당근/.test(objText)){
+      objectTypeContext = '\n\n📌 당근 직접 관련 주제 우선:\n- 껍질 영양소 vs 농약\n- 베타카로틴 흡수율 (기름과 함께)\n- 결 따라 자르기\n- 보관법\n금지: 잎채소 데치기, 육류 관련 (당근과 무관)';
+    } else if(/cola|콜라/.test(objText)){
+      objectTypeContext = '\n\n📌 콜라 직접 관련 주제 우선:\n- 입 대고 마시기 (박테리아)\n- 개봉 후 보관기간\n- 차게 마시기 효과\n- 탄산 빠짐\n- 빈 병 처리\n금지: 조리법, 식재료 손질 (콜라와 무관)';
+    } else if(/beef|소고기|chicken|닭/.test(objText)){
+      objectTypeContext = '\n\n📌 고기 직접 관련 주제 우선:\n- 결 따라 자르기\n- 해동법 (실온 vs 냉장)\n- 익힘 정도 (육즙)\n- 휴지 시간\n- 교차오염 (도마)\n금지: 야채 손질법 (고기와 무관)';
+    } else if(/onion|양파/.test(objText)){
+      objectTypeContext = '\n\n📌 양파 직접 관련 주제 우선:\n- 결 반대로 자르기 (매운맛)\n- 미리 냉장 (눈 안 매움)\n- 캐러멜라이즈\n- 양파 껍질 활용\n금지: 다른 야채 영양소, 육류 (양파와 무관)';
+    } else if(/cooking|요리/.test(S.cat || '') || /food|음식/.test(S.cat || '')){
+      objectTypeContext = '\n\n📌 식재료/음식 주제는 사물별로 차별화:\n- 그 사물 직접 관련 손질/조리/보관 (60%)\n- 조리 도구 (도마/칼) (30%)\n- 음식 낭비/보관 (10%)\n다른 사물에만 해당하는 주제 섞지 말 것.';
+    }
+    
     const TOPIC_MODE_GUIDE = {
       angry: '민폐, 잘못된 사용, 방치, 불편한 상황, 오용',
       happy: '잘 관리됨, 깨끗히 유지, 정성스런 사용, 적정 관리, 효과 있는 행동'
@@ -1153,6 +1360,20 @@ async function aiRandomTopic(){
    - happy 모드면: 잘 관리되는 행동 + 효과 정보만 (분노/민폐 절대 금지)
 4. 한국 사람 99%가 즉시 공감할 현실적 상황만.
 5. 판타지/미신/과장 금지. 일상에서 정말 자주 벌어지는 것만.
+
+🎯🎯🎯 사물 직접 관련성 절대 규칙 (대장 v5.5) 🎯🎯🎯
+주제는 반드시 다음 비율로 섞을 것:
+• 60% (4개) — **선택된 사물 직접 관련** (그 사물 자체의 손질/세척/조리)
+• 30% (2개) — **조리 과정·도구 관련** (도마/칼/냄비/팬)
+• 10% (1개) — **상황·보관 관련** (냉장고/방치/낭비)
+
+⚠️ 사물과 무관한 주제 절대 금지!
+예시 (시금치 선택시):
+✅ 좋음: "🥬 너무 오래 데침" (시금치 직접) / "🔪 무딘 칼" (조리 도구) / "🥶 일주일 방치" (상황)
+❌ 금지: "🛢️ 기름 재사용" (시금치와 무관!) / "🔥 튀김 (시금치는 튀기지 않음!)"
+
+⚠️ 사용자가 봤을 때 "아 이거 내가 겪은 거다" 수준의 현실 상황만.
+${objectTypeContext || ''}
 
 🎯🎯🎯 핵심: 정보성 주제 (둘 다) 🎯🎯🎯
 desc는 모호하면 안 된다.
