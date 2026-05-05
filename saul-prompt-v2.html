@@ -1954,8 +1954,80 @@ ${isTip
   : '- マナー指摘/愚痴: 「ちょっと待って」「いやそれはない」「またやってる」「ほんと勘弁して」みたいな共感ツッコミ'}
 `;
 
+  // 🎯 사물 종류 자동 감지 (대장 v5.4 — 음식/가전/사물별 톤 가이드)
+  const objText = (S.obj || '') + ' ' + (S.objEn || '');
+  const objLower = objText.toLowerCase();
+  
+  let objectTypeGuide = '';
+  
+  // 음식·음료 카테고리
+  if(/coffee|tea|drink|beer|soju|cola|water|milk|food|burger|pizza|noodle|ramen|rice|bread|cake|donut|pasta|소주|커피|차|음료|맥주|콜라|물|우유|음식|버거|피자|면|라면|밥|빵|케이크|도넛|파스타|라떼|라테|쥬스/i.test(objText)){
+    objectTypeGuide = `
+🍽️ 사물 종류: 음식·음료
+- 사물(음식/음료) 본인이 먹히기 직전, 마셔지기 직전 시점에서 화자
+- 잘못된 식습관/보관/소비 행태에 대해 한탄/지적
+- 예: "나 ${S.obj}인데! 일주일째 냉장고 구석에 처박혀서 곰팡이 피고 있어..."
+- 식품 안전 / 영양 / 보관 / 식습관 정보 자연스럽게 녹이기
+- 소비기한, 보관법, 영양소 손실, 식중독 같은 구체 정보 권장`;
+  }
+  // 전자제품·가전
+  else if(/electronics|tv|computer|laptop|phone|charger|router|console|fridge|refrigerator|washing|aircon|microwave|냉장고|세탁기|에어컨|TV|컴퓨터|노트북|폰|전화|충전|공유기|콘솔|전자레인지|밥솥/i.test(objText)){
+    objectTypeGuide = `
+⚡ 사물 종류: 전자제품·가전
+- 사물(가전/IT기기)이 사용/관리되는 입장에서 한탄
+- 잘못된 사용법, 청소 안 함, 무리한 작동, 수명 단축 행태
+- 예: "나 ${S.obj}인데! 6개월째 필터 한 번을 안 닦아주고..."
+- 전기세, 수명, 효율, 고장 원인 같은 구체 정보 권장`;
+  }
+  // 야채·식재료·요리
+  else if(/spinach|carrot|onion|potato|tomato|cucumber|pepper|garlic|beef|chicken|fish|shrimp|salad|stew|curry|시금치|당근|양파|감자|토마토|오이|고추|마늘|소고기|닭|생선|새우|샐러드|찌개|카레/i.test(objText)){
+    objectTypeGuide = `
+🥗 사물 종류: 식재료·요리
+- 식재료/요리가 조리되거나 보관되는 입장에서 한탄
+- 잘못된 손질, 과한 익힘, 보관 실수, 영양소 파괴, 위생 문제
+- 예: "나 ${S.obj}인데! 끓는 물에 5분이나 데치니까 비타민 다 날아갔어..."
+- 영양소, 조리법, 보관법, 위생, 교차오염 같은 구체 정보 권장`;
+  }
+  // 가구·인테리어
+  else if(/chair|sofa|desk|bed|wardrobe|table|lamp|mirror|plant|의자|소파|책상|침대|옷장|식탁|램프|거울|화분/i.test(objText)){
+    objectTypeGuide = `
+🛋️ 사물 종류: 가구·인테리어
+- 가구가 매일 사용되는 입장에서 한탄
+- 잘못된 자세, 청소 안 함, 거칠게 다루기, 관리 부족
+- 예: "나 ${S.obj}인데! 매일 다리 꼬고 앉아서 내 한쪽 다리만 휘어지고 있어..."
+- 자세 영향, 수명, 관리법, 건강 정보 권장`;
+  }
+  // 화장품·미용용품
+  else if(/cosmetic|makeup|skincare|lipstick|cream|serum|화장품|메이크업|스킨|로션|크림|립스틱|세럼|마스크팩/i.test(objText)){
+    objectTypeGuide = `
+💄 사물 종류: 화장품·뷰티
+- 화장품/뷰티 제품이 사용되는 입장
+- 잘못된 사용법, 보관, 유통기한, 피부 트러블 유발 행태
+- 예: "나 ${S.obj}인데! 뚜껑도 안 닫고 6개월째 화장대에서 산화되고 있어..."
+- 유통기한, 사용법, 보관, 피부 영향 정보 권장`;
+  }
+  // 의류·패션
+  else if(/cloth|shirt|jean|pant|shoe|sneaker|bag|jacket|coat|옷|티셔츠|청바지|바지|신발|운동화|가방|자켓|코트|모자/i.test(objText)){
+    objectTypeGuide = `
+👕 사물 종류: 의류·패션
+- 의류/패션 제품이 입혀지고 관리되는 입장
+- 세탁 실수, 보관 실수, 거친 사용, 수명 단축
+- 예: "나 ${S.obj}인데! 30도 물에 막 빨아서 색이 다 빠졌어..."
+- 세탁법, 보관법, 수명, 관리 정보 권장`;
+  }
+  // 일반 생활용품 (기본 폴백)
+  else {
+    objectTypeGuide = `
+📦 사물 종류: 일반 생활용품
+- 사물 본인이 사용/방치되는 입장에서 한탄
+- 잘못된 사용법, 관리 부족, 수명 단축, 위생 문제
+- 예: "나 ${S.obj}인데! 한 번도 닦아주질 않아서 박테리아 천국이야..."
+- 위생, 관리법, 수명, 효과 같은 구체 정보 권장`;
+  }
+
   const systemPrompt = (S.country==='us')
     ? `You are a top-tier short-form video scriptwriter for US TikTok/Instagram Reels/YouTube Shorts. You write SHORT, PUNCHY, NATURAL English lines that native speakers instantly understand and laugh at.
+${objectTypeGuide}
 
 【Reference: scripts viewers actually save and comment on】
 ${refs}
@@ -2122,6 +2194,7 @@ ${JP_TONE_RULES}
 - "안녕 나는 세탁기" (X) → "나 세탁기인데!" (O)
 - "야 너" (X) → "나 세탁기인데!" 부터 시작
 - 이 패턴은 어떤 상황에서도 절대 바꾸지 않는다
+${objectTypeGuide}
 
 【참고: 실제로 시청자가 "저장!" "댓글!" 하게 만드는 대본 예시】
 ${refs}
@@ -3026,4 +3099,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
