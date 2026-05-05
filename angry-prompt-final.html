@@ -316,8 +316,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
     </div>
     <div class="sec-label">⏱️ 대사 길이</div>
     <div class="chips" id="durChips" style="margin-bottom:14px;">
-      <div class="chip" data-val="7" onclick="selDur(this)">⚡ 7초</div>
-      <div class="chip active" data-val="8" onclick="selDur(this)">⚡ 8초</div>
+      <div class="chip active" data-val="7" onclick="selDur(this)">⚡ 7초</div>
     </div>
     <div class="dialogue-btns">
       <button class="btn-sm" onclick="autoDialogue()">✨ AI 공감 대사 생성</button>
@@ -1239,7 +1238,7 @@ const STYLE_DIALOGUE_TONE = {
 };
 
 // ═══ STATE ═══
-const S={country:'kr',cat:null,obj:null,objEn:null,objJp:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'8',voice:'young_male',dialect:'standard'};
+const S={country:'kr',cat:null,obj:null,objEn:null,objJp:null,loc:null,locEn:null,style:'pixar',mood:'angry',topic:TOPICS[0].val,topicDesc:TOPICS[0].desc,dur:'7',voice:'young_male',dialect:'standard'};
 let usedDialogues=[];
 
 function buildTopics(){
@@ -2013,7 +2012,7 @@ async function genDialogue(regen){
   const refs = REFS_10;
   
   // ⏱️ 사용자 선택 시간 (대장 v5.7 — 8초 기본)
-  const userDur = parseInt(S.dur || '8', 10) || 8;
+  const userDur = parseInt(S.dur || '7', 10) || 7;
   const sentCount = userDur >= 8 ? '4~5문장' : '3~4문장';
   const charCount = userDur >= 8 ? '60~80자' : '40~60자';
 
@@ -3269,7 +3268,7 @@ extraVideoBlock;
 
   // SRT 자막 생성 (대장 v5.2 — 항상 탭에 표시)
   // ⏱️ SRT 자막 생성 — 사용자가 선택한 길이 사용 (대장 v5.7)
-  const srtDuration = parseInt(S.dur || '8', 10) || 8;
+  const srtDuration = parseInt(S.dur || '7', 10) || 7;
   const srtText = generateSingleSceneSRT(dialogue, srtDuration);
   if(srtText){
     document.getElementById('srtOut').textContent=srtText;
