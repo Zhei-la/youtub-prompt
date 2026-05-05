@@ -365,9 +365,10 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 
 <div class="result-wrap" id="resultWrap">
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('img')">🖼️ 이미지 프롬프트</button>
-    <button class="tab" onclick="switchTab('vid')">🎬 영상 프롬프트</button>
-    <button class="tab" onclick="switchTab('srt')">📝 자막 SRT</button>
+    <button class="tab active" onclick="switchTab('img')">🖼️ 이미지</button>
+    <button class="tab" onclick="switchTab('vid')">🎬 영상</button>
+    <button class="tab" onclick="switchTab('srt')">📝 자막</button>
+    <button class="tab" onclick="switchTab('desc')">📋 설명/꿀팁</button>
   </div>
   <div class="tab-panel active" id="panelImg">
     <div class="scene-tip">💡 선택한 배경을 최우선으로 반영하고, 카테고리별 실제 사용/행동 맥락에 맞춰 생성됩니다.</div>
@@ -409,6 +410,32 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
       3. 자막이 시간별로 자동 매칭됨 → 폰트/색깔만 꾸미면 끝!<br><br>
       <b style="color:var(--text);">🎬 지원 프로그램</b><br>
       캡컷(CapCut), 프리미어(Adobe Premiere), 다빈치 리졸브, 파이널컷, iMovie, 곰믹스, 무비메이커
+    </div>
+  </div>
+  
+  <!-- 📋 영상 설명/꿀팁 탭 (대장 v5.3 — 정보 영상 콘텐츠) -->
+  <div class="tab-panel" id="panelDesc">
+    <div class="scene-tip" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.25);color:#065f46;">
+      💡 유튜브·인스타·스레드 <b>본문/댓글에 그대로 복사</b>해서 붙여넣으면 됩니다.<br>
+      문제점 + 해결책 + 꿀팁이 정리된 정보형 콘텐츠로 시청자 참여도 ↑
+    </div>
+    <div class="result-card" style="background:linear-gradient(135deg,#1a1a1a,#0f0f0f);border:2px solid #10b981;">
+      <div class="result-top">
+        <span class="result-label" style="color:#10b981;">📋 영상 설명 · 본문/댓글용</span>
+        <button class="copy-btn" id="copyDescBtn" onclick="doCopy('descOut','copyDescBtn')" style="border-color:#10b981;color:#10b981;">📋 복사</button>
+      </div>
+      <div class="result-text" id="descOut" style="white-space:pre-wrap;color:#d4d4d4;line-height:1.9;"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;font-size:12px;line-height:1.7;color:var(--sub);">
+      <b style="color:var(--text);">📌 활용 방법</b><br>
+      • 유튜브 쇼츠 → 영상 설명란에 붙여넣기<br>
+      • 인스타그램 릴스 → 첫 댓글에 고정 댓글로 붙여넣기<br>
+      • 스레드 → 다음 게시물로 이어 올리기<br>
+      • 네이버 블로그/카페 → 영상 본문에 같이 게시<br><br>
+      <b style="color:#10b981;">✅ 시청자 반응 효과</b><br>
+      • "오 이거 진짜 몰랐네" → 좋아요 ↑<br>
+      • 정보 가치 → 저장/공유 ↑<br>
+      • 댓글에 추가 꿀팁 공유 → 참여도 ↑
     </div>
   </div>
 </div>
@@ -2794,6 +2821,66 @@ extraVideoBlock;
     window._lastSRT='';
   }
 
+  // 📋 영상 설명/꿀팁 자동 생성 (대장 v5.3 — 정보형 콘텐츠)
+  const descEl = document.getElementById('descOut');
+  if(descEl){
+    descEl.textContent = '⏳ 영상 설명·꿀팁 생성 중...';
+    if(getApiKey() && S.obj && S.topicDesc){
+      try {
+        const moodKeyDesc = STYLE_MOODS_LEGACY_FALLBACK[S.mood] || S.mood || 'angry';
+        const descSys = `너는 한국 SNS 쇼츠/릴스 영상의 본문/댓글에 들어가는 "정보형 영상 설명"을 작성하는 작가다.
+
+📋 형식:
+영상 본문 시작 → 짧은 후킹 멘트 (1줄)
+🔍 문제점: [구체적 사실 + 숫자/수치]
+✅ 해결책: [실행 가능한 구체적 방법]
+💡 추가 꿀팁 1: [더 좋아지는 방법]
+💡 추가 꿀팁 2: [심화 팁]
+${moodKeyDesc === 'angry' ? '⚠️ 주의: [잘못된 방법/오해]' : '🌱 장기 효과: [계속 했을 때 결과]'}
+
+마지막 줄 → 행동 유도 (좋아요/저장/공유)
+해시태그 (5~7개)
+
+⚠️ 작성 규칙:
+- 영상 안의 짧은 대사가 아니라 본문/댓글에 붙일 "긴 설명"
+- 시청자가 영상 보고 나서 "어떻게 하면 좋을지" 명확히 알게
+- 구체적 숫자/수치/방법/시간 반드시 포함
+- 이모지 적극 활용 (🔍 ✅ 💡 ⚠️ 🌱 등)
+- 줄바꿈으로 가독성 확보
+- 해시태그는 마지막에 한 줄로`;
+
+        const descUsr = `오브젝트: ${S.obj}
+카테고리: ${S.cat || ''}
+장소: ${S.loc || ''}
+주제: ${S.topicDesc}
+감정: ${moodKeyDesc} (${moodKeyDesc==='angry'?'잘못된 행동 → 올바른 방법':'잘 하는 행동 → 더 잘하는 방법'})
+
+영상 안 대사 (참고용):
+${dialogue}
+
+위 영상의 본문/댓글에 붙일 정보형 설명을 한국어로 작성해줘.
+- 영상 본문 시작 후킹 1줄 (예: "이거 모르고 그냥 [행동]하면 손해입니다 👇")
+- 🔍 문제점 / ✅ 해결책 / 💡 꿀팁 / ⚠️ 주의 또는 🌱 장기효과 / 👍 행동유도 / #해시태그
+- life_fact_bot 같은 실용 정보 채널 톤
+- 시청자가 진짜 배워가는 정보 가치 있게`;
+
+        const descResult = await callAI(descSys, descUsr);
+        if(descResult && descResult.trim()){
+          descEl.textContent = descResult.trim();
+        } else {
+          descEl.textContent = '⚠️ 설명 생성 실패. 다시 시도해주세요.';
+        }
+      } catch(e){
+        console.error('[desc] error:', e);
+        descEl.textContent = '⚠️ 설명 생성 실패: ' + e.message;
+      }
+    } else if(!getApiKey()){
+      descEl.textContent = 'ℹ️ API 키가 있어야 영상 설명을 생성할 수 있어요. 상단에 API 키를 입력해주세요.';
+    } else {
+      descEl.textContent = '⚠️ 오브젝트와 주제를 선택한 후 다시 생성해주세요.';
+    }
+  }
+
   try {
     const stats=JSON.parse(localStorage.getItem('usage_stats')||'{}');
     stats.totalGenerates=(stats.totalGenerates||0)+1;
@@ -2999,26 +3086,82 @@ function formatSRTTime(seconds){
 
 function generateSingleSceneSRT(script,duration){
   if(!script)return '';
-  duration=duration||10;
-  let segments=script.split(/(?<=[.!?])\s+|\n+/).map(s=>s.trim()).filter(s=>s.length>0);
-  const finalSegs=[];
-  segments.forEach(seg=>{
-    if(seg.length>35){
-      const subs=seg.split(/,\s*/).filter(s=>s.length>0);
-      if(subs.length>1){finalSegs.push(...subs);}else{finalSegs.push(seg);}
-    }else{finalSegs.push(seg);}
+  duration=duration||7;
+  
+  // 🎯 짧은 구절 단위로 자연스럽게 끊기 (대장 v5.4)
+  // 1단계: 강한 구두점 (! ? .) + 쉼표로 1차 분할
+  let chunks = script
+    .replace(/[""''「」『』]/g, '')  // 따옴표 제거
+    .split(/(?<=[.!?])\s*|(?<=[,，])\s*/)
+    .map(s=>s.trim())
+    .filter(s=>s.length>0);
+  
+  // 2단계: 너무 긴 청크는 자연스러운 위치에서 더 분할
+  // 목표: 한 자막당 6~12자 (한국어 기준 0.5~1초)
+  const TARGET_LEN = 10;  // 목표 길이
+  const MAX_LEN = 14;     // 최대 길이
+  const MIN_LEN = 4;      // 너무 짧으면 안 됨
+  
+  let finalSegs = [];
+  chunks.forEach(chunk=>{
+    if(chunk.length <= MAX_LEN){
+      finalSegs.push(chunk);
+      return;
+    }
+    // 긴 청크 → 공백 단위로 단어 분할 후 재조합
+    const words = chunk.split(/\s+/);
+    let buffer = '';
+    words.forEach(word=>{
+      if(buffer.length === 0){
+        buffer = word;
+      } else if((buffer + ' ' + word).length <= TARGET_LEN){
+        buffer += ' ' + word;
+      } else if(buffer.length < 5 && (buffer + ' ' + word).length <= MAX_LEN){
+        // 너무 짧은 청크는 한 번 더 합침
+        buffer += ' ' + word;
+      } else {
+        finalSegs.push(buffer);
+        buffer = word;
+      }
+    });
+    if(buffer.length > 0) finalSegs.push(buffer);
   });
-  if(finalSegs.length===0)return '';
-  const totalChars=finalSegs.reduce((sum,s)=>sum+s.length,0);
-  let currentTime=0;
-  const lines=[];
+  
+  // 2.5단계: 짧은 고아 자막 처리 (대장 v5.4 개선)
+  // - 끝부분 "되냐?" 같은 4자 이하 자막은 앞 자막에 합침
+  // - 단, 합쳤을 때 MAX_LEN+3까지 허용 (자연스러움 우선)
+  const merged = [];
+  for(let i=0; i<finalSegs.length; i++){
+    const cur = finalSegs[i];
+    if(merged.length > 0 && cur.length < MIN_LEN){
+      const prev = merged[merged.length-1];
+      if((prev + ' ' + cur).length <= MAX_LEN + 3){
+        merged[merged.length-1] = prev + ' ' + cur;
+        continue;
+      }
+    }
+    merged.push(cur);
+  }
+  finalSegs = merged;
+  
+  if(finalSegs.length===0) return '';
+  
+  // 3단계: 각 자막의 길이에 비례해 시간 분배 (글자 수 기반)
+  const totalChars = finalSegs.reduce((sum,s)=>sum + s.length, 0);
+  let currentTime = 0;
+  const lines = [];
   finalSegs.forEach((seg,i)=>{
-    const ratio=seg.length/totalChars;
-    const segDuration=duration*ratio;
-    const startTime=currentTime;
-    const endTime=Math.min(currentTime+segDuration,duration);
-    lines.push((i+1)+'\n'+formatSRTTime(startTime)+' --> '+formatSRTTime(endTime)+'\n'+seg);
-    currentTime=endTime;
+    const ratio = seg.length / totalChars;
+    let segDuration = duration * ratio;
+    // 각 자막 최소 0.4초, 최대 1.5초
+    segDuration = Math.max(0.4, Math.min(1.5, segDuration));
+    const startTime = currentTime;
+    let endTime = currentTime + segDuration;
+    // 마지막 자막은 정확히 duration에 끝남
+    if(i === finalSegs.length - 1) endTime = duration;
+    if(endTime > duration) endTime = duration;
+    lines.push((i+1) + '\n' + formatSRTTime(startTime) + ' --> ' + formatSRTTime(endTime) + '\n' + seg);
+    currentTime = endTime;
   });
   return lines.join('\n\n');
 }
@@ -3037,11 +3180,11 @@ function downloadSRTFile(){
 }
 
 function switchTab(t){
-  const order = ['img','vid','srt'];
+  const order = ['img','vid','srt','desc'];
   document.querySelectorAll('.tabs .tab').forEach((b,i)=>b.classList.toggle('active', order[i]===t));
-  ['panelImg','panelVid','panelSrt'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
-  const targetId = t==='img' ? 'panelImg' : (t==='vid' ? 'panelVid' : 'panelSrt');
-  const target = document.getElementById(targetId);
+  ['panelImg','panelVid','panelSrt','panelDesc'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('active');});
+  const map = {img:'panelImg', vid:'panelVid', srt:'panelSrt', desc:'panelDesc'};
+  const target = document.getElementById(map[t]||'panelImg');
   if(target) target.classList.add('active');
 }
 function doCopy(textId,btnId){
@@ -3127,3 +3270,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
