@@ -339,10 +339,39 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 <div class="divider"></div>
 <div class="summary-bar" id="summaryBar">항목을 선택하면 여기에 표시됩니다.</div>
 
-<!-- ✨ 추가 지시사항 입력 (대장 v5.0) -->
-<div class="step active" id="sExtra" style="margin-bottom:18px;">
+<!-- 🔍 Step 7: GPT 사실 검증 (대장 v5.9) -->
+<div class="step active" id="sVerify" style="margin-bottom:18px;">
   <div class="step-hd">
     <div class="step-num">7</div>
+    <div class="step-title">🔍 사실 기반 검증 (GPT)</div>
+  </div>
+  <div style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(59,130,246,0.05));border:1.5px solid rgba(16,185,129,0.3);border-radius:10px;padding:14px 16px;font-size:12px;line-height:1.8;color:var(--text);margin-bottom:10px;">
+    <div style="font-weight:800;color:#10b981;margin-bottom:8px;font-size:13px;">📋 사용 안내</div>
+    <div style="color:var(--sub);line-height:1.7;">
+      ① 대사·설명이 <b style="color:var(--text);">실제 사실 기반인지</b> GPT로 한 번 더 검증할 수 있어요<br>
+      ② 아래 버튼을 누르면 <b>전용 GPT</b>로 이동해요<br>
+      ③ <span style="color:#f59e0b;font-weight:700;">⚠️ 영상 설명은 "🔥 프롬프트 생성하기" 클릭 후에 나옵니다</span><br>
+      ④ 의심 정보가 나오면 GPT 응답을 보고 대사·설명을 직접 수정해주세요
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="https://chatgpt.com/g/g-69fa1a156de08191b83e44687139ae0e-3d-pigsa-daebon-seolmyeong-saengseong-tul" target="_blank" rel="noopener" 
+       style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,#10b981,#059669);color:white;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;border:none;cursor:pointer;flex:1;justify-content:center;min-width:200px;">
+      🔍 GPT로 사실 검증하러 가기
+    </a>
+    <button class="btn-sm" onclick="scrollToDialogue()" style="background:#3b82f6;color:white;border-color:#3b82f6;font-weight:700;flex:1;min-width:140px;">
+      ✏️ 대사 수정
+    </button>
+    <button class="btn-sm" onclick="scrollToDesc()" style="background:#8b5cf6;color:white;border-color:#8b5cf6;font-weight:700;flex:1;min-width:140px;">
+      📋 설명 수정
+    </button>
+  </div>
+</div>
+
+<!-- ✨ Step 8: 추가 지시사항 (대장 v5.0) -->
+<div class="step active" id="sExtra" style="margin-bottom:18px;">
+  <div class="step-hd">
+    <div class="step-num">8</div>
     <div class="step-title">✨ 추가 지시사항 (선택)</div>
   </div>
   <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6;">
@@ -430,7 +459,7 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
         <span class="result-label" style="color:#10b981;">📋 영상 설명 · 본문/댓글용</span>
         <button class="copy-btn" id="copyDescBtn" onclick="doCopy('descOut','copyDescBtn')" style="border-color:#10b981;color:#10b981;">📋 복사</button>
       </div>
-      <div class="result-text" id="descOut" style="white-space:pre-wrap;color:#d4d4d4;line-height:1.9;"></div>
+      <div class="result-text" id="descOut" contenteditable="true" style="white-space:pre-wrap;color:#d4d4d4;line-height:1.9;outline:none;"></div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;font-size:12px;line-height:1.7;color:var(--sub);">
       <b style="color:var(--text);">📌 활용 방법</b><br>
@@ -1895,6 +1924,34 @@ async function aiRandom(step){
 // ═══ 대사 생성 (품질 강화) ═══
 async function autoDialogue(){await genDialogue(false);}
 async function regenDialogue(){await genDialogue(true);}
+
+// 🔍 GPT 검증 단계 스크롤 헬퍼 (대장 v5.9)
+function scrollToDialogue(){
+  const ta = document.getElementById('dialogue');
+  if(!ta) return;
+  ta.scrollIntoView({behavior:'smooth', block:'center'});
+  setTimeout(()=>{
+    ta.focus();
+    ta.style.border = '2px solid #3b82f6';
+    setTimeout(()=>{ ta.style.border = ''; }, 2000);
+  }, 400);
+}
+function scrollToDesc(){
+  const desc = document.getElementById('descOut');
+  if(!desc){ alert('영상 설명은 "🔥 프롬프트 생성하기"를 먼저 클릭해야 나와요.'); return; }
+  const text = (desc.textContent || '').trim();
+  if(!text || text.includes('생성 중') || text.includes('생성 실패') || text.includes('API 키')){
+    alert('영상 설명이 아직 생성되지 않았어요.\n"🔥 프롬프트 생성하기" 버튼을 먼저 클릭해주세요.');
+    return;
+  }
+  // 설명 탭으로 전환 + 스크롤
+  if(typeof switchTab === 'function') switchTab('desc');
+  setTimeout(()=>{
+    desc.scrollIntoView({behavior:'smooth', block:'center'});
+    desc.style.border = '2px solid #8b5cf6';
+    setTimeout(()=>{ desc.style.border = ''; }, 2000);
+  }, 300);
+}
 
 // ✅ 대사 확정 시스템 (대장 v5.7)
 let _confirmedDialogue = ''; // 확정된 대사 저장
