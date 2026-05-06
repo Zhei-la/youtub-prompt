@@ -398,6 +398,62 @@ body.dark .scene-tip{background:rgba(37,99,235,0.12);color:#60a5fa;}
 <div class="err" id="errMsg"></div>
 <button class="gen-btn" id="genBtn" onclick="generate()">🔥 프롬프트 생성하기</button>
 
+<!-- 🎬 Step 9: 영상에서 립싱크 SRT 추출 (대장 v6.0) -->
+<div class="step active" id="sLipsync" style="margin-bottom:18px;margin-top:24px;">
+  <div class="step-hd">
+    <div class="step-num">9</div>
+    <div class="step-title">🎬 립싱크 SRT 추출 (영상 업로드)</div>
+  </div>
+  <div style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(255,77,109,0.05));border:1.5px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px 16px;font-size:12px;line-height:1.8;color:var(--text);margin-bottom:12px;">
+    <div style="font-weight:800;color:#f59e0b;margin-bottom:8px;font-size:13px;">📋 사용 안내</div>
+    <div style="color:var(--sub);line-height:1.7;">
+      ① 위에서 만든 프롬프트로 <b>AI 영상 생성</b> (Kling, Veo, Runway 등)<br>
+      ② 영상 다운로드 후 <b>아래에 업로드</b><br>
+      ③ AI가 영상 음성을 분석해서 <b>실제 발화 타이밍</b>으로 SRT 추출<br>
+      ④ <b>캡컷에 영상 + SRT 같이 넣으면 립싱크 100% 일치</b><br><br>
+      <span style="color:#10b981;font-weight:700;">💡 OpenAI Whisper로 추출 — API 키 사용 (영상 1분당 약 8원)</span>
+    </div>
+  </div>
+
+  <input type="file" id="videoFile" accept="video/*,audio/*" style="display:none;" onchange="onVideoSelected(event)">
+  <button class="btn-sm" onclick="document.getElementById('videoFile').click()" style="background:#f59e0b;color:white;border-color:#f59e0b;font-weight:700;width:100%;padding:14px;font-size:14px;">
+    📁 영상 파일 선택 (mp4·mov·webm·mp3)
+  </button>
+  <div id="videoFileInfo" style="margin-top:8px;font-size:12px;color:var(--muted);min-height:20px;"></div>
+  
+  <!-- 🌐 언어 선택 (대장 v6.1 — 립싱크용, 번역 없이 원어 자막) -->
+  <div style="margin-top:14px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">🌐 영상 언어</div>
+    <div class="chips" id="lipsyncLangChips" style="margin-bottom:6px;">
+      <div class="chip active" data-val="ko" onclick="selLipsyncLang(this)">🇰🇷 한국어</div>
+      <div class="chip" data-val="ja" onclick="selLipsyncLang(this)">🇯🇵 일본어</div>
+      <div class="chip" data-val="en" onclick="selLipsyncLang(this)">🇺🇸 영어</div>
+      <div class="chip" data-val="auto" onclick="selLipsyncLang(this)">🌐 자동 감지</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);">💡 영상 언어 그대로 자막 추출 (립싱크 100% 일치)</div>
+  </div>
+
+  <div id="lipsyncResult" style="display:none;margin-top:14px;">
+    <div class="result-card" style="background:linear-gradient(135deg,#1a1a1a,#0f0f0f);border:2px solid #f59e0b;">
+      <div class="result-top">
+        <span class="result-label" style="color:#f59e0b;">🎬 립싱크 SRT (실제 발화 타이밍)</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="copy-btn" onclick="doCopy('lipsyncSrtOut','lipsyncCopyBtn')" id="lipsyncCopyBtn" style="border-color:#f59e0b;color:#f59e0b;">📋 복사</button>
+          <button class="copy-btn" onclick="downloadLipsyncSRT()" style="background:#10b981;color:white;border-color:#10b981;">📄 .srt 다운로드</button>
+        </div>
+      </div>
+      <div class="result-text" id="lipsyncSrtOut" style="background:#fffbeb;color:#78350f;font-family:monospace;font-size:12px;white-space:pre-wrap;"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;font-size:11px;color:var(--sub);line-height:1.7;">
+      <b style="color:#10b981;">🎬 캡컷 사용법</b><br>
+      1. 위 .srt 다운로드<br>
+      2. 캡컷에 영상 트랙 위로 .srt 드래그<br>
+      3. 자막이 영상 음성 타이밍에 정확히 맞춰짐 ✅<br>
+      4. 폰트·색상만 꾸미면 끝!
+    </div>
+  </div>
+</div>
+
 <div class="result-wrap" id="resultWrap">
   <div class="tabs">
     <button class="tab active" onclick="switchTab('img')">🖼️ 이미지</button>
@@ -3560,6 +3616,175 @@ const ANTI_HALLUCINATION_RULES = `
 ⚠️ desc(주제 설명) 안의 사실은 사용자가 선택한 거니 그대로 활용해도 됨.
 ⚠️ 하지만 desc에 없는 새 수치/사실을 추가로 만들지는 마라.
 `;
+
+// 🎬 영상 → SRT 추출 (립싱크 자동 맞춤) (대장 v6.0)
+let _selectedVideoFile = null;
+let _lipsyncSrt = '';
+let _lipsyncLang = 'ko'; // 기본값: 한국어
+
+function selLipsyncLang(el){
+  document.querySelectorAll('#lipsyncLangChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  _lipsyncLang = el.dataset.val;
+}
+
+function onVideoSelected(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  
+  const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+  const info = document.getElementById('videoFileInfo');
+  
+  if(file.size > 25 * 1024 * 1024){
+    info.innerHTML = '<span style="color:#ef4444;">⚠️ 파일이 25MB를 초과합니다 ('+sizeMB+'MB). 더 짧은 영상이나 압축된 파일을 사용해주세요.</span>';
+    return;
+  }
+  
+  _selectedVideoFile = file;
+  info.innerHTML = '✅ <b style="color:#10b981;">'+file.name+'</b> ('+sizeMB+'MB) — <button class="btn-sm" onclick="extractLipsyncSRT()" style="background:#f59e0b;color:white;border-color:#f59e0b;margin-left:8px;font-weight:700;">🔍 SRT 추출 시작</button>';
+}
+
+async function extractLipsyncSRT(){
+  if(!_selectedVideoFile){
+    showErr('영상 파일을 먼저 선택해주세요.');
+    return;
+  }
+  
+  const apiKey = getApiKey();
+  if(!apiKey){
+    showErr('OpenAI API 키가 필요합니다. 상단에 API 키를 입력하고 저장해주세요.');
+    return;
+  }
+  
+  const info = document.getElementById('videoFileInfo');
+  info.innerHTML = '⏳ <b>음성 추출 중... (10~60초 소요)</b>';
+  
+  try {
+    // 🌐 언어 코드 (auto면 비워둠 — Whisper가 자동 감지)
+    const lang = _lipsyncLang === 'auto' ? '' : _lipsyncLang;
+    
+    const formData = new FormData();
+    formData.append('file', _selectedVideoFile);
+    formData.append('model', 'whisper-1');
+    formData.append('response_format', 'verbose_json');
+    formData.append('timestamp_granularities[]', 'word');
+    if(lang) formData.append('language', lang);
+    
+    info.innerHTML = '⏳ <b>음성 분석 중... (' + (lang || '자동 감지') + ')</b>';
+    
+    const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey },
+      body: formData
+    });
+    
+    if(!res.ok){
+      const errData = await res.json().catch(()=>({}));
+      throw new Error((errData.error && errData.error.message) || 'Whisper API 오류 ' + res.status);
+    }
+    
+    const data = await res.json();
+    console.log('[Whisper] 결과:', data);
+    const detectedLang = data.language || 'unknown';
+    
+    // 원본 언어 그대로 SRT 생성 (번역 없이)
+    _lipsyncSrt = whisperToSRT(data);
+    if(!_lipsyncSrt){
+      throw new Error('SRT 변환 실패: 음성이 감지되지 않았습니다.');
+    }
+    
+    info.innerHTML = '✅ <b style="color:#10b981;">SRT 추출 완료! (언어: ' + detectedLang + ')</b>';
+    document.getElementById('lipsyncSrtOut').textContent = _lipsyncSrt;
+    document.getElementById('lipsyncResult').style.display = 'block';
+    
+    setTimeout(()=>{
+      document.getElementById('lipsyncResult').scrollIntoView({behavior:'smooth', block:'center'});
+    }, 300);
+    
+  } catch(e){
+    console.error('[Whisper] 에러:', e);
+    info.innerHTML = '❌ <span style="color:#ef4444;">추출 실패: ' + e.message + '</span>';
+  }
+}
+
+// Whisper → 세그먼트 객체 배열
+function whisperToSegments(whisperData){
+  if(!whisperData) return [];
+  if(whisperData.words && whisperData.words.length > 0){
+    return wordsToSegmentObjects(whisperData.words);
+  }
+  if(whisperData.segments && whisperData.segments.length > 0){
+    return whisperData.segments.map(s => ({
+      text: (s.text || '').trim(),
+      start: s.start,
+      end: s.end
+    }));
+  }
+  return [];
+}
+
+// 단어별 → 세그먼트 객체 그룹핑 (한국어/일본어 모두 지원)
+function wordsToSegmentObjects(words){
+  const TARGET_LEN = 10;
+  const MAX_LEN = 14;
+  const segs = [];
+  let buffer = { text: '', start: null, end: null };
+  
+  words.forEach(w=>{
+    const word = (w.word || '').trim();
+    if(!word) return;
+    
+    if(buffer.start === null) buffer.start = w.start;
+    
+    const newText = buffer.text ? (buffer.text + ' ' + word).trim() : word;
+    const hasPunct = /[.!?,。、！？]$/.test(word);
+    
+    if(newText.length >= TARGET_LEN || hasPunct){
+      buffer.text = newText;
+      buffer.end = w.end;
+      segs.push({...buffer});
+      buffer = { text: '', start: null, end: null };
+    } else if(newText.length > MAX_LEN){
+      if(buffer.text){
+        segs.push({...buffer, end: w.start});
+      }
+      buffer = { text: word, start: w.start, end: w.end };
+    } else {
+      buffer.text = newText;
+      buffer.end = w.end;
+    }
+  });
+  
+  if(buffer.text) segs.push(buffer);
+  return segs;
+}
+
+// 세그먼트 → SRT 문자열
+function segsToSRT(segs){
+  return segs.map((s,i)=>{
+    return (i+1) + '\n' + formatSRTTime(s.start) + ' --> ' + formatSRTTime(s.end) + '\n' + s.text;
+  }).join('\n\n');
+}
+
+function whisperToSRT(whisperData){
+  return segsToSRT(whisperToSegments(whisperData));
+}
+
+function downloadLipsyncSRT(){
+  if(!_lipsyncSrt){
+    showErr('추출된 SRT가 없습니다.');
+    return;
+  }
+  const blob = new Blob([_lipsyncSrt], {type: 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'lipsync_subtitles_' + Date.now() + '.srt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 async function callAI(system,user){
   const apiKey=getApiKey();
