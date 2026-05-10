@@ -171,6 +171,13 @@
       gap: 8px;
     }
 
+    .input-action-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
     .hint {
       color: var(--muted);
       font-size: 12.5px;
@@ -249,6 +256,10 @@
       user-select:none;
     }
 
+    .chip:hover {
+      background: #ffe5cd;
+    }
+
     .status {
       margin-top: 12px;
       padding: 12px 14px;
@@ -261,11 +272,13 @@
     }
 
     .status.show { display: block; }
+
     .status.error {
       background:#fff1ee;
       border-color:#ffc2b8;
       color:#923022;
     }
+
     .status.ok {
       background:#effaf0;
       border-color:#bfe7c3;
@@ -363,27 +376,45 @@
       .hero, .grid { grid-template-columns: 1fr; }
       .hero { padding: 26px 18px; }
       .key-row { grid-template-columns: 1fr; }
-      .row { grid-template-columns: 1fr 1fr; }
       .panel-body { padding: 18px 18px 22px; }
       .output-card { padding: 16px 18px; }
     }
+
+    @media (max-width: 520px) {
+      .row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .input-action-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-small {
+        width: 100%;
+      }
+    }
   </style>
 </head>
+
 <body>
   <main class="wrap">
     <section class="hero">
       <div>
         <span class="badge">🎞️ 시니어 감성 쇼츠 생성기</span>
         <h1>부모님 속마음<br/>프롬프트 생성기</h1>
-        <p>아이디어가 없어도 랜덤으로 소재를 뽑고, OpenAI API로 바로 쇼츠 대사·이미지 프롬프트·영상 프롬프트·SRT를 생성합니다. 결과 이미지 프롬프트는 실사 대신 Pixar-inspired 3D와 옛날 한국 감성을 기본으로 만듭니다.</p>
+        <p>
+          오브젝트와 배경을 직접 넣거나 AI 추천으로 뽑고,
+          부모님 세대의 말하지 못한 마음을 자연스럽게 이어지는 쇼츠 대사로 만듭니다.
+          이미지/영상 프롬프트는 실사 대신 픽사풍 3D와 옛날 한국 감성을 기본으로 생성합니다.
+        </p>
       </div>
 
       <div class="hero-card">
         <strong>기능</strong>
         <ul>
+          <li>오브젝트/배경 AI 추천</li>
+          <li>직접 키워드 추가</li>
           <li>모델 선택</li>
-          <li>랜덤 조합 만들기</li>
-          <li>AI 랜덤 아이디어 받기</li>
           <li>API 연결 테스트</li>
           <li>결과 복사 / 다운로드</li>
         </ul>
@@ -393,6 +424,7 @@
     <section class="grid">
       <aside class="panel">
         <h2>설정</h2>
+
         <div class="panel-body">
           <label for="apiKey">OpenAI API Key</label>
           <div class="key-row">
@@ -405,17 +437,22 @@
             <button class="btn-ok" id="testApiBtn" type="button">API 연결 테스트</button>
           </div>
 
-          <div class="hint">개인용 정적 페이지 방식입니다. 공개 서비스로 운영할 땐 서버 프록시를 사용하세요.</div>
+          <div class="hint">
+            개인용 정적 페이지 방식입니다. 공개 서비스로 운영할 땐 서버 프록시를 사용하세요.
+          </div>
 
           <label for="model">모델 선택</label>
           <select id="model"></select>
-          <div class="hint">기본 추천은 gpt-5.5입니다. 비용/속도가 중요하면 mini/nano 계열을 선택하세요.</div>
+          <div class="hint">
+            기본 추천은 gpt-5.5입니다. 모델명이 다르면 직접 입력을 선택하세요.
+          </div>
 
           <div class="row">
             <div>
               <label for="target">타깃</label>
               <select id="target"></select>
             </div>
+
             <div>
               <label for="length">대사 길이</label>
               <select id="length"></select>
@@ -426,11 +463,25 @@
           <select id="mode"></select>
 
           <label for="object">오브젝트</label>
-          <input id="object" placeholder="예: 장바구니, 낡은 운동화, 냉장고" />
+          <div class="input-action-row">
+            <input id="object" placeholder="예: 낡은 지갑, 장바구니, 오래된 전화번호부" />
+            <button class="btn-secondary btn-small" id="aiObjectBtn" type="button">AI 추천</button>
+            <button class="btn-secondary btn-small" id="addObjectBtn" type="button">+</button>
+          </div>
+          <div class="hint">
+            AI 추천을 누르면 오브젝트 후보가 추가됩니다. 직접 적고 +를 누르면 내 키워드로 추가됩니다.
+          </div>
           <div class="chips" id="objectChips"></div>
 
           <label for="place">배경 장소</label>
-          <input id="place" placeholder="예: 엄마 집 주방, 시장 골목, 현관" />
+          <div class="input-action-row">
+            <input id="place" placeholder="예: 오래된 아파트 현관, 시장 골목, 약국 앞" />
+            <button class="btn-secondary btn-small" id="aiPlaceBtn" type="button">AI 추천</button>
+            <button class="btn-secondary btn-small" id="addPlaceBtn" type="button">+</button>
+          </div>
+          <div class="hint">
+            AI 추천을 누르면 배경 후보가 추가됩니다. 직접 적고 +를 누르면 내 장소로 추가됩니다.
+          </div>
           <div class="chips" id="placeChips"></div>
 
           <div class="row">
@@ -438,6 +489,7 @@
               <label for="tone">감정 톤</label>
               <select id="tone"></select>
             </div>
+
             <div>
               <label for="voice">목소리</label>
               <select id="voice"></select>
@@ -445,15 +497,14 @@
           </div>
 
           <label for="extra">추가 지시사항</label>
-          <textarea id="extra" placeholder="예: 마지막 반전 강조, 더 감동적으로, 한국 시장 느낌, 느린 줌인"></textarea>
+          <textarea id="extra" placeholder="예: 지갑이면 돈과 동전, 오래된 영수증 중심으로 이어지게. 마지막은 억지 감동 말고 생활 디테일로."></textarea>
 
           <button class="btn-primary" id="generateBtn" type="button">
             <span class="loader"></span>프롬프트 생성하기
           </button>
 
           <div class="btn-stack">
-            <button class="btn-secondary" id="randomBtn" type="button">랜덤 조합 만들기</button>
-            <button class="btn-secondary" id="aiIdeaBtn" type="button">AI 랜덤 아이디어 받기</button>
+            <button class="btn-secondary" id="randomBtn" type="button">전체 랜덤 조합 만들기</button>
             <button class="btn-secondary" id="sampleBtn" type="button">예시로 채우기</button>
           </div>
 
@@ -463,11 +514,15 @@
 
       <section class="panel">
         <h2>생성 결과</h2>
-        <div id="resultArea" class="result-empty">왼쪽 설정을 채우고 생성 버튼을 눌러주세요.</div>
+        <div id="resultArea" class="result-empty">
+          왼쪽 설정을 채우고 생성 버튼을 눌러주세요.
+        </div>
       </section>
     </section>
 
-    <p class="footer">GitHub Pages에 이 파일을 <b>senior-heart-prompt.html</b>로 올리면 바로 사용할 수 있습니다.</p>
+    <p class="footer">
+      GitHub Pages에 이 파일을 <b>senior-heart-prompt.html</b>로 올리면 바로 사용할 수 있습니다.
+    </p>
   </main>
 
 <script>
@@ -479,6 +534,7 @@ const DATA = {
     { label: 'GPT-5.4 - 고품질 대안', value: 'gpt-5.4' },
     { label: '직접 입력', value: 'custom' }
   ],
+
   targets: [
     '50대 여성',
     '50대 남성',
@@ -491,6 +547,7 @@ const DATA = {
     '은퇴 후 부모님',
     '시니어 부부'
   ],
+
   modes: [
     '물건이 보내는 음성메시지',
     '인생템 인터뷰',
@@ -503,13 +560,18 @@ const DATA = {
     '시니어 루틴 다큐',
     '웃픈 생활공감'
   ],
+
   objects: [
-    '장바구니',
     '낡은 지갑',
+    '장바구니',
+    '오래된 전화번호부',
+    '병원 진료카드',
+    '김치통',
+    '손목시계',
+    '낡은 운동화',
     '반찬통',
     '약통',
     '손수건',
-    '낡은 운동화',
     '앞치마',
     '냉장고',
     '사진첩',
@@ -526,24 +588,22 @@ const DATA = {
     '밥솥',
     '오래된 라디오',
     '면도기',
-    '손목시계',
     '커피잔',
     '우산',
     '버스카드',
-    '병원 진료카드',
-    '김치통',
     '작은 화분',
     '찻잔',
     '안경집',
     '달력',
-    '오래된 전화번호부',
     '이불',
     '소파'
   ],
+
   places: [
+    '오래된 아파트 현관',
+    '전통시장 반찬가게',
     '엄마 집 주방',
     '아빠 거실',
-    '오래된 아파트 현관',
     '동네 병원 대기실',
     '시장 골목',
     '버스정류장',
@@ -557,11 +617,11 @@ const DATA = {
     '작은 식탁 위',
     '햇살 드는 창가',
     '엘리베이터 앞',
-    '전통시장 반찬가게',
     '동네 마트 계산대',
     '손주 방 앞',
     '명절 전날 주방'
   ],
+
   tones: [
     '따뜻한',
     '웃픈',
@@ -577,6 +637,7 @@ const DATA = {
     '혼자 있을 때 더 와닿는',
     '마지막에 반전 있는'
   ],
+
   voices: [
     '따뜻한 여성 내레이션',
     '담담한 남성 내레이션',
@@ -589,6 +650,7 @@ const DATA = {
     '라디오 사연 느낌',
     '카톡 음성메시지 느낌'
   ],
+
   lengths: [
     '7초',
     '10초',
@@ -596,15 +658,17 @@ const DATA = {
     '20초',
     '30초'
   ],
+
   extras: [
-    '마지막에 자식이 부모님께 전화하고 싶어지는 여운을 넣어줘.',
+    '오브젝트와 관련 없는 감동 장치를 넣지 말고, 생활 디테일에서 자연스럽게 감동을 만들어줘.',
+    '지갑이면 돈, 동전, 영수증, 오래된 가족사진처럼 연결되는 소재만 사용해줘.',
     '더 감동적으로, 하지만 과하지 않게.',
     '살짝 웃기고 마지막은 뭉클하게.',
     '한국적인 생활감과 오래된 아파트 느낌을 강조해줘.',
     '자녀 세대가 저장하고 공유하고 싶게 만들어줘.',
     '느린 줌인, 따뜻한 조명, 조용한 분위기를 강조해줘.',
     '첫 문장을 강한 후킹으로 만들어줘.',
-    '마지막 한 줄에 반전을 넣어줘.',
+    '마지막 한 줄에 앞에서 나온 소재를 회수하는 반전을 넣어줘.',
     '옛날 한국 집 느낌과 레트로 소품을 꼭 넣어줘.',
     '실사 말고 픽사풍 3D 느낌으로 만들어줘.'
   ]
@@ -633,6 +697,7 @@ function fillSelect(id, values) {
     if (typeof v === 'string') {
       return `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`;
     }
+
     return `<option value="${escapeHtml(v.value)}">${escapeHtml(v.label)}</option>`;
   }).join('');
 }
@@ -663,29 +728,37 @@ function renderChips(containerId, values, inputId) {
 
 document.addEventListener('click', async (e) => {
   const chip = e.target.closest('.chip');
+
   if (chip) {
     $(chip.dataset.target).value = chip.dataset.value;
+    showStatus(`"${chip.dataset.value}" 키워드를 선택했습니다.`, 'ok');
     return;
   }
 
   const copyBtn = e.target.closest('[data-copy-type]');
+
   if (copyBtn) {
     const type = copyBtn.dataset.copyType;
+
     if (type === 'all') {
       await copyText(RESULT_STORE.allText || '');
     } else if (type === 'section') {
       const idx = Number(copyBtn.dataset.index);
       await copyText((RESULT_STORE.sections[idx] && RESULT_STORE.sections[idx].body) || '');
     }
+
     return;
   }
 
   const downloadBtn = e.target.closest('[data-download-type]');
+
   if (downloadBtn) {
     const filename = downloadBtn.dataset.filename || 'senior-shorts-prompt.txt';
+
     if (downloadBtn.dataset.downloadType === 'all') {
       downloadText(RESULT_STORE.allText || '', filename);
     }
+
     return;
   }
 });
@@ -693,6 +766,7 @@ document.addEventListener('click', async (e) => {
 $('model').addEventListener('change', () => {
   if ($('model').value === 'custom') {
     const custom = prompt('사용할 모델명을 입력하세요. 예: gpt-5.5');
+
     if (custom) {
       const opt = document.createElement('option');
       opt.value = custom.trim();
@@ -721,8 +795,13 @@ $('clearKeyBtn').addEventListener('click', () => {
 
 $('testApiBtn').addEventListener('click', testApi);
 $('randomBtn').addEventListener('click', randomize);
-$('aiIdeaBtn').addEventListener('click', aiRandomIdea);
 $('sampleBtn').addEventListener('click', sample);
+
+$('aiObjectBtn').addEventListener('click', () => aiSuggestKeyword('object'));
+$('aiPlaceBtn').addEventListener('click', () => aiSuggestKeyword('place'));
+$('addObjectBtn').addEventListener('click', () => addKeywordFromInput('object'));
+$('addPlaceBtn').addEventListener('click', () => addKeywordFromInput('place'));
+
 $('generateBtn').addEventListener('click', generate);
 
 function randomize() {
@@ -735,24 +814,162 @@ function randomize() {
   $('length').value = pick(DATA.lengths.filter(x => x !== '7초'));
   $('extra').value = pick(DATA.extras);
 
-  showStatus('랜덤 조합을 만들었습니다. 바로 생성해도 됩니다.', 'ok');
+  showStatus('전체 랜덤 조합을 만들었습니다. 바로 생성해도 됩니다.', 'ok');
 }
 
 function sample() {
   $('target').value = '60대 엄마';
   $('mode').value = '물건이 보내는 음성메시지';
-  $('object').value = '장바구니';
-  $('place').value = '시장 골목';
+  $('object').value = '낡은 지갑';
+  $('place').value = '오래된 아파트 현관';
   $('tone').value = '따뜻한';
   $('voice').value = '물건이 조용히 말하는 느낌';
   $('length').value = '15초';
-  $('extra').value = '실사 말고 픽사풍 3D로, 옛날 한국 시장과 오래된 추억 느낌이 나게 만들어줘. 마지막에 자식이 부모님께 전화하고 싶어지는 여운을 넣어줘.';
+  $('extra').value = '지갑이면 돈, 동전, 영수증, 오래된 가족사진처럼 연결되는 소재로만 이어줘. 갑자기 전화 같은 관련 없는 감동 장치는 넣지 마. 실사 말고 픽사풍 3D와 옛날 한국 감성으로 만들어줘.';
 
   showStatus('예시를 채웠습니다.');
 }
 
+function addKeywordFromInput(type) {
+  const inputId = type === 'object' ? 'object' : 'place';
+  const chipId = type === 'object' ? 'objectChips' : 'placeChips';
+  const list = type === 'object' ? DATA.objects : DATA.places;
+
+  const value = $(inputId).value.trim();
+
+  if (!value) {
+    showStatus(type === 'object' ? '오브젝트를 먼저 입력해주세요.' : '배경 장소를 먼저 입력해주세요.', 'error');
+    return;
+  }
+
+  if (!list.includes(value)) {
+    list.unshift(value);
+  }
+
+  prependChip(chipId, value, inputId);
+
+  showStatus(`"${value}" 키워드를 추가했습니다. 추가된 칩을 누르면 입력칸에 적용됩니다.`, 'ok');
+}
+
+function prependChip(containerId, value, inputId) {
+  const container = $(containerId);
+
+  const exists = Array.from(container.querySelectorAll('.chip'))
+    .some(chip => chip.dataset.value === value);
+
+  if (exists) return;
+
+  const chip = document.createElement('span');
+  chip.className = 'chip';
+  chip.dataset.target = inputId;
+  chip.dataset.value = value;
+  chip.textContent = value;
+
+  container.prepend(chip);
+}
+
+async function aiSuggestKeyword(type) {
+  const key = getApiKey();
+  const isObject = type === 'object';
+
+  if (!key) {
+    const value = isObject ? pick(DATA.objects) : pick(DATA.places);
+    const inputId = isObject ? 'object' : 'place';
+    const chipId = isObject ? 'objectChips' : 'placeChips';
+
+    $(inputId).value = value;
+    prependChip(chipId, value, inputId);
+
+    showStatus(`API 키가 없어서 기본 랜덤 ${isObject ? '오브젝트' : '배경장소'}를 추천했습니다.`, 'ok');
+    return;
+  }
+
+  const btnId = isObject ? 'aiObjectBtn' : 'aiPlaceBtn';
+  setButtonLoading(btnId, true, '추천중...');
+
+  try {
+    const prompt = isObject
+      ? `시니어 감성 쇼츠에 어울리는 신박한 오브젝트 키워드 1개만 한국어로 출력해줘.
+
+조건:
+- 부모님 속마음, 오래된 물건, 추억, 생활감이 느껴질 것
+- 오브젝트 자체로 대사가 자연스럽게 이어질 수 있을 것
+- 돈, 기억, 손때, 집안일, 병원, 시장, 손주, 오래된 습관 중 하나와 연결되면 좋음
+- 너무 흔한 장바구니, 냉장고만 반복하지 말 것
+- 예: 낡은 지갑, 오래된 전화번호부, 병원 진료카드, 김치통, 손목시계, 빛바랜 영수증 봉투
+- 설명 없이 키워드만 출력`
+      : `시니어 감성 쇼츠에 어울리는 신박한 배경 장소 키워드 1개만 한국어로 출력해줘.
+
+조건:
+- 옛날 한국 감성, 부모님 생활감, 추억이 느껴질 것
+- 오브젝트와 감정이 자연스럽게 이어질 수 있는 장소일 것
+- 예: 오래된 아파트 현관, 전통시장 반찬가게, 약국 앞, 손주 방 앞, 명절 전날 주방, 동네 병원 복도
+- 설명 없이 장소 키워드만 출력`;
+
+    const res = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: getModel(),
+        input: prompt
+      })
+    });
+
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+
+    const data = await res.json();
+    const value = cleanKeyword(extractText(data));
+
+    if (!value) {
+      throw new Error('추천 키워드가 비어 있습니다.');
+    }
+
+    const inputId = isObject ? 'object' : 'place';
+    const chipId = isObject ? 'objectChips' : 'placeChips';
+    const list = isObject ? DATA.objects : DATA.places;
+
+    $(inputId).value = value;
+
+    if (!list.includes(value)) {
+      list.unshift(value);
+    }
+
+    prependChip(chipId, value, inputId);
+
+    showStatus(`AI가 "${value}" 키워드를 추천했습니다. 이대로 생성하거나 다른 칩을 선택하세요.`, 'ok');
+  } catch (err) {
+    console.error(err);
+
+    const value = isObject ? pick(DATA.objects) : pick(DATA.places);
+    const inputId = isObject ? 'object' : 'place';
+    const chipId = isObject ? 'objectChips' : 'placeChips';
+
+    $(inputId).value = value;
+    prependChip(chipId, value, inputId);
+
+    showStatus('AI 추천에 실패해서 기본 랜덤 키워드를 넣었습니다.', 'error');
+  } finally {
+    setButtonLoading(btnId, false, 'AI 추천');
+  }
+}
+
+function cleanKeyword(text) {
+  return String(text || '')
+    .replace(/```/g, '')
+    .replace(/^[-•\d.\s]+/g, '')
+    .replace(/["“”']/g, '')
+    .split('\n')[0]
+    .trim();
+}
+
 function showStatus(msg, type = '') {
   const el = $('status');
+
   el.textContent = msg;
   el.className = 'status show' + (
     type === 'error' ? ' error' :
@@ -811,6 +1028,7 @@ async function testApi() {
     }
 
     const data = await res.json();
+
     showStatus('API 연결 성공: ' + (extractText(data) || '연결 성공'), 'ok');
   } catch (err) {
     console.error(err);
@@ -821,23 +1039,37 @@ async function testApi() {
 function buildPrompt(f) {
   return `너는 시니어 공감형 쇼츠 콘텐츠 작가다.
 
-사용자가 선택한 타깃, 콘텐츠 모드, 오브젝트, 배경, 감정 톤, 목소리, 길이에 맞춰 부모님 세대의 생활감, 가족애, 말하지 못한 속마음, 오래된 물건의 기억을 담은 짧은 쇼츠 대사와 이미지/영상 프롬프트를 생성한다.
+사용자가 선택한 타깃, 콘텐츠 모드, 오브젝트, 배경, 감정 톤, 목소리, 길이에 맞춰
+부모님 세대의 생활감, 가족애, 말하지 못한 속마음, 오래된 물건의 기억을 담은
+짧은 쇼츠 대사와 이미지/영상 프롬프트를 생성한다.
 
-콘텐츠는 화내거나 조롱하는 느낌이 아니라, 따뜻하고 현실적이며 살짝 웃기거나 뭉클한 방향이어야 한다.
+콘텐츠는 화내거나 조롱하는 느낌이 아니라,
+따뜻하고 현실적이며 살짝 웃기거나 뭉클한 방향이어야 한다.
+
+매우 중요:
+- 대사는 반드시 선택한 오브젝트의 기능, 역할, 위치, 기억에서 자연스럽게 이어져야 한다.
+- 오브젝트와 관계없는 소재를 갑자기 넣지 않는다.
+- 예를 들어 오브젝트가 "낡은 지갑"이면 돈, 천 원짜리, 동전, 영수증, 가족사진, 자식 간식값, 아껴 쓴 생활비 같은 소재로 이어간다.
+- 예를 들어 오브젝트가 "운동화"이면 걸음, 산책길, 닳은 뒤꿈치, 오래 걸은 시간, 혼자 걷는 마음으로 이어간다.
+- 예를 들어 오브젝트가 "냉장고"이면 반찬통, 자식이 온다는 말, 남겨둔 과일, 혼자 먹는 밥으로 이어간다.
+- 예를 들어 오브젝트가 "약통"이면 아침 식탁, 요일칸, 건강을 챙기는 습관, 자식에게 걱정 끼치기 싫은 마음으로 이어간다.
+- 지갑 이야기에서 갑자기 전화 한 통 같은 관련 없는 감동 장치를 넣지 않는다.
+- 감동은 억지로 만들지 말고, 오브젝트가 실제로 품고 있을 법한 생활 디테일에서 나온다.
+- 첫 문장, 중간 문장, 마지막 문장이 하나의 흐름으로 이어져야 한다.
+- 마지막 한 줄은 앞의 소재를 회수해야 한다.
+
 시니어를 무시하거나 희화화하지 않는다.
 건강 관련 소재가 나와도 의학적 효능이나 치료 주장은 하지 않는다.
 사물은 부모님의 마음을 대신 전하는 화자처럼 말한다.
-마지막에는 공감, 반전, 여운 중 하나를 반드시 넣는다.
 
-매우 중요:
+이미지/영상 프롬프트 규칙:
 - 이미지 프롬프트와 영상 프롬프트는 반드시 영어로 작성한다.
-- 실사(photorealistic, realistic live-action, real photo) 느낌은 금지한다.
-- 반드시 selected object를 main character로 삼는다.
+- 실사 photorealistic, live-action, real photo 느낌은 금지한다.
+- 반드시 선택한 오브젝트를 main character로 삼는다.
 - 반드시 Pixar-inspired stylized 3D animation look으로 작성한다.
 - 반드시 nostalgic old Korean vibe, retro emotional mood, old apartment or traditional market feeling, warm amber lighting, slightly faded retro color palette, late 80s / 90s sentimental atmosphere를 반영한다.
 - 옛날 감성이 느껴지는 생활 소품과 공간 분위기를 넣는다.
 - 영상 프롬프트는 9:16 세로형 숏폼 기준으로 작성한다.
-- 이미지와 영상 모두 부드럽고 감성적인 3D 애니메이션 룩이어야 한다.
 
 [입력값]
 타깃: ${f.target}
@@ -849,10 +1081,31 @@ function buildPrompt(f) {
 대사 길이: ${f.length}
 추가 지시사항: ${f.extra || '없음'}
 
-[모드별 규칙]
-- 물건이 보내는 음성메시지: 선택한 오브젝트가 부모님 대신 조용히 음성메시지를 남기는 형식. 첫 문장은 “저는 [오브젝트]입니다.” 또는 “오늘도 저는 [장소]에 있었습니다.”로 시작.
-- 인생템 인터뷰: 선택한 오브젝트가 오랫동안 부모님과 함께한 인생템처럼 자기소개. “안녕하세요. 저는 [오브젝트]입니다.”로 시작. 몇 년째 함께했는지, 어떤 날에 자주 쓰이는지, 그 물건이 기억하는 부모님의 모습을 담기.
-- 부모님의 하루 관찰: 여러 사물의 시선으로 하루를 관찰하는 짧은 다큐. 새벽, 아침, 낮, 저녁, 밤 중 최소 3개 구간 포함.
+[대사 작성 방식]
+1. 첫 문장:
+선택한 오브젝트가 자기소개하거나 현재 위치를 말한다.
+
+2. 중간 문장:
+그 오브젝트가 실제로 봤을 법한 부모님의 행동을 구체적으로 말한다.
+
+3. 마지막 문장:
+중간에 나온 생활 디테일을 감정적으로 회수한다.
+
+좋은 예시:
+오브젝트: 낡은 지갑
+대사 흐름:
+저는 낡은 지갑입니다.
+어머니는 제 안의 천 원짜리는 끝까지 아끼셨지만,
+자식들 백 원짜리 간식값은 늘 먼저 꺼내셨어요.
+그래서 저는 돈보다 오래된 사랑을 더 많이 품고 있습니다.
+
+나쁜 예시:
+오브젝트: 낡은 지갑
+대사 흐름:
+저는 낡은 지갑입니다.
+엄마는 전화 한 통을 기다렸어요.
+표현은 짧아도 사랑은 길어요.
+=> 지갑과 전화가 연결되지 않으므로 금지.
 
 반드시 아래 마크다운 구조 그대로 출력해라.
 
@@ -871,105 +1124,6 @@ function buildPrompt(f) {
 ## 유튜브/인스타 본문
 
 ## 해시태그`;
-}
-
-function buildRandomIdeaPrompt() {
-  return `시니어 감성 쇼츠 프롬프트 생성기에서 사용할 랜덤 아이디어 1개를 JSON으로만 생성해줘.
-
-조건:
-- 화내는 사물류 금지
-- 부모님 속마음, 오래된 물건, 하루 루틴, 가족 공감 중심
-- 너무 뻔한 장바구니/냉장고만 반복하지 말고 신박한 소재
-- 한국적인 생활감
-- 시니어를 조롱하지 말 것
-- 옛날 감성과 레트로한 한국 생활 분위기에 잘 어울릴 것
-
-반드시 JSON만 출력:
-{
-  "target": "60대 엄마",
-  "mode": "물건이 보내는 음성메시지",
-  "object": "오브젝트",
-  "place": "배경 장소",
-  "tone": "감정 톤",
-  "voice": "목소리",
-  "length": "15초",
-  "extra": "추가 지시사항"
-}`;
-}
-
-async function aiRandomIdea() {
-  const key = getApiKey();
-
-  if (!key) {
-    randomize();
-    showStatus('API 키가 없어서 일반 랜덤 조합으로 만들었습니다. API 키를 넣으면 AI가 더 신박한 조합을 뽑아줍니다.');
-    return;
-  }
-
-  setButtonLoading('aiIdeaBtn', true, 'AI가 아이디어 뽑는 중...');
-  showStatus('AI가 랜덤 아이디어를 뽑는 중입니다...');
-
-  try {
-    const res = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`
-      },
-      body: JSON.stringify({
-        model: getModel(),
-        input: buildRandomIdeaPrompt()
-      })
-    });
-
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
-
-    const data = await res.json();
-    const raw = extractText(data);
-    const idea = safeJson(raw);
-
-    $('target').value = closestOption('target', idea.target) || pick(DATA.targets);
-    $('mode').value = closestOption('mode', idea.mode) || pick(DATA.modes);
-    $('object').value = idea.object || pick(DATA.objects);
-    $('place').value = idea.place || pick(DATA.places);
-    $('tone').value = closestOption('tone', idea.tone) || pick(DATA.tones);
-    $('voice').value = closestOption('voice', idea.voice) || pick(DATA.voices);
-    $('length').value = closestOption('length', idea.length) || '15초';
-    $('extra').value = idea.extra || pick(DATA.extras);
-
-    showStatus('AI 랜덤 아이디어를 채웠습니다. 이제 프롬프트 생성하기를 누르세요.', 'ok');
-  } catch (err) {
-    console.error(err);
-    randomize();
-    showStatus('AI 랜덤 아이디어 호출에 실패해서 일반 랜덤 조합으로 채웠습니다.', 'error');
-  } finally {
-    setButtonLoading('aiIdeaBtn', false, 'AI 랜덤 아이디어 받기');
-  }
-}
-
-function safeJson(text) {
-  const cleaned = String(text || '').replace(/```json|```/g, '').trim();
-
-  try {
-    return JSON.parse(cleaned);
-  } catch(e) {}
-
-  const match = cleaned.match(/\{[\s\S]*\}/);
-  if (match) {
-    try {
-      return JSON.parse(match[0]);
-    } catch(e) {}
-  }
-
-  return {};
-}
-
-function closestOption(selectId, value) {
-  if (!value) return '';
-  const options = Array.from($(selectId).options).map(o => o.value);
-  return options.includes(value) ? value : '';
 }
 
 async function generate() {
@@ -1041,29 +1195,24 @@ function extractText(data) {
 
 function setLoading(on) {
   const btn = $('generateBtn');
+
   btn.disabled = on;
   btn.classList.toggle('loading', on);
 }
 
 function setButtonLoading(id, on, text) {
   const btn = $(id);
+
   btn.disabled = on;
   btn.textContent = text;
 }
 
 function localGenerate(f) {
   const title = `${f.object}이 대신 전한 부모님의 마음`;
-  const hook = `${f.object}이 알고 있던 부모님의 진짜 속마음.`;
+  const hook = `${f.object} 안에는 오래된 마음이 남아 있었습니다.`;
 
-  const script = f.mode.includes('하루')
-    ? `새벽엔 작은 불빛이 먼저 켜집니다.
-아침엔 ${f.object}이 ${f.place}에서 조용히 기다리고,
-낮에는 부모님의 발걸음이 천천히 이어집니다.
-우리가 모르는 사이, 부모님의 하루는 생각보다 길고 조용합니다.`
-    : `저는 ${f.object}입니다.
-오늘도 저는 ${f.place}에서 부모님의 하루를 지켜봤습니다.
-부모님은 괜찮다고 말하지만, 사실 마음속엔 가족 생각이 먼저 지나갑니다.
-표현은 조용해도 사랑까지 작아지는 건 아닙니다.`;
+  const script = makeObjectBasedScript(f);
+  const lines = script.split('\n').filter(Boolean);
 
   return `## 쇼츠 제목
 ${title}
@@ -1083,25 +1232,120 @@ Vertical 9:16 Pixar-inspired stylized 3D animated video. ${f.object} is the main
 ## SRT 자막
 1
 00:00:00,000 --> 00:00:02,500
-저는 ${f.object}입니다.
+${lines[0] || ''}
 
 2
 00:00:02,500 --> 00:00:05,500
-오늘도 저는 ${f.place}에서 부모님의 하루를 지켜봤습니다.
+${lines[1] || ''}
 
 3
 00:00:05,500 --> 00:00:09,000
-부모님은 괜찮다고 말하지만, 가족 생각이 먼저 지나갑니다.
+${lines[2] || ''}
 
 4
 00:00:09,000 --> 00:00:12,000
-표현은 조용해도 사랑까지 작아지는 건 아닙니다.
+${lines[3] || ''}
 
 ## 유튜브/인스타 본문
-부모님의 평범한 물건 안에는 우리가 몰랐던 마음이 숨어 있을지도 모릅니다. 오늘은 먼저 안부를 물어보세요.
+부모님의 평범한 물건 안에는 우리가 몰랐던 마음이 숨어 있을지도 모릅니다.
+오늘은 그 마음을 조금 천천히 떠올려보세요.
 
 ## 해시태그
 #부모님생각 #시니어공감 #가족공감 #감성쇼츠 #엄마생각 #아빠생각 #옛날감성 #레트로감성`;
+}
+
+function makeObjectBasedScript(f) {
+  const object = f.object;
+  const place = f.place;
+
+  if (object.includes('지갑')) {
+    return `저는 ${object}입니다.
+어머니는 제 안의 천 원짜리는 끝까지 아끼셨지만,
+자식들 백 원짜리 간식값은 늘 먼저 꺼내셨어요.
+그래서 저는 돈보다 오래된 사랑을 더 많이 품고 있습니다.`;
+  }
+
+  if (object.includes('영수증')) {
+    return `저는 ${object}입니다.
+어머니는 본인 물건은 늘 제일 싼 걸 고르셨지만,
+자식이 좋아하는 간식 이름 옆에는 망설임이 없었습니다.
+제 구겨진 글씨 안엔 아껴 쓴 사랑이 남아 있습니다.`;
+  }
+
+  if (object.includes('장바구니') || object.includes('시장가방')) {
+    return `저는 ${object}입니다.
+어머니는 본인 간식은 한참 망설이셨지만,
+자식 좋아하는 과일은 제일 좋은 걸로 담으셨어요.
+사랑은 늘 장바구니 밑바닥부터 조용히 차올랐습니다.`;
+  }
+
+  if (object.includes('운동화')) {
+    return `저는 ${object}입니다.
+아버지는 운동하러 나간다고 하셨지만,
+사실 닳은 제 뒤꿈치엔 혼자 삼킨 걱정들이 묻어 있습니다.
+오늘도 아버지는 말 대신 천천히 걸었습니다.`;
+  }
+
+  if (object.includes('냉장고')) {
+    return `저는 ${object}입니다.
+어머니는 혼자 드실 땐 대충 꺼내 드셨지만,
+자식이 온다는 말 한마디엔 반찬통을 가득 채우셨어요.
+기다림은 늘 냉장고 안에서 먼저 차가워졌습니다.`;
+  }
+
+  if (object.includes('약통')) {
+    return `저는 ${object}입니다.
+아침마다 식탁 위에서 요일칸을 지키고 있습니다.
+어머니는 아픈 티를 내지 않으려 저를 먼저 챙기셨어요.
+걱정시키기 싫은 마음도 매일 한 칸씩 담겨 있었습니다.`;
+  }
+
+  if (object.includes('사진')) {
+    return `저는 ${object}입니다.
+어머니는 이미 다 아는 얼굴도 오래 바라보셨습니다.
+사진을 보는 게 아니라 그때의 웃음소리를 다시 듣는 중이었어요.
+추억은 낡아도 마음은 잘 바래지 않습니다.`;
+  }
+
+  if (object.includes('리모컨')) {
+    return `저는 ${object}입니다.
+아버지는 뉴스 소리를 조금 크게 틀어두셨지만,
+사실 방 안이 너무 조용한 날이 더 많았습니다.
+제 버튼마다 혼자 보낸 저녁이 조금씩 남아 있습니다.`;
+  }
+
+  if (object.includes('밥솥')) {
+    return `저는 ${object}입니다.
+어머니는 혼자 먹을 밥은 작게 지으셨지만,
+자식이 온다는 날엔 제 안을 가득 채우셨어요.
+밥 냄새보다 먼저 피어나는 건 기다림이었습니다.`;
+  }
+
+  if (object.includes('전화번호부')) {
+    return `저는 ${object}입니다.
+어머니는 지워진 글씨 위에도 이름을 다시 눌러 적으셨습니다.
+번호는 바뀌어도 사람을 잊지 않으려는 마음은 그대로였어요.
+제 낡은 종이엔 오래된 안부들이 아직 남아 있습니다.`;
+  }
+
+  if (object.includes('진료카드')) {
+    return `저는 ${object}입니다.
+어머니는 병원 가는 날에도 괜찮다는 말을 먼저 하셨습니다.
+제 작은 글씨 사이엔 말하지 않은 통증과 참은 시간이 남아 있어요.
+걱정시키기 싫은 마음은 늘 접힌 카드처럼 조용했습니다.`;
+  }
+
+  if (object.includes('김치통')) {
+    return `저는 ${object}입니다.
+어머니는 조금만 가져가라던 말에도 제 속을 꾹꾹 채우셨습니다.
+뚜껑이 안 닫히는 건 반찬 때문만은 아니었어요.
+사랑은 늘 적당히 담기 어려웠습니다.`;
+  }
+
+  return `저는 ${object}입니다.
+오늘도 저는 ${place}에서 부모님의 손길을 기다렸습니다.
+작고 낡은 제 몸엔 오래 아껴 쓴 시간들이 남아 있습니다.
+부모님의 사랑은 늘 새것보다 오래된 것에 먼저 묻어납니다.`;
 }
 
 function parseSections(markdown) {
@@ -1175,12 +1419,14 @@ function renderResult(markdown) {
 
 async function copyText(text) {
   const value = String(text || '');
+
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(value);
     } else {
       fallbackCopyText(value);
     }
+
     showStatus('복사되었습니다.', 'ok');
   } catch (err) {
     try {
@@ -1195,16 +1441,21 @@ async function copyText(text) {
 
 function fallbackCopyText(text) {
   const textarea = document.createElement('textarea');
+
   textarea.value = text;
   textarea.setAttribute('readonly', '');
   textarea.style.position = 'fixed';
   textarea.style.top = '-9999px';
   textarea.style.left = '-9999px';
+
   document.body.appendChild(textarea);
+
   textarea.focus();
   textarea.select();
   textarea.setSelectionRange(0, textarea.value.length);
+
   document.execCommand('copy');
+
   document.body.removeChild(textarea);
 }
 
