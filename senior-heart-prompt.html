@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>부모님 속마음 프롬프트 생성기</title>
+  <style>
+    :root {
+      --bg: #fff8ef;
+      --card: #ffffff;
+      --ink: #2f2a24;
+      --muted: #7c6f63;
+      --line: #eadfce;
+      --primary: #e67e45;
+      --primary-dark: #c95f29;
+      --soft: #fff0df;
+      --soft2: #f7efe4;
+      --danger: #c0392b;
+      --shadow: 0 20px 50px rgba(73, 45, 23, 0.11);
+      --radius: 22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffe2c4 0, transparent 35%),
+        radial-gradient(circle at top right, #fff0bf 0, transparent 32%),
+        var(--bg);
+      line-height: 1.55;
+    }
+
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 36px 18px 80px; }
+    .hero {
+      padding: 38px 24px;
+      border: 1px solid rgba(234, 223, 206, .8);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(14px);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1.4fr .8fr;
+      gap: 24px;
+      align-items: center;
+    }
+    .badge { display: inline-flex; gap: 8px; align-items: center; background: var(--soft); color: var(--primary-dark); border: 1px solid #ffd3b0; border-radius: 999px; padding: 7px 12px; font-weight: 800; font-size: 13px; }
+    h1 { margin: 14px 0 10px; font-size: clamp(32px, 5vw, 56px); line-height: 1.05; letter-spacing: -0.05em; }
+    .hero p { margin: 0; color: var(--muted); font-size: 17px; max-width: 760px; }
+    .hero-card { background: #fffaf3; border: 1px solid var(--line); border-radius: 24px; padding: 18px; }
+    .hero-card strong { display:block; font-size: 17px; margin-bottom: 8px; }
+    .hero-card ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); }
+
+    .grid { display: grid; grid-template-columns: 410px 1fr; gap: 22px; margin-top: 22px; align-items: start; }
+    .panel { background: rgba(255,255,255,.9); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .panel h2 { margin: 0; padding: 20px 22px; border-bottom: 1px solid var(--line); font-size: 20px; letter-spacing: -0.03em; }
+    .panel-body { padding: 20px 22px 24px; }
+
+    label { display: block; font-weight: 800; margin: 17px 0 8px; font-size: 14px; }
+    select, input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 13px;
+      font: inherit;
+      background: #fffdf9;
+      color: var(--ink);
+      outline: none;
+      transition: border .15s, box-shadow .15s;
+    }
+    select:focus, input:focus, textarea:focus { border-color: #f4a261; box-shadow: 0 0 0 4px rgba(230,126,69,.12); }
+    textarea { min-height: 88px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .key-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; }
+    .hint { color: var(--muted); font-size: 12.5px; margin-top: 7px; }
+    .mini { font-size: 12px; color: var(--muted); }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 15px;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .08s, filter .15s, background .15s;
+    }
+    button:hover { filter: brightness(.98); }
+    button:active { transform: translateY(1px); }
+    .btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 18px; font-size: 16px; padding: 15px; }
+    .btn-secondary { background: var(--soft2); color: var(--ink); border: 1px solid var(--line); }
+    .btn-danger { background: #fff1ee; color: var(--danger); border: 1px solid #ffd2ca; }
+    .btn-small { padding: 9px 11px; font-size: 13px; white-space: nowrap; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    .chip { background: var(--soft); color: var(--primary-dark); border: 1px solid #ffd3b0; border-radius: 999px; padding: 7px 10px; font-size: 12.5px; font-weight: 800; cursor:pointer; user-select:none; }
+
+    .status { margin-top: 12px; padding: 12px 14px; background: #fff9ed; border: 1px dashed #e9c391; color: #725335; border-radius: 14px; font-size: 13px; display: none; }
+    .status.show { display: block; }
+    .status.error { background:#fff1ee; border-color:#ffc2b8; color:#923022; }
+
+    .result-empty { padding: 34px; text-align: center; color: var(--muted); }
+    .result-actions { display: flex; gap: 10px; flex-wrap: wrap; padding: 14px 22px; border-bottom: 1px solid var(--line); background: #fffaf4; }
+    .output-card { padding: 18px 22px; border-bottom: 1px solid var(--line); }
+    .output-card:last-child { border-bottom: 0; }
+    .output-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .output-head h3 { margin: 0; font-size: 16px; letter-spacing: -0.02em; }
+    pre {
+      margin: 0;
+      background: #2d261f;
+      color: #fff9ef;
+      border-radius: 15px;
+      padding: 15px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.55;
+      max-height: 460px;
+      overflow: auto;
+    }
+    .plain { background:#fffdf9; color: var(--ink); border:1px solid var(--line); font-family: var(--sans); font-size:15px; }
+    .footer { margin-top: 22px; color: var(--muted); font-size: 13px; text-align: center; }
+    .loader { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; display: none; animation: spin .8s linear infinite; vertical-align: -3px; margin-right: 8px; }
+    .loading .loader { display:inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 920px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .key-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <span class="badge">🎞️ 시니어 감성 쇼츠 생성기</span>
+        <h1>부모님 속마음<br/>프롬프트 생성기</h1>
+        <p>사물, 장소, 하루 루틴이 부모님의 말하지 못한 마음을 대신 전합니다. 화내는 사물류 대신 따뜻하고, 웃프고, 공유하고 싶은 쇼츠 대사와 이미지·영상 프롬프트를 한 번에 만드세요.</p>
+      </div>
+      <div class="hero-card">
+        <strong>출력 결과</strong>
+        <ul>
+          <li>쇼츠 제목 + 첫 2초 후킹 자막</li>
+          <li>한국어 대사 + SRT 자막</li>
+          <li>이미지/영상 생성 프롬프트</li>
+          <li>본문/댓글용 글 + 해시태그</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="grid">
+      <aside class="panel">
+        <h2>설정</h2>
+        <div class="panel-body">
+          <label for="apiKey">OpenAI API Key</label>
+          <div class="key-row">
+            <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+            <button class="btn-secondary btn-small" id="saveKeyBtn">저장</button>
+            <button class="btn-danger btn-small" id="clearKeyBtn">삭제</button>
+          </div>
+          <div class="hint">개인용 정적 페이지 방식입니다. 공개 서비스로 운영할 땐 서버 프록시를 사용하세요.</div>
+
+          <div class="row">
+            <div>
+              <label for="target">타깃</label>
+              <select id="target"></select>
+            </div>
+            <div>
+              <label for="length">대사 길이</label>
+              <select id="length"></select>
+            </div>
+          </div>
+
+          <label for="mode">콘텐츠 모드</label>
+          <select id="mode"></select>
+
+          <label for="object">오브젝트</label>
+          <input id="object" placeholder="예: 장바구니, 낡은 운동화, 냉장고" />
+          <div class="chips" id="objectChips"></div>
+
+          <label for="place">배경 장소</label>
+          <input id="place" placeholder="예: 엄마 집 주방, 시장 골목, 현관" />
+          <div class="chips" id="placeChips"></div>
+
+          <div class="row">
+            <div>
+              <label for="tone">감정 톤</label>
+              <select id="tone"></select>
+            </div>
+            <div>
+              <label for="voice">목소리</label>
+              <select id="voice"></select>
+            </div>
+          </div>
+
+          <label for="extra">추가 지시사항</label>
+          <textarea id="extra" placeholder="예: 마지막 반전 강조, 더 감동적으로, 한국 시장 느낌, 느린 줌인"></textarea>
+
+          <label for="model">모델</label>
+          <input id="model" value="gpt-5.5" />
+          <div class="hint">원하는 모델명으로 바꿀 수 있습니다.</div>
+
+          <button class="btn-primary" id="generateBtn"><span class="loader"></span>프롬프트 생성하기</button>
+          <button class="btn-secondary" id="randomBtn" style="width:100%; margin-top:10px;">랜덤 조합 만들기</button>
+          <button class="btn-secondary" id="sampleBtn" style="width:100%; margin-top:10px;">예시로 채우기</button>
+
+          <div class="status" id="status"></div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <h2>생성 결과</h2>
+        <div id="resultArea" class="result-empty">왼쪽 설정을 채우고 생성 버튼을 눌러주세요.</div>
+      </section>
+    </section>
+
+    <p class="footer">GitHub Pages에 이 파일을 <b>senior-heart-prompt.html</b>로 올리면 바로 사용할 수 있습니다.</p>
+  </main>
+
+<script>
+const DATA = {
+  targets: ['50대 여성','50대 남성','60대 엄마','60대 아빠','70대 부모님','혼자 사는 부모님','손주 있는 부모님','자녀와 떨어져 사는 부모님','은퇴 후 부모님','시니어 부부'],
+  modes: ['물건이 보내는 음성메시지','인생템 인터뷰','부모님의 하루 관찰','자식은 모르는 속마음','엄마 집 물건의 고백','아빠 물건의 자기소개','손주 기다리는 집','오래된 물건의 기억','시니어 루틴 다큐','웃픈 생활공감'],
+  objects: ['장바구니','낡은 지갑','반찬통','약통','손수건','낡은 운동화','앞치마','냉장고','사진첩','리모컨','돋보기','휴대폰','등산모자','전기포트','혈압계','파스','시장가방','가족사진','손주 사진','밥솥','오래된 라디오','면도기','손목시계','커피잔','우산'],
+  places: ['엄마 집 주방','아빠 거실','오래된 아파트 현관','동네 병원 대기실','시장 골목','버스정류장','약국 앞','산책길','공원 벤치','베란다','냉장고 앞','가족사진이 걸린 거실','조용한 밤의 안방','작은 식탁 위','햇살 드는 창가'],
+  tones: ['따뜻한','웃픈','찡한','담담한','귀여운','뭉클한','현실공감','살짝 코믹한','다큐 느낌','부모님 생각나는','손주 생각나는','혼자 있을 때 더 와닿는','마지막에 반전 있는'],
+  voices: ['따뜻한 여성 내레이션','담담한 남성 내레이션','할머니 목소리','할아버지 목소리','딸이 읽어주는 느낌','아들이 읽어주는 느낌','물건이 조용히 말하는 느낌','다큐멘터리 내레이션','라디오 사연 느낌','카톡 음성메시지 느낌'],
+  lengths: ['7초','10초','15초','20초','30초']
+};
+
+const $ = (id) => document.getElementById(id);
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+function fillSelect(id, values) {
+  $(id).innerHTML = values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+}
+
+function escapeHtml(str='') {
+  return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+function init() {
+  fillSelect('target', DATA.targets);
+  fillSelect('mode', DATA.modes);
+  fillSelect('tone', DATA.tones);
+  fillSelect('voice', DATA.voices);
+  fillSelect('length', DATA.lengths);
+  $('length').value = '15초';
+  $('apiKey').value = localStorage.getItem('openai_api_key') || '';
+  renderChips('objectChips', DATA.objects.slice(0, 12), 'object');
+  renderChips('placeChips', DATA.places.slice(0, 10), 'place');
+  sample();
+}
+
+function renderChips(containerId, values, inputId) {
+  $(containerId).innerHTML = values.map(v => `<span class="chip" data-target="${inputId}" data-value="${escapeHtml(v)}">${escapeHtml(v)}</span>`).join('');
+}
+
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (chip) $(chip.dataset.target).value = chip.dataset.value;
+});
+
+$('saveKeyBtn').addEventListener('click', () => {
+  localStorage.setItem('openai_api_key', $('apiKey').value.trim());
+  showStatus('API 키를 이 브라우저에 저장했습니다.');
+});
+$('clearKeyBtn').addEventListener('click', () => {
+  localStorage.removeItem('openai_api_key');
+  $('apiKey').value = '';
+  showStatus('저장된 API 키를 삭제했습니다.');
+});
+$('randomBtn').addEventListener('click', randomize);
+$('sampleBtn').addEventListener('click', sample);
+$('generateBtn').addEventListener('click', generate);
+
+function randomize() {
+  $('target').value = pick(DATA.targets);
+  $('mode').value = pick(DATA.modes);
+  $('object').value = pick(DATA.objects);
+  $('place').value = pick(DATA.places);
+  $('tone').value = pick(DATA.tones);
+  $('voice').value = pick(DATA.voices);
+  $('length').value = pick(DATA.lengths.filter(x => x !== '7초'));
+  $('extra').value = pick(['마지막 반전 강조','더 감동적으로, 하지만 과하지 않게','살짝 웃기고 마지막은 뭉클하게','한국적인 생활감 강조','자녀 세대가 저장하고 싶게','느린 줌인, 따뜻한 조명']);
+  showStatus('랜덤 조합을 만들었습니다.');
+}
+
+function sample() {
+  $('target').value = '60대 엄마';
+  $('mode').value = '물건이 보내는 음성메시지';
+  $('object').value = '장바구니';
+  $('place').value = '시장 골목';
+  $('tone').value = '따뜻한';
+  $('voice').value = '물건이 조용히 말하는 느낌';
+  $('length').value = '15초';
+  $('extra').value = '마지막에 자식이 부모님께 전화하고 싶어지는 여운을 넣어줘.';
+  showStatus('예시를 채웠습니다.');
+}
+
+function showStatus(msg, type='') {
+  const el = $('status');
+  el.textContent = msg;
+  el.className = 'status show' + (type === 'error' ? ' error' : '');
+}
+
+function getForm() {
+  return {
+    target: $('target').value,
+    mode: $('mode').value,
+    object: $('object').value.trim(),
+    place: $('place').value.trim(),
+    tone: $('tone').value,
+    voice: $('voice').value,
+    length: $('length').value,
+    extra: $('extra').value.trim(),
+    model: $('model').value.trim() || 'gpt-5.5'
+  };
+}
+
+function buildPrompt(f) {
+  return `너는 시니어 공감형 쇼츠 콘텐츠 작가다.\n\n사용자가 선택한 타깃, 콘텐츠 모드, 오브젝트, 배경, 감정 톤, 목소리, 길이에 맞춰 부모님 세대의 생활감, 가족애, 말하지 못한 속마음, 오래된 물건의 기억을 담은 짧은 쇼츠 대사와 이미지/영상 프롬프트를 생성한다.\n\n콘텐츠는 화내거나 조롱하는 느낌이 아니라, 따뜻하고 현실적이며 살짝 웃기거나 뭉클한 방향이어야 한다. 시니어를 무시하거나 희화화하지 않는다. 건강 관련 소재가 나와도 의학적 효능이나 치료 주장은 하지 않는다. 사물은 부모님의 마음을 대신 전하는 화자처럼 말한다. 마지막에는 공감, 반전, 여운 중 하나를 반드시 넣는다.\n\n[입력값]\n타깃: ${f.target}\n콘텐츠 모드: ${f.mode}\n오브젝트: ${f.object}\n배경 장소: ${f.place}\n감정 톤: ${f.tone}\n목소리: ${f.voice}\n대사 길이: ${f.length}\n추가 지시사항: ${f.extra || '없음'}\n\n[모드별 규칙]\n- 물건이 보내는 음성메시지: 선택한 오브젝트가 부모님 대신 조용히 음성메시지를 남기는 형식. 첫 문장은 “저는 [오브젝트]입니다.” 또는 “오늘도 저는 [장소]에 있었습니다.”로 시작.\n- 인생템 인터뷰: 선택한 오브젝트가 오랫동안 부모님과 함께한 인생템처럼 자기소개. “안녕하세요. 저는 [오브젝트]입니다.”로 시작. 몇 년째 함께했는지, 어떤 날에 자주 쓰이는지, 그 물건이 기억하는 부모님의 모습을 담기.\n- 부모님의 하루 관찰: 여러 사물의 시선으로 하루를 관찰하는 짧은 다큐. 새벽, 아침, 낮, 저녁, 밤 중 최소 3개 구간 포함.\n\n반드시 아래 마크다운 구조 그대로 출력해라. 이미지 프롬프트와 영상 프롬프트는 영어로 작성해라. 영상 프롬프트는 9:16 세로형 숏폼 기준으로 작성해라.\n\n## 쇼츠 제목\n\n## 첫 2초 후킹 자막\n\n## 한국어 대사\n\n## 이미지 프롬프트\n\n## 영상 프롬프트\n\n## SRT 자막\n\n## 유튜브/인스타 본문\n\n## 해시태그`;
+}
+
+async function generate() {
+  const f = getForm();
+  if (!f.object || !f.place) {
+    showStatus('오브젝트와 배경 장소를 입력해주세요.', 'error');
+    return;
+  }
+
+  const key = $('apiKey').value.trim() || localStorage.getItem('openai_api_key');
+
+  if (!key) {
+    showStatus('API 키가 없어서 로컬 예시 생성으로 만들었습니다. 실제 AI 생성을 원하면 API 키를 입력하세요.');
+    renderResult(localGenerate(f));
+    return;
+  }
+
+  localStorage.setItem('openai_api_key', key);
+  setLoading(true);
+  showStatus('AI가 쇼츠 프롬프트를 생성 중입니다...');
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: f.model,
+        input: buildPrompt(f)
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = extractText(data);
+    renderResult(text || localGenerate(f));
+    showStatus('생성이 완료되었습니다. 각 박스의 복사 버튼을 사용할 수 있습니다.');
+  } catch (err) {
+    console.error(err);
+    showStatus('API 호출에 실패했습니다. 아래는 로컬 예시 생성 결과입니다. 키, 모델명, 브라우저 CORS 환경을 확인해주세요.', 'error');
+    renderResult(localGenerate(f));
+  } finally {
+    setLoading(false);
+  }
+}
+
+function extractText(data) {
+  if (data.output_text) return data.output_text;
+  try {
+    return data.output.flatMap(item => item.content || []).map(c => c.text || '').join('\n');
+  } catch(e) { return ''; }
+}
+
+function setLoading(on) {
+  const btn = $('generateBtn');
+  btn.disabled = on;
+  btn.classList.toggle('loading', on);
+}
+
+function localGenerate(f) {
+  const title = `${f.object}이 대신 전한 부모님의 마음`;
+  const hook = `${f.object}이 알고 있던 부모님의 진짜 속마음.`;
+  const script = f.mode.includes('하루')
+    ? `새벽엔 작은 불빛이 먼저 켜집니다.\n아침엔 ${f.object}이 ${f.place}에서 조용히 기다리고,\n낮에는 부모님의 발걸음이 천천히 이어집니다.\n우리가 모르는 사이, 부모님의 하루는 생각보다 길고 조용합니다.`
+    : `저는 ${f.object}입니다.\n오늘도 저는 ${f.place}에서 부모님의 하루를 지켜봤습니다.\n부모님은 괜찮다고 말하지만, 사실 마음속엔 가족 생각이 먼저 지나갑니다.\n표현은 조용해도 사랑까지 작아지는 건 아닙니다.`;
+
+  return `## 쇼츠 제목\n${title}\n\n## 첫 2초 후킹 자막\n${hook}\n\n## 한국어 대사\n${script}\n\n## 이미지 프롬프트\nA warm cinematic 3D scene featuring ${f.object} in ${f.place}, Korean senior lifestyle atmosphere, soft warm lighting, realistic textures, emotional and heartwarming mood, vertical 9:16 composition, gentle depth of field.\n\n## 영상 프롬프트\nVertical 9:16 cinematic video. The camera slowly pushes in on ${f.object} placed in ${f.place}. Soft warm light, quiet Korean home atmosphere, realistic textures, emotional documentary mood, gentle slow zoom, heartwarming ending.\n\n## SRT 자막\n1\n00:00:00,000 --> 00:00:02,500\n저는 ${f.object}입니다.\n\n2\n00:00:02,500 --> 00:00:05,500\n오늘도 저는 ${f.place}에서 부모님의 하루를 지켜봤습니다.\n\n3\n00:00:05,500 --> 00:00:09,000\n부모님은 괜찮다고 말하지만, 가족 생각이 먼저 지나갑니다.\n\n4\n00:00:09,000 --> 00:00:12,000\n표현은 조용해도 사랑까지 작아지는 건 아닙니다.\n\n## 유튜브/인스타 본문\n부모님의 평범한 물건 안에는 우리가 몰랐던 마음이 숨어 있을지도 모릅니다. 오늘은 먼저 안부를 물어보세요.\n\n## 해시태그\n#부모님생각 #시니어공감 #가족공감 #감성쇼츠 #엄마생각 #아빠생각`;
+}
+
+function parseSections(markdown) {
+  const names = ['쇼츠 제목','첫 2초 후킹 자막','한국어 대사','이미지 프롬프트','영상 프롬프트','SRT 자막','유튜브/인스타 본문','해시태그'];
+  const sections = [];
+
+  for (let i = 0; i < names.length; i++) {
+    const start = new RegExp(`##\\s*${names[i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n`, 'm');
+    const m = markdown.match(start);
+    if (!m) continue;
+
+    const from = m.index + m[0].length;
+    let to = markdown.length;
+
+    for (let j = i + 1; j < names.length; j++) {
+      const next = markdown.slice(from).match(new RegExp(`\\n##\\s*${names[j].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n`, 'm'));
+      if (next) {
+        to = from + next.index;
+        break;
+      }
+    }
+
+    sections.push({ title: names[i], body: markdown.slice(from, to).trim() });
+  }
+
+  return sections.length ? sections : [{ title: '전체 결과', body: markdown }];
+}
+
+function renderResult(markdown) {
+  const sections = parseSections(markdown);
+  const allText = sections.map(s => `## ${s.title}\n${s.body}`).join('\n\n');
+
+  $('resultArea').className = '';
+  $('resultArea').innerHTML = `
+    <div class="result-actions">
+      <button class="btn-secondary btn-small" onclick="copyText(${JSON.stringify(allText)})">전체 복사</button>
+      <button class="btn-secondary btn-small" onclick="downloadText(${JSON.stringify(allText)}, 'senior-shorts-prompt.txt')">TXT 다운로드</button>
+    </div>
+    ${sections.map(s => `
+      <article class="output-card">
+        <div class="output-head">
+          <h3>${escapeHtml(s.title)}</h3>
+          <button class="btn-secondary btn-small" onclick="copyText(${JSON.stringify(s.body)})">복사</button>
+        </div>
+        <pre class="${['쇼츠 제목','첫 2초 후킹 자막','한국어 대사','유튜브/인스타 본문','해시태그'].includes(s.title) ? 'plain' : ''}">${escapeHtml(s.body)}</pre>
+      </article>
+    `).join('')}
+  `;
+}
+
+async function copyText(text) {
+  await navigator.clipboard.writeText(text);
+  showStatus('복사되었습니다.');
+}
+
+function downloadText(text, filename) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+init();
+</script>
+</body>
+</html>
